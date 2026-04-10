@@ -1,0 +1,103 @@
+{
+  "summary": {
+    "tests_run": 8,
+    "tests_passed": 8,
+    "success_rate": 100.0
+  },
+  "test_results": [
+    {
+      "test_name": "Root API",
+      "endpoint": "",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 30,
+      "response_keys": [
+        "message"
+      ]
+    },
+    {
+      "test_name": "System Stats",
+      "endpoint": "stats",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 123,
+      "response_keys": [
+        "total_flow",
+        "avg_pressure",
+        "active_alerts",
+        "anomalies_detected",
+        "online_sensors",
+        "total_sensors"
+      ]
+    },
+    {
+      "test_name": "Latest Sensors",
+      "endpoint": "sensors/latest",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 2129,
+      "response_items": 10
+    },
+    {
+      "test_name": "Active Alerts",
+      "endpoint": "alerts?acknowledged=false",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 4929,
+      "response_items": 19
+    },
+    {
+      "test_name": "Anomalies",
+      "endpoint": "anomalies",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 5027,
+      "response_items": 20
+    },
+    {
+      "test_name": "AI Query",
+      "endpoint": "ai/query",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 1290,
+      "response_keys": [
+        "response"
+      ]
+    },
+    {
+      "test_name": "Get Alerts for Ack",
+      "endpoint": "alerts?acknowledged=false",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 4929,
+      "response_items": 19
+    },
+    {
+      "test_name": "Acknowledge Alert",
+      "endpoint": "alerts/69d8d945-04ef-4d8f-9b48-609d8f08d811/acknowledge",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 32,
+      "response_keys": [
+        "message"
+      ]
+    }
+  ],
+  "timestamp": "2026-04-10T09:11:19.225958"
+}
