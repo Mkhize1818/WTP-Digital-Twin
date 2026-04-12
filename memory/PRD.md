@@ -9,43 +9,23 @@ Build a digital twin demo/MVP for Coke's water reticulation system with live das
 - **Database**: MongoDB (sensor_readings, alerts, anomalies, chat_messages, leaks)
 - **Data**: Simulated live sensor data (10 instruments, 5-second intervals)
 
-## User Personas
-- **Coke Operations Engineer**: Monitors water reticulation system in real-time
-- **Quality Manager**: Checks compliance alerts and water quality parameters
-- **Management**: Reviews analytics and AI-powered insights
-
-## Core Requirements
-1. Live digital twin with PFD visualization
-2. Flow meters, pressure indicators, water quality probes (pH, conductivity, chlorine)
-3. Live dashboards with auto-refresh
-4. Instrumentation status (online/offline/warning)
-5. Compliance alerts (pH 6.5-8.5, chlorine 0.5-1.2 mg/L)
-6. Leak detection and anomaly detection
-7. Interactive AI agent (Claude Sonnet 4.5)
-
 ## What's Been Implemented (2026-04-12)
-- [x] Backend sensor simulation engine (10 instruments)
+- [x] Backend sensor simulation engine (10 instruments, secrets.SystemRandom)
+- [x] Extracted backend helpers (_store_doc, _check_compliance, _compute_rolling_avg, etc.)
 - [x] Dark control room dashboard with Talbot branding
 - [x] 4 summary metric cards (flow, pressure, alerts, sensors)
 - [x] Interactive PFD diagram with clickable sensor overlays
 - [x] Sensor Analytics drill-down (time series, rolling averages, stats, trends)
-- [x] **Leak Detection on PFD** - animated leak indicators at 6 pipe zones
-- [x] **CSV/PDF Compliance Export** - dashboard-level and per-sensor exports
-- [x] **Date Range Selector** - 1H/6H/24H/7D/ALL for analytics
+- [x] Leak Detection on PFD - animated leak indicators at 6 pipe zones
+- [x] CSV/PDF Compliance Export - dashboard-level and per-sensor exports
+- [x] Date Range Selector - 1H/6H/24H/7D/ALL for analytics
 - [x] Instrumentation grid (clickable sensor cards)
 - [x] Anomaly detection panel
 - [x] Active alerts feed with acknowledge
 - [x] AI Agent panel (Claude Sonnet 4.5)
-- [x] Auto-refresh (dashboard: 5s, analytics: 10s)
 
-## Prioritized Backlog
-### P1 (Next Phase)
-- Historical data export with custom date ranges (calendar picker)
-- Email/SMS alert notification system
-- Multi-site support for different Coke facilities
-
-### P2 (Future)
-- User authentication and role-based access
-- Predictive maintenance using ML
-- Integration with real SCADA/PLC data sources
-- Scheduled automated compliance reports
+## Code Quality (Applied 2026-04-12)
+- Backend: secrets.SystemRandom, extracted 9 helper functions, shared RANGE_MAP
+- Frontend: useCallback hooks, proper deps, split SensorAnalytics into sub-components
+- Frontend: extracted chart config constants, removed console statements, stable key props
+- Linting: Python ruff + JS ESLint both pass clean
