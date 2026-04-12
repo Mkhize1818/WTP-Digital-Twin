@@ -90,16 +90,38 @@ class LeakEvent(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 instruments = [
+    # Flow Indicators (FIT)
     {"id": "FIT_10", "name": "Main Feed Flow", "type": "flow", "unit": "L/min", "baseline": 150.0, "variance": 15.0},
-    {"id": "FIT_8", "name": "Nano Recovery Tank Flow", "type": "flow", "unit": "L/min", "baseline": 85.0, "variance": 8.0},
-    {"id": "FIT_6", "name": "Recovery Line Flow", "type": "flow", "unit": "L/min", "baseline": 120.0, "variance": 12.0},
-    {"id": "PIT_M1", "name": "Main Tank Pressure", "type": "pressure", "unit": "bar", "baseline": 3.2, "variance": 0.3},
-    {"id": "PIT_M2", "name": "Feed Tank Pressure", "type": "pressure", "unit": "bar", "baseline": 2.8, "variance": 0.25},
-    {"id": "PIT_M3", "name": "RO System Pressure", "type": "pressure", "unit": "bar", "baseline": 4.5, "variance": 0.4},
-    {"id": "pH_001", "name": "RO Water pH", "type": "ph", "unit": "pH", "baseline": 7.2, "variance": 0.3},
+    {"id": "FIT_FL", "name": "Fire Line Flow", "type": "flow", "unit": "L/min", "baseline": 95.0, "variance": 10.0},
+    {"id": "FIT_8", "name": "Nano Recovery 2 Flow", "type": "flow", "unit": "L/min", "baseline": 85.0, "variance": 8.0},
+    {"id": "FIT_6", "name": "Nano Recovery 1 Flow", "type": "flow", "unit": "L/min", "baseline": 120.0, "variance": 12.0},
+    {"id": "FIT_CIP", "name": "CIP Line Flow", "type": "flow", "unit": "L/min", "baseline": 60.0, "variance": 8.0},
+    # Level Indicators (LIT)
+    {"id": "LIT_MR", "name": "Main Reservoir Level", "type": "level", "unit": "m\u00b3", "baseline": 450.0, "variance": 30.0},
+    {"id": "LIT_RT4", "name": "Reservoir Tank 4 Level", "type": "level", "unit": "m\u00b3", "baseline": 100.0, "variance": 10.0},
+    {"id": "LIT_RR2", "name": "Red Reservoir 2 Level", "type": "level", "unit": "m\u00b3", "baseline": 12.0, "variance": 2.0},
+    {"id": "LIT_STW", "name": "Semi Treated Tank Level", "type": "level", "unit": "m\u00b3", "baseline": 30.0, "variance": 4.0},
+    {"id": "LIT_TWT", "name": "Treated Water Tank Level", "type": "level", "unit": "m\u00b3", "baseline": 20.0, "variance": 3.0},
+    {"id": "LIT_HT", "name": "Holding Tank Level", "type": "level", "unit": "m\u00b3", "baseline": 50.0, "variance": 6.0},
+    {"id": "LIT_BRT", "name": "Backwash Recovery Level", "type": "level", "unit": "m\u00b3", "baseline": 28.0, "variance": 5.0},
+    {"id": "LIT_ST", "name": "Storage Tank Level", "type": "level", "unit": "m\u00b3", "baseline": 8.0, "variance": 1.5},
+    {"id": "LIT_NR2", "name": "Nano Recovery 2 Level", "type": "level", "unit": "m\u00b3", "baseline": 3.5, "variance": 0.5},
+    {"id": "LIT_NR1", "name": "Nano Recovery 1 Level", "type": "level", "unit": "m\u00b3", "baseline": 3.5, "variance": 0.5},
+    # Pressure Indicators (PIT)
+    {"id": "PIT_RACF1", "name": "RACF 1 Pressure", "type": "pressure", "unit": "bar", "baseline": 3.2, "variance": 0.3},
+    {"id": "PIT_RACF2", "name": "RACF 2 Pressure", "type": "pressure", "unit": "bar", "baseline": 3.2, "variance": 0.3},
+    {"id": "PIT_RACF3", "name": "RACF 3 Pressure", "type": "pressure", "unit": "bar", "baseline": 3.2, "variance": 0.3},
+    {"id": "PIT_NACF1", "name": "NACF 1 Pressure", "type": "pressure", "unit": "bar", "baseline": 2.8, "variance": 0.25},
+    {"id": "PIT_NACF2", "name": "NACF 2 Pressure", "type": "pressure", "unit": "bar", "baseline": 2.8, "variance": 0.25},
+    # Water Quality
+    {"id": "pH_RO", "name": "RO Break Tank pH", "type": "ph", "unit": "pH", "baseline": 7.2, "variance": 0.3},
+    {"id": "pH_NACF", "name": "NACF pH/Cl", "type": "ph", "unit": "pH", "baseline": 7.0, "variance": 0.4},
     {"id": "CL_001", "name": "Free Chlorine", "type": "chlorine", "unit": "mg/L", "baseline": 0.8, "variance": 0.15},
-    {"id": "EC_001", "name": "Water Conductivity", "type": "conductivity", "unit": "µS/cm", "baseline": 450.0, "variance": 50.0},
-    {"id": "LIT_001", "name": "Main Reservoir Level", "type": "level", "unit": "m³", "baseline": 450.0, "variance": 30.0},
+    {"id": "EC_RO", "name": "RO Conductivity", "type": "conductivity", "unit": "\u00b5S/cm", "baseline": 450.0, "variance": 50.0},
+    {"id": "EC_NANO", "name": "Nano Filtration EC", "type": "conductivity", "unit": "\u00b5S/cm", "baseline": 380.0, "variance": 40.0},
+    # Differential Pressure (DPT)
+    {"id": "DPT_BF", "name": "Bag Filter dP", "type": "pressure", "unit": "bar", "baseline": 0.8, "variance": 0.15},
+    {"id": "DPT_PF", "name": "Polishing Filter dP", "type": "pressure", "unit": "bar", "baseline": 0.5, "variance": 0.1},
 ]
 
 leak_zones = [

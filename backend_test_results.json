@@ -1,7 +1,7 @@
 {
   "summary": {
-    "tests_run": 32,
-    "tests_passed": 32,
+    "tests_run": 31,
+    "tests_passed": 31,
     "success_rate": 100.0
   },
   "test_results": [
@@ -24,7 +24,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 124,
+      "response_size": 125,
       "response_keys": [
         "total_flow",
         "avg_pressure",
@@ -41,8 +41,8 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 2130,
-      "response_items": 10
+      "response_size": 5752,
+      "response_items": 27
     },
     {
       "test_name": "Active Alerts",
@@ -51,7 +51,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25994,
+      "response_size": 26038,
       "response_items": 100
     },
     {
@@ -61,27 +61,17 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 12748,
+      "response_size": 12676,
       "response_items": 50
     },
     {
-      "test_name": "Get Sensors for Analytics",
-      "endpoint": "sensors/latest",
+      "test_name": "Analytics LIT_MR (1h)",
+      "endpoint": "sensors/LIT_MR/analytics?time_range=1h",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 2130,
-      "response_items": 10
-    },
-    {
-      "test_name": "Analytics FIT_10 (1h)",
-      "endpoint": "sensors/FIT_10/analytics?time_range=1h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 33343,
+      "response_size": 4855,
       "response_keys": [
         "instrument",
         "time_series",
@@ -92,13 +82,98 @@
       ]
     },
     {
-      "test_name": "Analytics FIT_10 (6h)",
-      "endpoint": "sensors/FIT_10/analytics?time_range=6h",
+      "test_name": "Analytics LIT_MR (24h)",
+      "endpoint": "sensors/LIT_MR/analytics?time_range=24h",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 33343,
+      "response_size": 4855,
+      "response_keys": [
+        "instrument",
+        "time_series",
+        "stats",
+        "thresholds",
+        "recent_alerts",
+        "recent_anomalies"
+      ]
+    },
+    {
+      "test_name": "Analytics LIT_MR (all)",
+      "endpoint": "sensors/LIT_MR/analytics?time_range=all",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 4855,
+      "response_keys": [
+        "instrument",
+        "time_series",
+        "stats",
+        "thresholds",
+        "recent_alerts",
+        "recent_anomalies"
+      ]
+    },
+    {
+      "test_name": "Analytics PIT_RACF1 (1h)",
+      "endpoint": "sensors/PIT_RACF1/analytics?time_range=1h",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 4270,
+      "response_keys": [
+        "instrument",
+        "time_series",
+        "stats",
+        "thresholds",
+        "recent_alerts",
+        "recent_anomalies"
+      ]
+    },
+    {
+      "test_name": "Analytics PIT_RACF1 (24h)",
+      "endpoint": "sensors/PIT_RACF1/analytics?time_range=24h",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 4270,
+      "response_keys": [
+        "instrument",
+        "time_series",
+        "stats",
+        "thresholds",
+        "recent_alerts",
+        "recent_anomalies"
+      ]
+    },
+    {
+      "test_name": "Analytics PIT_RACF1 (all)",
+      "endpoint": "sensors/PIT_RACF1/analytics?time_range=all",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 4270,
+      "response_keys": [
+        "instrument",
+        "time_series",
+        "stats",
+        "thresholds",
+        "recent_alerts",
+        "recent_anomalies"
+      ]
+    },
+    {
+      "test_name": "Analytics FIT_10 (1h)",
+      "endpoint": "sensors/FIT_10/analytics?time_range=1h",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 33354,
       "response_keys": [
         "instrument",
         "time_series",
@@ -115,24 +190,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 33343,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
-    },
-    {
-      "test_name": "Analytics FIT_10 (7d)",
-      "endpoint": "sensors/FIT_10/analytics?time_range=7d",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 33359,
+      "response_size": 33341,
       "response_keys": [
         "instrument",
         "time_series",
@@ -149,7 +207,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 33359,
+      "response_size": 33357,
       "response_keys": [
         "instrument",
         "time_series",
@@ -160,13 +218,13 @@
       ]
     },
     {
-      "test_name": "Analytics PIT_M1 (1h)",
-      "endpoint": "sensors/PIT_M1/analytics?time_range=1h",
+      "test_name": "Analytics pH_RO (1h)",
+      "endpoint": "sensors/pH_RO/analytics?time_range=1h",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30509,
+      "response_size": 4530,
       "response_keys": [
         "instrument",
         "time_series",
@@ -177,13 +235,13 @@
       ]
     },
     {
-      "test_name": "Analytics PIT_M1 (6h)",
-      "endpoint": "sensors/PIT_M1/analytics?time_range=6h",
+      "test_name": "Analytics pH_RO (24h)",
+      "endpoint": "sensors/pH_RO/analytics?time_range=24h",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30509,
+      "response_size": 4530,
       "response_keys": [
         "instrument",
         "time_series",
@@ -194,13 +252,13 @@
       ]
     },
     {
-      "test_name": "Analytics PIT_M1 (24h)",
-      "endpoint": "sensors/PIT_M1/analytics?time_range=24h",
+      "test_name": "Analytics pH_RO (all)",
+      "endpoint": "sensors/pH_RO/analytics?time_range=all",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30509,
+      "response_size": 4530,
       "response_keys": [
         "instrument",
         "time_series",
@@ -211,13 +269,13 @@
       ]
     },
     {
-      "test_name": "Analytics PIT_M1 (7d)",
-      "endpoint": "sensors/PIT_M1/analytics?time_range=7d",
+      "test_name": "Analytics EC_NANO (1h)",
+      "endpoint": "sensors/EC_NANO/analytics?time_range=1h",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30518,
+      "response_size": 5178,
       "response_keys": [
         "instrument",
         "time_series",
@@ -228,13 +286,13 @@
       ]
     },
     {
-      "test_name": "Analytics PIT_M1 (all)",
-      "endpoint": "sensors/PIT_M1/analytics?time_range=all",
+      "test_name": "Analytics EC_NANO (24h)",
+      "endpoint": "sensors/EC_NANO/analytics?time_range=24h",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30518,
+      "response_size": 5178,
       "response_keys": [
         "instrument",
         "time_series",
@@ -245,81 +303,13 @@
       ]
     },
     {
-      "test_name": "Analytics pH_001 (1h)",
-      "endpoint": "sensors/pH_001/analytics?time_range=1h",
+      "test_name": "Analytics EC_NANO (all)",
+      "endpoint": "sensors/EC_NANO/analytics?time_range=all",
       "method": "GET",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30194,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
-    },
-    {
-      "test_name": "Analytics pH_001 (6h)",
-      "endpoint": "sensors/pH_001/analytics?time_range=6h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 30194,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
-    },
-    {
-      "test_name": "Analytics pH_001 (24h)",
-      "endpoint": "sensors/pH_001/analytics?time_range=24h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 30194,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
-    },
-    {
-      "test_name": "Analytics pH_001 (7d)",
-      "endpoint": "sensors/pH_001/analytics?time_range=7d",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 30226,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
-    },
-    {
-      "test_name": "Analytics pH_001 (all)",
-      "endpoint": "sensors/pH_001/analytics?time_range=all",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 30226,
+      "response_size": 5178,
       "response_keys": [
         "instrument",
         "time_series",
@@ -348,8 +338,8 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 433,
-      "response_items": 2
+      "response_size": 2572,
+      "response_items": 12
     },
     {
       "test_name": "Leak Zones",
@@ -358,7 +348,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 782,
+      "response_size": 816,
       "response_items": 6
     },
     {
@@ -368,7 +358,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 959,
+      "response_size": 962,
       "response_keys": [
         "report_generated",
         "range",
@@ -386,7 +376,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 959,
+      "response_size": 962,
       "response_keys": [
         "report_generated",
         "range",
@@ -404,7 +394,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 960,
+      "response_size": 963,
       "response_keys": [
         "report_generated",
         "range",
@@ -422,7 +412,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 964,
+      "response_size": 965,
       "response_keys": [
         "report_generated",
         "range",
@@ -440,7 +430,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 965,
+      "response_size": 966,
       "response_keys": [
         "report_generated",
         "range",
@@ -458,7 +448,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 1051,
+      "response_size": 1523,
       "response_keys": [
         "response"
       ]
@@ -470,12 +460,12 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25994,
+      "response_size": 26038,
       "response_items": 100
     },
     {
       "test_name": "Acknowledge Alert",
-      "endpoint": "alerts/100344fa-e466-4306-93f6-35699625c034/acknowledge",
+      "endpoint": "alerts/d5268bd4-16d7-482a-af9b-de24beac1295/acknowledge",
       "method": "POST",
       "expected_status": 200,
       "actual_status": 200,
@@ -486,5 +476,5 @@
       ]
     }
   ],
-  "timestamp": "2026-04-12T18:34:15.007096"
+  "timestamp": "2026-04-12T19:04:14.801747"
 }

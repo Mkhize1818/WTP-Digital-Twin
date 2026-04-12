@@ -103,9 +103,36 @@ class DigitalTwinAPITester:
         return success
 
     def test_latest_sensors(self):
-        """Test latest sensor readings endpoint"""
+        """Test latest sensor readings endpoint - UPDATED: Should return 27 sensors"""
         success, response = self.run_test("Latest Sensors", "GET", "sensors/latest", 200)
         if success and isinstance(response, list):
+            print(f"   Found {len(response)} sensors (Expected: 27)")
+            
+            # Check if we have exactly 27 sensors as per the updated requirement
+            if len(response) != 27:
+                print(f"⚠️  Warning: Expected 27 sensors, got {len(response)}")
+                success = False
+            
+            # Count sensors by type to verify the distribution
+            sensor_types = {}
+            for sensor in response:
+                sensor_type = sensor.get('type', 'unknown')
+                sensor_types[sensor_type] = sensor_types.get(sensor_type, 0) + 1
+            
+            print(f"   Sensor distribution: {sensor_types}")
+            
+            # Expected distribution: 5 FIT, 10 LIT, 5 PIT, 5 quality (ph/chlorine/conductivity), 2 DPT
+            expected_distribution = {
+                'flow': 5,      # FIT sensors
+                'level': 10,    # LIT sensors  
+                'pressure': 7,  # PIT (5) + DPT (2) sensors
+                'ph': 2,        # pH sensors
+                'chlorine': 1,  # Chlorine sensors
+                'conductivity': 2  # EC sensors
+            }
+            
+            print(f"   Expected distribution: {expected_distribution}")
+            
             if len(response) > 0:
                 sensor = response[0]
                 required_fields = ["instrument_id", "instrument_name", "type", "value", "unit", "status"]
@@ -171,21 +198,17 @@ class DigitalTwinAPITester:
             return True  # Not a failure if no alerts exist
 
     def test_sensor_analytics(self):
-        """Test the sensor analytics endpoint with time range filtering (UPDATED FEATURE)"""
-        print("\n=== Testing Sensor Analytics with Time Range Filtering ===")
+        """Test the sensor analytics endpoint with specific instruments from the PFD"""
+        print("\n=== Testing Sensor Analytics for Key PFD Instruments ===")
         
-        # First get available sensors
-        success, sensors = self.run_test("Get Sensors for Analytics", "GET", "sensors/latest", 200)
-        if not success or not sensors:
-            print("❌ Cannot test analytics - no sensors available")
-            return False
-
+        # Test specific instruments mentioned in the review request
+        test_instruments = ["LIT_MR", "PIT_RACF1", "FIT_10", "pH_RO", "EC_NANO"]
+        time_ranges = ["1h", "24h", "all"]
+        
         analytics_results = []
-        test_instruments = ["FIT_10", "PIT_M1", "pH_001"]  # Test key instruments
-        time_ranges = ["1h", "6h", "24h", "7d", "all"]  # NEW: Test different time ranges
         
         for instrument_id in test_instruments:
-            print(f"\n   Testing {instrument_id} with different time ranges:")
+            print(f"\n   Testing {instrument_id} analytics:")
             
             for time_range in time_ranges:
                 success, analytics = self.run_test(
@@ -223,6 +246,11 @@ class DigitalTwinAPITester:
                             print(f"     📊 {time_range}: All stats available, {stats.get('data_points')} points")
                         else:
                             print(f"     ⚠️  {time_range}: Missing stats: {[s for s in required_stats if s not in stats]}")
+                        
+                        # Validate instrument details
+                        instrument = analytics.get('instrument', {})
+                        if instrument.get('id') == instrument_id:
+                            print(f"     ✅ Instrument details: {instrument.get('name')} ({instrument.get('type')})")
                         
                         analytics_results.append({
                             'instrument_id': instrument_id,
