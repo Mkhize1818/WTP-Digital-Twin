@@ -24,7 +24,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 125,
+      "response_size": 124,
       "response_keys": [
         "total_flow",
         "avg_pressure",
@@ -51,7 +51,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 26022,
+      "response_size": 25994,
       "response_items": 100
     },
     {
@@ -61,7 +61,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 12672,
+      "response_size": 12748,
       "response_items": 50
     },
     {
@@ -71,7 +71,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 2131,
+      "response_size": 2130,
       "response_items": 10
     },
     {
@@ -81,7 +81,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 28108,
+      "response_size": 33343,
       "response_keys": [
         "instrument",
         "time_series",
@@ -98,7 +98,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 28108,
+      "response_size": 33343,
       "response_keys": [
         "instrument",
         "time_series",
@@ -115,7 +115,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 28108,
+      "response_size": 33343,
       "response_keys": [
         "instrument",
         "time_series",
@@ -166,7 +166,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25835,
+      "response_size": 30509,
       "response_keys": [
         "instrument",
         "time_series",
@@ -183,7 +183,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25835,
+      "response_size": 30509,
       "response_keys": [
         "instrument",
         "time_series",
@@ -200,7 +200,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25835,
+      "response_size": 30509,
       "response_keys": [
         "instrument",
         "time_series",
@@ -217,7 +217,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30517,
+      "response_size": 30518,
       "response_keys": [
         "instrument",
         "time_series",
@@ -234,7 +234,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30517,
+      "response_size": 30518,
       "response_keys": [
         "instrument",
         "time_series",
@@ -251,7 +251,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25522,
+      "response_size": 30194,
       "response_keys": [
         "instrument",
         "time_series",
@@ -268,7 +268,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25522,
+      "response_size": 30194,
       "response_keys": [
         "instrument",
         "time_series",
@@ -285,7 +285,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 25522,
+      "response_size": 30194,
       "response_keys": [
         "instrument",
         "time_series",
@@ -302,7 +302,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30227,
+      "response_size": 30226,
       "response_keys": [
         "instrument",
         "time_series",
@@ -319,7 +319,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 30227,
+      "response_size": 30226,
       "response_keys": [
         "instrument",
         "time_series",
@@ -348,8 +348,8 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 216,
-      "response_items": 1
+      "response_size": 433,
+      "response_items": 2
     },
     {
       "test_name": "Leak Zones",
@@ -358,7 +358,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 772,
+      "response_size": 782,
       "response_items": 6
     },
     {
@@ -422,7 +422,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 963,
+      "response_size": 964,
       "response_keys": [
         "report_generated",
         "range",
@@ -440,7 +440,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 964,
+      "response_size": 965,
       "response_keys": [
         "report_generated",
         "range",
@@ -458,7 +458,7 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 1269,
+      "response_size": 1051,
       "response_keys": [
         "response"
       ]
@@ -470,12 +470,12 @@
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
-      "response_size": 26032,
+      "response_size": 25994,
       "response_items": 100
     },
     {
       "test_name": "Acknowledge Alert",
-      "endpoint": "alerts/2f58de07-4550-4d2c-b08e-b20b8d130147/acknowledge",
+      "endpoint": "alerts/100344fa-e466-4306-93f6-35699625c034/acknowledge",
       "method": "POST",
       "expected_status": 200,
       "actual_status": 200,
@@ -486,5 +486,5 @@
       ]
     }
   ],
-  "timestamp": "2026-04-12T18:18:58.028553"
+  "timestamp": "2026-04-12T18:34:15.007096"
 }

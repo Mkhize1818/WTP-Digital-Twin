@@ -1,10 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { PaperPlaneRight, CircleNotch } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+const SUGGESTED_QUERIES = [
+  "How much water has passed through today?",
+  "Show me chlorine compliance status",
+  "When was the last anomaly detected?",
+  "What's the average pressure?",
+];
 
 const AIAgentPanel = () => {
   const [query, setQuery] = useState("");
@@ -13,19 +20,19 @@ const AIAgentPanel = () => {
   const [sessionId] = useState(() => `session-${Date.now()}`);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!query.trim() || loading) return;
 
-    const userMessage = { role: "user", content: query };
+    const userMessage = { role: "user", content: query, id: `user-${Date.now()}` };
     setMessages((prev) => [...prev, userMessage]);
     setQuery("");
     setLoading(true);
@@ -36,27 +43,26 @@ const AIAgentPanel = () => {
         session_id: sessionId,
       });
 
-      const assistantMessage = { role: "assistant", content: response.data.response };
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Error querying AI:", error);
-      toast.error("Failed to get AI response");
-      const errorMessage = {
+      const assistantMessage = {
         role: "assistant",
-        content: "Sorry, I encountered an error processing your request.",
+        content: response.data.response,
+        id: `assistant-${Date.now()}`,
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (err) {
+      toast.error("Failed to get AI response");
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, I encountered an error processing your request.",
+          id: `error-${Date.now()}`,
+        },
+      ]);
     } finally {
       setLoading(false);
     }
   };
-
-  const suggestedQueries = [
-    "How much water has passed through today?",
-    "Show me chlorine compliance status",
-    "When was the last anomaly detected?",
-    "What's the average pressure?",
-  ];
 
   return (
     <div
@@ -88,9 +94,9 @@ const AIAgentPanel = () => {
             <p className="text-xs" style={{ color: "#A3A3A3" }}>
               Try asking:
             </p>
-            {suggestedQueries.map((q, idx) => (
+            {SUGGESTED_QUERIES.map((q) => (
               <button
-                key={idx}
+                key={q}
                 onClick={() => setQuery(q)}
                 className="w-full text-left text-xs p-2 border rounded-sm hover:border-[#007AFF] transition-colors"
                 style={{
@@ -98,7 +104,7 @@ const AIAgentPanel = () => {
                   borderColor: "rgba(255, 255, 255, 0.1)",
                   color: "#A3A3A3",
                 }}
-                data-testid={`suggested-query-${idx}`}
+                data-testid={`suggested-query-${q.slice(0, 20).replace(/\s/g, "-")}`}
               >
                 {q}
               </button>
@@ -106,9 +112,9 @@ const AIAgentPanel = () => {
           </div>
         )}
 
-        {messages.map((msg, idx) => (
+        {messages.map((msg) => (
           <div
-            key={idx}
+            key={msg.id}
             className="p-2 rounded-sm"
             style={{
               backgroundColor: msg.role === "user" ? "#1A1A1A" : "#121212",
@@ -117,7 +123,7 @@ const AIAgentPanel = () => {
                   ? "2px solid #007AFF"
                   : "2px solid #A3A3A3",
             }}
-            data-testid={`chat-message-${idx}`}
+            data-testid={`chat-message-${msg.id}`}
           >
             <span
               className="text-xs font-bold uppercase tracking-wider mb-1 block"

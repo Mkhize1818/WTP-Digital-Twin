@@ -10,8 +10,11 @@ from typing import List, Optional, Literal
 import uuid
 from datetime import datetime, timezone, timedelta
 import asyncio
-import random
+import secrets
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+# Cryptographically-backed RNG for simulation integrity
+_rng = secrets.SystemRandom()
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -108,75 +111,98 @@ leak_zones = [
     {"id": "LZ_06", "name": "WWTP Outflow", "x": "90%", "y": "85%"},
 ]
 
+async def _store_doc(collection, model_instance):
+    """Serialize and insert a Pydantic model into a MongoDB collection."""
+    doc = model_instance.model_dump()
+    doc["timestamp"] = doc["timestamp"].isoformat()
+    await collection.insert_one(doc)
+
+
+async def _create_compliance_alert(instrument, value, alert_type, severity, message):
+    """Generate and store a compliance/offline alert."""
+    alert = Alert(
+        type=alert_type,
+        severity=severity,
+        message=message,
+        instrument_id=instrument["id"],
+        instrument_name=instrument["name"],
+    )
+    await _store_doc(db.alerts, alert)
+
+
+def _check_compliance(instrument, value):
+    """Return (alert_type, severity, message) if value is out-of-spec, else None."""
+    itype = instrument["type"]
+    if itype == "ph" and (value < 6.5 or value > 8.5):
+        return ("compliance", "critical", f"pH out of spec: {value:.2f} (acceptable range: 6.5-8.5)")
+    if itype == "chlorine" and (value < 0.5 or value > 1.2):
+        return ("compliance", "warning", f"Chlorine out of spec: {value:.2f} mg/L (acceptable range: 0.5-1.2 mg/L)")
+    return None
+
+
 async def generate_sensor_reading(instrument):
-    value = instrument["baseline"] + random.uniform(-instrument["variance"], instrument["variance"])
-    
+    value = instrument["baseline"] + _rng.uniform(-instrument["variance"], instrument["variance"])
+
     status = "online"
-    if random.random() < 0.05:
-        status = "warning" if random.random() < 0.7 else "offline"
-    
+    if _rng.random() < 0.05:
+        status = "warning" if _rng.random() < 0.7 else "offline"
+
     reading = SensorReading(
         instrument_id=instrument["id"],
         instrument_name=instrument["name"],
         type=instrument["type"],
         value=round(value, 2),
         unit=instrument["unit"],
-        status=status
+        status=status,
     )
-    
-    doc = reading.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    await db.sensor_readings.insert_one(doc)
-    
-    if instrument["type"] == "ph" and (value < 6.5 or value > 8.5):
-        alert = Alert(
-            type="compliance",
-            severity="critical",
-            message=f"pH out of spec: {value:.2f} (acceptable range: 6.5-8.5)",
-            instrument_id=instrument["id"],
-            instrument_name=instrument["name"]
-        )
-        alert_doc = alert.model_dump()
-        alert_doc['timestamp'] = alert_doc['timestamp'].isoformat()
-        await db.alerts.insert_one(alert_doc)
-    
-    if instrument["type"] == "chlorine" and (value < 0.5 or value > 1.2):
-        alert = Alert(
-            type="compliance",
-            severity="warning",
-            message=f"Chlorine out of spec: {value:.2f} mg/L (acceptable range: 0.5-1.2 mg/L)",
-            instrument_id=instrument["id"],
-            instrument_name=instrument["name"]
-        )
-        alert_doc = alert.model_dump()
-        alert_doc['timestamp'] = alert_doc['timestamp'].isoformat()
-        await db.alerts.insert_one(alert_doc)
-    
+    await _store_doc(db.sensor_readings, reading)
+
+    compliance = _check_compliance(instrument, value)
+    if compliance:
+        await _create_compliance_alert(instrument, value, *compliance)
+
     if status == "offline":
-        alert = Alert(
-            type="offline",
-            severity="critical",
-            message=f"Sensor {instrument['name']} is offline",
-            instrument_id=instrument["id"],
-            instrument_name=instrument["name"]
+        await _create_compliance_alert(
+            instrument, value, "offline", "critical",
+            f"Sensor {instrument['name']} is offline",
         )
-        alert_doc = alert.model_dump()
-        alert_doc['timestamp'] = alert_doc['timestamp'].isoformat()
-        await db.alerts.insert_one(alert_doc)
-    
-    if random.random() < 0.02:
+
+    if _rng.random() < 0.02:
         anomaly = Anomaly(
             instrument_id=instrument["id"],
             instrument_name=instrument["name"],
-            anomaly_type="spike" if random.random() < 0.5 else "drift",
-            confidence=round(random.uniform(0.7, 0.95), 2),
-            description=f"Unusual pattern detected in {instrument['name']}"
+            anomaly_type="spike" if _rng.random() < 0.5 else "drift",
+            confidence=round(_rng.uniform(0.7, 0.95), 2),
+            description=f"Unusual pattern detected in {instrument['name']}",
         )
-        anomaly_doc = anomaly.model_dump()
-        anomaly_doc['timestamp'] = anomaly_doc['timestamp'].isoformat()
-        await db.anomalies.insert_one(anomaly_doc)
-    
+        await _store_doc(db.anomalies, anomaly)
+
     return reading
+
+
+async def _simulate_leak():
+    """Simulate a random leak event and create associated alert."""
+    zone = _rng.choice(leak_zones)
+    severity = _rng.choices(["minor", "warning", "critical"], weights=[0.5, 0.35, 0.15])[0]
+    loss_map = {"minor": (0.5, 3.0), "warning": (3.0, 10.0), "critical": (10.0, 30.0)}
+    lo, hi = loss_map[severity]
+    leak = LeakEvent(
+        zone_id=zone["id"],
+        zone_name=zone["name"],
+        severity=severity,
+        estimated_loss=round(_rng.uniform(lo, hi), 2),
+        confidence=round(_rng.uniform(0.6, 0.98), 2),
+    )
+    await _store_doc(db.leaks, leak)
+
+    alert = Alert(
+        type="leak",
+        severity="critical" if severity == "critical" else "warning",
+        message=f"Leak detected at {zone['name']}: ~{leak.estimated_loss} L/min loss ({severity})",
+        instrument_id=zone["id"],
+        instrument_name=zone["name"],
+    )
+    await _store_doc(db.alerts, alert)
 
 async def sensor_simulation_loop():
     while True:
@@ -185,32 +211,8 @@ async def sensor_simulation_loop():
                 await generate_sensor_reading(instrument)
 
             # Leak simulation: ~3% chance per cycle
-            if random.random() < 0.03:
-                zone = random.choice(leak_zones)
-                severity = random.choices(["minor", "warning", "critical"], weights=[0.5, 0.35, 0.15])[0]
-                loss_map = {"minor": (0.5, 3.0), "warning": (3.0, 10.0), "critical": (10.0, 30.0)}
-                lo, hi = loss_map[severity]
-                leak = LeakEvent(
-                    zone_id=zone["id"],
-                    zone_name=zone["name"],
-                    severity=severity,
-                    estimated_loss=round(random.uniform(lo, hi), 2),
-                    confidence=round(random.uniform(0.6, 0.98), 2),
-                )
-                leak_doc = leak.model_dump()
-                leak_doc["timestamp"] = leak_doc["timestamp"].isoformat()
-                await db.leaks.insert_one(leak_doc)
-
-                alert = Alert(
-                    type="leak",
-                    severity="critical" if severity == "critical" else "warning",
-                    message=f"Leak detected at {zone['name']}: ~{leak.estimated_loss} L/min loss ({severity})",
-                    instrument_id=zone["id"],
-                    instrument_name=zone["name"],
-                )
-                alert_doc = alert.model_dump()
-                alert_doc["timestamp"] = alert_doc["timestamp"].isoformat()
-                await db.alerts.insert_one(alert_doc)
+            if _rng.random() < 0.03:
+                await _simulate_leak()
 
             await asyncio.sleep(5)
         except Exception as e:
@@ -235,8 +237,7 @@ async def get_latest_sensors():
             sort=[("timestamp", -1)]
         )
         if reading:
-            if isinstance(reading['timestamp'], str):
-                reading['timestamp'] = datetime.fromisoformat(reading['timestamp'])
+            _parse_timestamp(reading)
             latest_readings.append(reading)
     return latest_readings
 
@@ -246,12 +247,78 @@ async def get_sensor_history(instrument_id: str, limit: int = 50):
         {"instrument_id": instrument_id},
         {"_id": 0}
     ).sort("timestamp", -1).limit(limit).to_list(limit)
-    
+
     for reading in readings:
-        if isinstance(reading['timestamp'], str):
-            reading['timestamp'] = datetime.fromisoformat(reading['timestamp'])
-    
+        _parse_timestamp(reading)
+
     return readings
+
+RANGE_MAP = {
+    "1h": timedelta(hours=1),
+    "6h": timedelta(hours=6),
+    "24h": timedelta(hours=24),
+    "7d": timedelta(days=7),
+    "30d": timedelta(days=30),
+}
+
+
+def _parse_timestamp(doc):
+    """Ensure doc['timestamp'] is a datetime object."""
+    if isinstance(doc["timestamp"], str):
+        doc["timestamp"] = datetime.fromisoformat(doc["timestamp"])
+
+
+def _compute_rolling_avg(vals, window):
+    """Compute a rolling average with the given window size."""
+    result = []
+    for i in range(len(vals)):
+        start = max(0, i - window + 1)
+        result.append(round(sum(vals[start : i + 1]) / (i - start + 1), 2))
+    return result
+
+
+def _compute_stats(values):
+    """Return a stats dict from a list of float values."""
+    if not values:
+        return {}
+    mean = sum(values) / len(values)
+    return {
+        "current": values[-1],
+        "min": round(min(values), 2),
+        "max": round(max(values), 2),
+        "mean": round(mean, 2),
+        "std_dev": round((sum((v - mean) ** 2 for v in values) / len(values)) ** 0.5, 2),
+        "data_points": len(values),
+    }
+
+
+def _get_thresholds(instrument):
+    """Return compliance threshold dict for an instrument."""
+    itype = instrument["type"]
+    if itype == "ph":
+        return {"low": 6.5, "high": 8.5, "label": "pH Compliance Range"}
+    if itype == "chlorine":
+        return {"low": 0.5, "high": 1.2, "label": "Chlorine Compliance Range"}
+    if itype in ("pressure", "flow"):
+        margin = instrument["variance"] * 2
+        return {
+            "low": instrument["baseline"] - margin,
+            "high": instrument["baseline"] + margin,
+            "label": "Normal Operating Range",
+        }
+    return {}
+
+
+async def _fetch_recent_docs(collection, instrument_id, limit=10):
+    """Fetch recent docs for an instrument, normalizing timestamps to ISO strings."""
+    docs = await collection.find(
+        {"instrument_id": instrument_id}, {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    for d in docs:
+        _parse_timestamp(d)
+        d["timestamp"] = d["timestamp"].isoformat() if isinstance(d["timestamp"], datetime) else d["timestamp"]
+    return docs
+
 
 @api_router.get("/sensors/{instrument_id}/analytics")
 async def get_sensor_analytics(instrument_id: str, time_range: str = "all"):
@@ -259,83 +326,23 @@ async def get_sensor_analytics(instrument_id: str, time_range: str = "all"):
     if not instrument:
         raise HTTPException(status_code=404, detail="Instrument not found")
 
-    # Build time filter based on range
     time_filter = {"instrument_id": instrument_id}
-    now = datetime.now(timezone.utc)
-    range_map = {
-        "1h": timedelta(hours=1),
-        "6h": timedelta(hours=6),
-        "24h": timedelta(hours=24),
-        "7d": timedelta(days=7),
-        "30d": timedelta(days=30),
-    }
-    if time_range in range_map:
-        cutoff = (now - range_map[time_range]).isoformat()
+    if time_range in RANGE_MAP:
+        cutoff = (datetime.now(timezone.utc) - RANGE_MAP[time_range]).isoformat()
         time_filter["timestamp"] = {"$gte": cutoff}
 
     readings = await db.sensor_readings.find(
-        time_filter,
-        {"_id": 0}
+        time_filter, {"_id": 0}
     ).sort("timestamp", 1).limit(500).to_list(500)
 
     for r in readings:
-        if isinstance(r['timestamp'], str):
-            r['timestamp'] = datetime.fromisoformat(r['timestamp'])
+        _parse_timestamp(r)
 
     values = [r["value"] for r in readings]
-    timestamps = [r["timestamp"].isoformat() if isinstance(r["timestamp"], datetime) else r["timestamp"] for r in readings]
-
-    # Rolling averages (window of 5 and 10)
-    def rolling_avg(vals, window):
-        result = []
-        for i in range(len(vals)):
-            start = max(0, i - window + 1)
-            result.append(round(sum(vals[start:i+1]) / (i - start + 1), 2))
-        return result
-
-    ra5 = rolling_avg(values, 5)
-    ra10 = rolling_avg(values, 10)
-
-    # Stats
-    stats = {}
-    if values:
-        stats["current"] = values[-1]
-        stats["min"] = round(min(values), 2)
-        stats["max"] = round(max(values), 2)
-        stats["mean"] = round(sum(values) / len(values), 2)
-        stats["std_dev"] = round((sum((v - stats["mean"]) ** 2 for v in values) / len(values)) ** 0.5, 2)
-        stats["data_points"] = len(values)
-
-    # Compliance thresholds
-    thresholds = {}
-    if instrument["type"] == "ph":
-        thresholds = {"low": 6.5, "high": 8.5, "label": "pH Compliance Range"}
-    elif instrument["type"] == "chlorine":
-        thresholds = {"low": 0.5, "high": 1.2, "label": "Chlorine Compliance Range"}
-    elif instrument["type"] == "pressure":
-        thresholds = {"low": instrument["baseline"] - instrument["variance"] * 2, "high": instrument["baseline"] + instrument["variance"] * 2, "label": "Normal Operating Range"}
-    elif instrument["type"] == "flow":
-        thresholds = {"low": instrument["baseline"] - instrument["variance"] * 2, "high": instrument["baseline"] + instrument["variance"] * 2, "label": "Normal Operating Range"}
-
-    # Recent alerts for this instrument
-    recent_alerts = await db.alerts.find(
-        {"instrument_id": instrument_id},
-        {"_id": 0}
-    ).sort("timestamp", -1).limit(10).to_list(10)
-    for a in recent_alerts:
-        if isinstance(a['timestamp'], str):
-            a['timestamp'] = datetime.fromisoformat(a['timestamp'])
-        a['timestamp'] = a['timestamp'].isoformat() if isinstance(a['timestamp'], datetime) else a['timestamp']
-
-    # Recent anomalies
-    recent_anomalies = await db.anomalies.find(
-        {"instrument_id": instrument_id},
-        {"_id": 0}
-    ).sort("timestamp", -1).limit(10).to_list(10)
-    for an in recent_anomalies:
-        if isinstance(an['timestamp'], str):
-            an['timestamp'] = datetime.fromisoformat(an['timestamp'])
-        an['timestamp'] = an['timestamp'].isoformat() if isinstance(an['timestamp'], datetime) else an['timestamp']
+    timestamps = [
+        r["timestamp"].isoformat() if isinstance(r["timestamp"], datetime) else r["timestamp"]
+        for r in readings
+    ]
 
     return {
         "instrument": {
@@ -348,13 +355,13 @@ async def get_sensor_analytics(instrument_id: str, time_range: str = "all"):
         "time_series": {
             "timestamps": timestamps,
             "values": values,
-            "rolling_avg_5": ra5,
-            "rolling_avg_10": ra10,
+            "rolling_avg_5": _compute_rolling_avg(values, 5),
+            "rolling_avg_10": _compute_rolling_avg(values, 10),
         },
-        "stats": stats,
-        "thresholds": thresholds,
-        "recent_alerts": recent_alerts,
-        "recent_anomalies": recent_anomalies,
+        "stats": _compute_stats(values),
+        "thresholds": _get_thresholds(instrument),
+        "recent_alerts": await _fetch_recent_docs(db.alerts, instrument_id),
+        "recent_anomalies": await _fetch_recent_docs(db.anomalies, instrument_id),
     }
 
 @api_router.get("/alerts", response_model=List[Alert])
@@ -364,11 +371,10 @@ async def get_alerts(acknowledged: Optional[bool] = None, limit: int = 100):
         query["acknowledged"] = acknowledged
     
     alerts = await db.alerts.find(query, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
-    
+
     for alert in alerts:
-        if isinstance(alert['timestamp'], str):
-            alert['timestamp'] = datetime.fromisoformat(alert['timestamp'])
-    
+        _parse_timestamp(alert)
+
     return alerts
 
 @api_router.post("/alerts/{alert_id}/acknowledge")
@@ -384,11 +390,10 @@ async def acknowledge_alert(alert_id: str):
 @api_router.get("/anomalies", response_model=List[Anomaly])
 async def get_anomalies(limit: int = 50):
     anomalies = await db.anomalies.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
-    
+
     for anomaly in anomalies:
-        if isinstance(anomaly['timestamp'], str):
-            anomaly['timestamp'] = datetime.fromisoformat(anomaly['timestamp'])
-    
+        _parse_timestamp(anomaly)
+
     return anomalies
 
 @api_router.get("/stats", response_model=SystemStats)
@@ -481,9 +486,8 @@ async def get_chat_history(session_id: str):
     ).sort("timestamp", 1).to_list(100)
     
     for msg in messages:
-        if isinstance(msg['timestamp'], str):
-            msg['timestamp'] = datetime.fromisoformat(msg['timestamp'])
-    
+        _parse_timestamp(msg)
+
     return messages
 
 # ── Leak Detection ──────────────────────────────────────────
@@ -494,8 +498,7 @@ async def get_leaks(active_only: bool = True, limit: int = 50):
         query["active"] = True
     leaks = await db.leaks.find(query, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
     for lk in leaks:
-        if isinstance(lk["timestamp"], str):
-            lk["timestamp"] = datetime.fromisoformat(lk["timestamp"])
+        _parse_timestamp(lk)
         lk["timestamp"] = lk["timestamp"].isoformat() if isinstance(lk["timestamp"], datetime) else lk["timestamp"]
     return leaks
 
@@ -518,58 +521,57 @@ async def get_leak_zones():
         })
     return zones_with_status
 
+COMPLIANCE_SPECS = {
+    "pH_001": {"name": "RO Water pH", "unit": "pH", "low": 6.5, "high": 8.5},
+    "CL_001": {"name": "Free Chlorine", "unit": "mg/L", "low": 0.5, "high": 1.2},
+    "EC_001": {"name": "Water Conductivity", "unit": "µS/cm", "low": 200.0, "high": 800.0},
+}
+
+
+async def _build_compliance_row(inst_id, spec, cutoff):
+    """Build a single compliance row for the report."""
+    readings = await db.sensor_readings.find(
+        {"instrument_id": inst_id, "timestamp": {"$gte": cutoff}}, {"_id": 0}
+    ).sort("timestamp", 1).to_list(5000)
+
+    values = [r["value"] for r in readings]
+    if not values:
+        return None
+
+    out_of_spec = [v for v in values if v < spec["low"] or v > spec["high"]]
+    total = len(values)
+    return {
+        "instrument_id": inst_id,
+        "instrument_name": spec["name"],
+        "unit": spec["unit"],
+        "low_limit": spec["low"],
+        "high_limit": spec["high"],
+        "readings_count": total,
+        "min_value": round(min(values), 2),
+        "max_value": round(max(values), 2),
+        "mean_value": round(sum(values) / total, 2),
+        "out_of_spec_count": len(out_of_spec),
+        "compliance_pct": round(((total - len(out_of_spec)) / total) * 100, 1),
+    }
+
+
 # ── Compliance Report ───────────────────────────────────────
 @api_router.get("/reports/compliance")
 async def get_compliance_report(time_range: str = "24h"):
     now = datetime.now(timezone.utc)
-    range_map = {"1h": timedelta(hours=1), "6h": timedelta(hours=6), "24h": timedelta(hours=24), "7d": timedelta(days=7), "30d": timedelta(days=30)}
-    delta = range_map.get(time_range, timedelta(hours=24))
+    delta = RANGE_MAP.get(time_range, timedelta(hours=24))
     cutoff = (now - delta).isoformat()
 
-    # Compliance instruments
-    compliance_specs = {
-        "pH_001": {"name": "RO Water pH", "unit": "pH", "low": 6.5, "high": 8.5},
-        "CL_001": {"name": "Free Chlorine", "unit": "mg/L", "low": 0.5, "high": 1.2},
-        "EC_001": {"name": "Water Conductivity", "unit": "µS/cm", "low": 200.0, "high": 800.0},
-    }
-
     report_rows = []
-    for inst_id, spec in compliance_specs.items():
-        readings = await db.sensor_readings.find(
-            {"instrument_id": inst_id, "timestamp": {"$gte": cutoff}},
-            {"_id": 0}
-        ).sort("timestamp", 1).to_list(5000)
+    for inst_id, spec in COMPLIANCE_SPECS.items():
+        row = await _build_compliance_row(inst_id, spec, cutoff)
+        if row:
+            report_rows.append(row)
 
-        values = [r["value"] for r in readings]
-        if not values:
-            continue
-
-        out_of_spec = [v for v in values if v < spec["low"] or v > spec["high"]]
-        compliance_pct = round(((len(values) - len(out_of_spec)) / len(values)) * 100, 1) if values else 100.0
-
-        report_rows.append({
-            "instrument_id": inst_id,
-            "instrument_name": spec["name"],
-            "unit": spec["unit"],
-            "low_limit": spec["low"],
-            "high_limit": spec["high"],
-            "readings_count": len(values),
-            "min_value": round(min(values), 2),
-            "max_value": round(max(values), 2),
-            "mean_value": round(sum(values) / len(values), 2),
-            "out_of_spec_count": len(out_of_spec),
-            "compliance_pct": compliance_pct,
-        })
-
-    # Alert summary
     alert_counts = {
-        "compliance": await db.alerts.count_documents({"type": "compliance", "timestamp": {"$gte": cutoff}}),
-        "leak": await db.alerts.count_documents({"type": "leak", "timestamp": {"$gte": cutoff}}),
-        "anomaly": await db.alerts.count_documents({"type": "anomaly", "timestamp": {"$gte": cutoff}}),
-        "offline": await db.alerts.count_documents({"type": "offline", "timestamp": {"$gte": cutoff}}),
+        atype: await db.alerts.count_documents({"type": atype, "timestamp": {"$gte": cutoff}})
+        for atype in ("compliance", "leak", "anomaly", "offline")
     }
-
-    leak_events = await db.leaks.count_documents({"timestamp": {"$gte": cutoff}})
 
     return {
         "report_generated": now.isoformat(),
@@ -578,7 +580,7 @@ async def get_compliance_report(time_range: str = "24h"):
         "range_end": now.isoformat(),
         "compliance_data": report_rows,
         "alert_summary": alert_counts,
-        "total_leak_events": leak_events,
+        "total_leak_events": await db.leaks.count_documents({"timestamp": {"$gte": cutoff}}),
     }
 
 app.include_router(api_router)

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 import MetricCard from "../components/MetricCard";
@@ -22,7 +22,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSensor, setSelectedSensor] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [statsRes, sensorsRes, alertsRes, anomaliesRes] = await Promise.all([
         axios.get(`${API}/stats`),
@@ -36,26 +36,25 @@ const Dashboard = () => {
       setAlerts(alertsRes.data);
       setAnomalies(anomaliesRes.data);
       setLoading(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    } catch (err) {
       toast.error("Failed to fetch system data");
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchData]);
 
-  const handleSensorClick = (instrumentId) => {
+  const handleSensorClick = useCallback((instrumentId) => {
     setSelectedSensor(instrumentId);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, []);
 
-  const handleBackToPFD = () => {
+  const handleBackToPFD = useCallback(() => {
     setSelectedSensor(null);
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -111,35 +110,24 @@ const Dashboard = () => {
           />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-            {/* PFD Visualization - Large */}
             <div className="lg:col-span-3 lg:row-span-2">
               <PFDVisualization
                 sensors={sensors}
                 onSensorClick={handleSensorClick}
               />
             </div>
-
-            {/* AI Agent Panel */}
             <div className="lg:col-span-1 lg:row-span-2">
               <AIAgentPanel />
             </div>
-
-            {/* Sensor Grid */}
             <div className="lg:col-span-2">
               <SensorGrid sensors={sensors} onSensorClick={handleSensorClick} />
             </div>
-
-            {/* Anomaly Panel */}
             <div className="lg:col-span-2">
               <AnomalyPanel anomalies={anomalies} />
             </div>
-
-            {/* Alerts Feed */}
             <div className="lg:col-span-4">
               <AlertsFeed alerts={alerts} onRefresh={fetchData} />
             </div>
-
-            {/* Compliance Export */}
             <div className="lg:col-span-4">
               <ComplianceExport />
             </div>

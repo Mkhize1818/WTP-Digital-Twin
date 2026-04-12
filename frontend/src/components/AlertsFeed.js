@@ -7,22 +7,21 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const SEVERITY_CONFIG = {
+  critical: { icon: XCircle, color: "#FF3B30", bg: "rgba(255, 59, 48, 0.1)" },
+  warning: { icon: WarningCircle, color: "#FF9500", bg: "rgba(255, 149, 0, 0.1)" },
+  info: { icon: Info, color: "#32ADE6", bg: "rgba(50, 173, 230, 0.1)" },
+};
+
 const AlertsFeed = ({ alerts, onRefresh }) => {
   const handleAcknowledge = async (alertId) => {
     try {
       await axios.post(`${API}/alerts/${alertId}/acknowledge`);
       toast.success("Alert acknowledged");
       onRefresh();
-    } catch (error) {
-      console.error("Error acknowledging alert:", error);
+    } catch (_) {
       toast.error("Failed to acknowledge alert");
     }
-  };
-
-  const severityConfig = {
-    critical: { icon: XCircle, color: "#FF3B30", bg: "rgba(255, 59, 48, 0.1)" },
-    warning: { icon: WarningCircle, color: "#FF9500", bg: "rgba(255, 149, 0, 0.1)" },
-    info: { icon: Info, color: "#32ADE6", bg: "rgba(50, 173, 230, 0.1)" },
   };
 
   return (
@@ -58,7 +57,7 @@ const AlertsFeed = ({ alerts, onRefresh }) => {
       ) : (
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {alerts.map((alert) => {
-            const config = severityConfig[alert.severity];
+            const config = SEVERITY_CONFIG[alert.severity];
             const Icon = config.icon;
 
             return (
@@ -72,7 +71,7 @@ const AlertsFeed = ({ alerts, onRefresh }) => {
                 data-testid={`alert-item-${alert.id}`}
               >
                 <Icon size={24} color={config.color} weight="duotone" />
-                
+
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-1">
                     <div>
