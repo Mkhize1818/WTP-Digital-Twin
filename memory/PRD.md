@@ -5,8 +5,8 @@ Build a digital twin demo/MVP for Coke's water reticulation system with live das
 
 ## Architecture
 - **Backend**: FastAPI + MongoDB + emergentintegrations (Claude Sonnet 4.5)
-- **Frontend**: React + Tailwind + Recharts + Phosphor Icons + Shadcn UI
-- **Database**: MongoDB (sensor_readings, alerts, anomalies, chat_messages)
+- **Frontend**: React + Tailwind + Recharts + Phosphor Icons + Shadcn UI + jsPDF
+- **Database**: MongoDB (sensor_readings, alerts, anomalies, chat_messages, leaks)
 - **Data**: Simulated live sensor data (10 instruments, 5-second intervals)
 
 ## User Personas
@@ -28,12 +28,10 @@ Build a digital twin demo/MVP for Coke's water reticulation system with live das
 - [x] Dark control room dashboard with Talbot branding
 - [x] 4 summary metric cards (flow, pressure, alerts, sensors)
 - [x] Interactive PFD diagram with clickable sensor overlays
-- [x] **Sensor Analytics drill-down** - click any sensor for:
-  - Time series chart with rolling averages (5 & 10 window)
-  - Stat cards (Current, Mean, Min, Max, Std Dev)
-  - Trend envelope area chart
-  - Compliance threshold reference lines
-  - Recent events (alerts + anomalies)
+- [x] Sensor Analytics drill-down (time series, rolling averages, stats, trends)
+- [x] **Leak Detection on PFD** - animated leak indicators at 6 pipe zones
+- [x] **CSV/PDF Compliance Export** - dashboard-level and per-sensor exports
+- [x] **Date Range Selector** - 1H/6H/24H/7D/ALL for analytics
 - [x] Instrumentation grid (clickable sensor cards)
 - [x] Anomaly detection panel
 - [x] Active alerts feed with acknowledge
@@ -41,18 +39,13 @@ Build a digital twin demo/MVP for Coke's water reticulation system with live das
 - [x] Auto-refresh (dashboard: 5s, analytics: 10s)
 
 ## Prioritized Backlog
-### P0 (Done)
-- All core features implemented and tested
-
 ### P1 (Next Phase)
-- Historical data export (CSV/PDF reports)
-- Date range selector for analytics
-- Leak detection visualization on PFD
-- More detailed anomaly classification
+- Historical data export with custom date ranges (calendar picker)
+- Email/SMS alert notification system
+- Multi-site support for different Coke facilities
 
 ### P2 (Future)
 - User authentication and role-based access
-- Email/SMS alert notifications
 - Predictive maintenance using ML
 - Integration with real SCADA/PLC data sources
-- Multi-site support
+- Scheduled automated compliance reports
