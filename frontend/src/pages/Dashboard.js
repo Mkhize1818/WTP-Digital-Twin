@@ -7,6 +7,7 @@ import AlertsFeed from "../components/AlertsFeed";
 import AIAgentPanel from "../components/AIAgentPanel";
 import AnomalyPanel from "../components/AnomalyPanel";
 import SensorGrid from "../components/SensorGrid";
+import SensorAnalytics from "../components/SensorAnalytics";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const [alerts, setAlerts] = useState([]);
   const [anomalies, setAnomalies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSensor, setSelectedSensor] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -45,6 +47,15 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleSensorClick = (instrumentId) => {
+    setSelectedSensor(instrumentId);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleBackToPFD = () => {
+    setSelectedSensor(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -56,7 +67,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0A0A0A" }}>
       <Header />
-      
+
       <main className="p-6 md:p-8">
         {/* Top Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6">
@@ -91,33 +102,43 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-          {/* PFD Visualization - Large */}
-          <div className="lg:col-span-3 lg:row-span-2">
-            <PFDVisualization sensors={sensors} />
-          </div>
+        {/* Conditional: Analytics View or Main Dashboard */}
+        {selectedSensor ? (
+          <SensorAnalytics
+            instrumentId={selectedSensor}
+            onBack={handleBackToPFD}
+          />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+            {/* PFD Visualization - Large */}
+            <div className="lg:col-span-3 lg:row-span-2">
+              <PFDVisualization
+                sensors={sensors}
+                onSensorClick={handleSensorClick}
+              />
+            </div>
 
-          {/* AI Agent Panel */}
-          <div className="lg:col-span-1 lg:row-span-2">
-            <AIAgentPanel />
-          </div>
+            {/* AI Agent Panel */}
+            <div className="lg:col-span-1 lg:row-span-2">
+              <AIAgentPanel />
+            </div>
 
-          {/* Sensor Grid */}
-          <div className="lg:col-span-2">
-            <SensorGrid sensors={sensors} />
-          </div>
+            {/* Sensor Grid */}
+            <div className="lg:col-span-2">
+              <SensorGrid sensors={sensors} onSensorClick={handleSensorClick} />
+            </div>
 
-          {/* Anomaly Panel */}
-          <div className="lg:col-span-2">
-            <AnomalyPanel anomalies={anomalies} />
-          </div>
+            {/* Anomaly Panel */}
+            <div className="lg:col-span-2">
+              <AnomalyPanel anomalies={anomalies} />
+            </div>
 
-          {/* Alerts Feed */}
-          <div className="lg:col-span-4">
-            <AlertsFeed alerts={alerts} onRefresh={fetchData} />
+            {/* Alerts Feed */}
+            <div className="lg:col-span-4">
+              <AlertsFeed alerts={alerts} onRefresh={fetchData} />
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

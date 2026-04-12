@@ -170,6 +170,99 @@ class DigitalTwinAPITester:
             print("   No alerts available to acknowledge")
             return True  # Not a failure if no alerts exist
 
+    def test_sensor_analytics(self):
+        """Test the new sensor analytics endpoint (NEW FEATURE)"""
+        print("\n=== Testing Sensor Analytics Endpoints (NEW FEATURE) ===")
+        
+        # First get available sensors
+        success, sensors = self.run_test("Get Sensors for Analytics", "GET", "sensors/latest", 200)
+        if not success or not sensors:
+            print("❌ Cannot test analytics - no sensors available")
+            return False
+
+        analytics_results = []
+        test_instruments = ["FIT_10", "PIT_M1", "pH_001"]  # Test key instruments
+        
+        for instrument_id in test_instruments:
+            success, analytics = self.run_test(
+                f"Analytics for {instrument_id}", 
+                "GET", 
+                f"sensors/{instrument_id}/analytics", 
+                200
+            )
+            
+            if success and analytics:
+                # Validate analytics structure
+                required_fields = ['instrument', 'time_series', 'stats', 'thresholds', 'recent_alerts', 'recent_anomalies']
+                missing_fields = [field for field in required_fields if field not in analytics]
+                
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields for {instrument_id}: {missing_fields}")
+                    analytics_results.append({'instrument_id': instrument_id, 'success': False, 'issue': f"Missing fields: {missing_fields}"})
+                else:
+                    print(f"   ✅ Complete analytics structure for {instrument_id}")
+                    
+                    # Validate time series data
+                    ts = analytics.get('time_series', {})
+                    if ts.get('timestamps') and ts.get('values'):
+                        data_points = len(ts['timestamps'])
+                        print(f"   📈 Time series: {data_points} data points")
+                        print(f"   📈 Rolling averages: 5-window={len(ts.get('rolling_avg_5', []))}, 10-window={len(ts.get('rolling_avg_10', []))}")
+                        
+                        # Validate rolling averages match data points
+                        if len(ts.get('rolling_avg_5', [])) != data_points or len(ts.get('rolling_avg_10', [])) != data_points:
+                            print(f"   ⚠️  Rolling average lengths don't match data points")
+                    
+                    # Validate stats
+                    stats = analytics.get('stats', {})
+                    required_stats = ['current', 'min', 'max', 'mean', 'std_dev', 'data_points']
+                    available_stats = [stat for stat in required_stats if stat in stats]
+                    print(f"   📊 Stats available: {len(available_stats)}/{len(required_stats)} - {available_stats}")
+                    
+                    # Validate instrument info
+                    instrument = analytics.get('instrument', {})
+                    if instrument.get('id') == instrument_id:
+                        print(f"   🔧 Instrument: {instrument.get('name')} ({instrument.get('type')}) - {instrument.get('unit')}")
+                    
+                    # Validate thresholds
+                    thresholds = analytics.get('thresholds', {})
+                    if thresholds:
+                        print(f"   🎯 Thresholds: Low={thresholds.get('low')}, High={thresholds.get('high')}")
+                    
+                    # Validate events
+                    alerts_count = len(analytics.get('recent_alerts', []))
+                    anomalies_count = len(analytics.get('recent_anomalies', []))
+                    print(f"   🚨 Recent events: {alerts_count} alerts, {anomalies_count} anomalies")
+                    
+                    analytics_results.append({
+                        'instrument_id': instrument_id,
+                        'success': True,
+                        'data_points': data_points,
+                        'stats_count': len(available_stats),
+                        'alerts_count': alerts_count,
+                        'anomalies_count': anomalies_count
+                    })
+            else:
+                print(f"   ❌ Analytics call failed for {instrument_id}")
+                analytics_results.append({'instrument_id': instrument_id, 'success': False, 'issue': 'API call failed'})
+
+        # Test invalid instrument ID
+        success, response = self.run_test(
+            "Analytics for Invalid ID", 
+            "GET", 
+            "sensors/INVALID_ID/analytics", 
+            404
+        )
+        
+        if success:
+            print("   ✅ Correctly returns 404 for invalid instrument ID")
+
+        # Summary
+        successful_analytics = [r for r in analytics_results if r['success']]
+        print(f"\n   📈 Analytics Summary: {len(successful_analytics)}/{len(analytics_results)} instruments tested successfully")
+        
+        return len(successful_analytics) > 0
+
 def main():
     print("🚀 Starting Digital Twin API Tests")
     print("=" * 50)
@@ -183,6 +276,7 @@ def main():
         tester.test_latest_sensors,
         tester.test_alerts,
         tester.test_anomalies,
+        tester.test_sensor_analytics,  # NEW: Test analytics endpoint
         tester.test_ai_query,
         tester.test_acknowledge_alert
     ]

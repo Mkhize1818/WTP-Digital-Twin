@@ -1,7 +1,7 @@
 import React from "react";
-import { Drop, Gauge, Flask } from "@phosphor-icons/react";
+import { Drop, Gauge, Flask, ChartLine } from "@phosphor-icons/react";
 
-const SensorGrid = ({ sensors }) => {
+const SensorGrid = ({ sensors, onSensorClick }) => {
   const getIcon = (type) => {
     switch (type) {
       case "flow":
@@ -38,19 +38,23 @@ const SensorGrid = ({ sensors }) => {
           return (
             <div
               key={sensor.id}
-              className="p-3 border rounded-sm"
+              className="p-3 border rounded-sm cursor-pointer hover:border-[#007AFF] transition-colors"
               style={{
                 backgroundColor: "#1A1A1A",
                 borderColor: "rgba(255, 255, 255, 0.1)",
               }}
+              onClick={() => onSensorClick?.(sensor.instrument_id)}
               data-testid={`sensor-card-${sensor.instrument_id}`}
             >
               <div className="flex items-start justify-between mb-2">
                 <Icon size={20} color="#007AFF" weight="duotone" />
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: statusColors[sensor.status] }}
-                />
+                <div className="flex items-center gap-2">
+                  <ChartLine size={14} color="#525252" />
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: statusColors[sensor.status] }}
+                  />
+                </div>
               </div>
               <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "#A3A3A3" }}>
                 {sensor.instrument_id}

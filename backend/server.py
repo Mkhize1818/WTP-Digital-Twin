@@ -204,6 +204,96 @@ async def get_sensor_history(instrument_id: str, limit: int = 50):
     
     return readings
 
+@api_router.get("/sensors/{instrument_id}/analytics")
+async def get_sensor_analytics(instrument_id: str):
+    instrument = next((i for i in instruments if i["id"] == instrument_id), None)
+    if not instrument:
+        raise HTTPException(status_code=404, detail="Instrument not found")
+
+    readings = await db.sensor_readings.find(
+        {"instrument_id": instrument_id},
+        {"_id": 0}
+    ).sort("timestamp", 1).limit(200).to_list(200)
+
+    for r in readings:
+        if isinstance(r['timestamp'], str):
+            r['timestamp'] = datetime.fromisoformat(r['timestamp'])
+
+    values = [r["value"] for r in readings]
+    timestamps = [r["timestamp"].isoformat() if isinstance(r["timestamp"], datetime) else r["timestamp"] for r in readings]
+
+    # Rolling averages (window of 5 and 10)
+    def rolling_avg(vals, window):
+        result = []
+        for i in range(len(vals)):
+            start = max(0, i - window + 1)
+            result.append(round(sum(vals[start:i+1]) / (i - start + 1), 2))
+        return result
+
+    ra5 = rolling_avg(values, 5)
+    ra10 = rolling_avg(values, 10)
+
+    # Stats
+    stats = {}
+    if values:
+        stats["current"] = values[-1]
+        stats["min"] = round(min(values), 2)
+        stats["max"] = round(max(values), 2)
+        stats["mean"] = round(sum(values) / len(values), 2)
+        stats["std_dev"] = round((sum((v - stats["mean"]) ** 2 for v in values) / len(values)) ** 0.5, 2)
+        stats["data_points"] = len(values)
+
+    # Compliance thresholds
+    thresholds = {}
+    if instrument["type"] == "ph":
+        thresholds = {"low": 6.5, "high": 8.5, "label": "pH Compliance Range"}
+    elif instrument["type"] == "chlorine":
+        thresholds = {"low": 0.5, "high": 1.2, "label": "Chlorine Compliance Range"}
+    elif instrument["type"] == "pressure":
+        thresholds = {"low": instrument["baseline"] - instrument["variance"] * 2, "high": instrument["baseline"] + instrument["variance"] * 2, "label": "Normal Operating Range"}
+    elif instrument["type"] == "flow":
+        thresholds = {"low": instrument["baseline"] - instrument["variance"] * 2, "high": instrument["baseline"] + instrument["variance"] * 2, "label": "Normal Operating Range"}
+
+    # Recent alerts for this instrument
+    recent_alerts = await db.alerts.find(
+        {"instrument_id": instrument_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(10).to_list(10)
+    for a in recent_alerts:
+        if isinstance(a['timestamp'], str):
+            a['timestamp'] = datetime.fromisoformat(a['timestamp'])
+        a['timestamp'] = a['timestamp'].isoformat() if isinstance(a['timestamp'], datetime) else a['timestamp']
+
+    # Recent anomalies
+    recent_anomalies = await db.anomalies.find(
+        {"instrument_id": instrument_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(10).to_list(10)
+    for an in recent_anomalies:
+        if isinstance(an['timestamp'], str):
+            an['timestamp'] = datetime.fromisoformat(an['timestamp'])
+        an['timestamp'] = an['timestamp'].isoformat() if isinstance(an['timestamp'], datetime) else an['timestamp']
+
+    return {
+        "instrument": {
+            "id": instrument["id"],
+            "name": instrument["name"],
+            "type": instrument["type"],
+            "unit": instrument["unit"],
+            "baseline": instrument["baseline"],
+        },
+        "time_series": {
+            "timestamps": timestamps,
+            "values": values,
+            "rolling_avg_5": ra5,
+            "rolling_avg_10": ra10,
+        },
+        "stats": stats,
+        "thresholds": thresholds,
+        "recent_alerts": recent_alerts,
+        "recent_anomalies": recent_anomalies,
+    }
+
 @api_router.get("/alerts", response_model=List[Alert])
 async def get_alerts(acknowledged: Optional[bool] = None, limit: int = 100):
     query = {}
