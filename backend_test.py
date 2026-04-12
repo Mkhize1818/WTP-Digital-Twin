@@ -171,8 +171,8 @@ class DigitalTwinAPITester:
             return True  # Not a failure if no alerts exist
 
     def test_sensor_analytics(self):
-        """Test the new sensor analytics endpoint (NEW FEATURE)"""
-        print("\n=== Testing Sensor Analytics Endpoints (NEW FEATURE) ===")
+        """Test the sensor analytics endpoint with time range filtering (UPDATED FEATURE)"""
+        print("\n=== Testing Sensor Analytics with Time Range Filtering ===")
         
         # First get available sensors
         success, sensors = self.run_test("Get Sensors for Analytics", "GET", "sensors/latest", 200)
@@ -182,69 +182,58 @@ class DigitalTwinAPITester:
 
         analytics_results = []
         test_instruments = ["FIT_10", "PIT_M1", "pH_001"]  # Test key instruments
+        time_ranges = ["1h", "6h", "24h", "7d", "all"]  # NEW: Test different time ranges
         
         for instrument_id in test_instruments:
-            success, analytics = self.run_test(
-                f"Analytics for {instrument_id}", 
-                "GET", 
-                f"sensors/{instrument_id}/analytics", 
-                200
-            )
+            print(f"\n   Testing {instrument_id} with different time ranges:")
             
-            if success and analytics:
-                # Validate analytics structure
-                required_fields = ['instrument', 'time_series', 'stats', 'thresholds', 'recent_alerts', 'recent_anomalies']
-                missing_fields = [field for field in required_fields if field not in analytics]
+            for time_range in time_ranges:
+                success, analytics = self.run_test(
+                    f"Analytics {instrument_id} ({time_range})", 
+                    "GET", 
+                    f"sensors/{instrument_id}/analytics?time_range={time_range}", 
+                    200
+                )
                 
-                if missing_fields:
-                    print(f"   ⚠️  Missing fields for {instrument_id}: {missing_fields}")
-                    analytics_results.append({'instrument_id': instrument_id, 'success': False, 'issue': f"Missing fields: {missing_fields}"})
-                else:
-                    print(f"   ✅ Complete analytics structure for {instrument_id}")
+                if success and analytics:
+                    # Validate analytics structure
+                    required_fields = ['instrument', 'time_series', 'stats', 'thresholds', 'recent_alerts', 'recent_anomalies']
+                    missing_fields = [field for field in required_fields if field not in analytics]
                     
-                    # Validate time series data
-                    ts = analytics.get('time_series', {})
-                    if ts.get('timestamps') and ts.get('values'):
-                        data_points = len(ts['timestamps'])
-                        print(f"   📈 Time series: {data_points} data points")
-                        print(f"   📈 Rolling averages: 5-window={len(ts.get('rolling_avg_5', []))}, 10-window={len(ts.get('rolling_avg_10', []))}")
+                    if missing_fields:
+                        print(f"     ⚠️  Missing fields for {instrument_id} ({time_range}): {missing_fields}")
+                        analytics_results.append({'instrument_id': instrument_id, 'time_range': time_range, 'success': False, 'issue': f"Missing fields: {missing_fields}"})
+                    else:
+                        # Validate time series data
+                        ts = analytics.get('time_series', {})
+                        if ts.get('timestamps') and ts.get('values'):
+                            data_points = len(ts['timestamps'])
+                            print(f"     📈 {time_range}: {data_points} data points")
+                            
+                            # Validate rolling averages match data points
+                            if len(ts.get('rolling_avg_5', [])) != data_points or len(ts.get('rolling_avg_10', [])) != data_points:
+                                print(f"     ⚠️  Rolling average lengths don't match data points")
                         
-                        # Validate rolling averages match data points
-                        if len(ts.get('rolling_avg_5', [])) != data_points or len(ts.get('rolling_avg_10', [])) != data_points:
-                            print(f"   ⚠️  Rolling average lengths don't match data points")
-                    
-                    # Validate stats
-                    stats = analytics.get('stats', {})
-                    required_stats = ['current', 'min', 'max', 'mean', 'std_dev', 'data_points']
-                    available_stats = [stat for stat in required_stats if stat in stats]
-                    print(f"   📊 Stats available: {len(available_stats)}/{len(required_stats)} - {available_stats}")
-                    
-                    # Validate instrument info
-                    instrument = analytics.get('instrument', {})
-                    if instrument.get('id') == instrument_id:
-                        print(f"   🔧 Instrument: {instrument.get('name')} ({instrument.get('type')}) - {instrument.get('unit')}")
-                    
-                    # Validate thresholds
-                    thresholds = analytics.get('thresholds', {})
-                    if thresholds:
-                        print(f"   🎯 Thresholds: Low={thresholds.get('low')}, High={thresholds.get('high')}")
-                    
-                    # Validate events
-                    alerts_count = len(analytics.get('recent_alerts', []))
-                    anomalies_count = len(analytics.get('recent_anomalies', []))
-                    print(f"   🚨 Recent events: {alerts_count} alerts, {anomalies_count} anomalies")
-                    
-                    analytics_results.append({
-                        'instrument_id': instrument_id,
-                        'success': True,
-                        'data_points': data_points,
-                        'stats_count': len(available_stats),
-                        'alerts_count': alerts_count,
-                        'anomalies_count': anomalies_count
-                    })
-            else:
-                print(f"   ❌ Analytics call failed for {instrument_id}")
-                analytics_results.append({'instrument_id': instrument_id, 'success': False, 'issue': 'API call failed'})
+                        # Validate stats
+                        stats = analytics.get('stats', {})
+                        required_stats = ['current', 'min', 'max', 'mean', 'std_dev', 'data_points']
+                        available_stats = [stat for stat in required_stats if stat in stats]
+                        
+                        if len(available_stats) == len(required_stats):
+                            print(f"     📊 {time_range}: All stats available, {stats.get('data_points')} points")
+                        else:
+                            print(f"     ⚠️  {time_range}: Missing stats: {[s for s in required_stats if s not in stats]}")
+                        
+                        analytics_results.append({
+                            'instrument_id': instrument_id,
+                            'time_range': time_range,
+                            'success': True,
+                            'data_points': data_points,
+                            'stats_count': len(available_stats)
+                        })
+                else:
+                    print(f"     ❌ Analytics call failed for {instrument_id} ({time_range})")
+                    analytics_results.append({'instrument_id': instrument_id, 'time_range': time_range, 'success': False, 'issue': 'API call failed'})
 
         # Test invalid instrument ID
         success, response = self.run_test(
@@ -259,9 +248,87 @@ class DigitalTwinAPITester:
 
         # Summary
         successful_analytics = [r for r in analytics_results if r['success']]
-        print(f"\n   📈 Analytics Summary: {len(successful_analytics)}/{len(analytics_results)} instruments tested successfully")
+        print(f"\n   📈 Analytics Summary: {len(successful_analytics)}/{len(analytics_results)} tests passed")
         
         return len(successful_analytics) > 0
+
+    def test_leak_detection(self):
+        """Test the new leak detection endpoints (NEW FEATURE)"""
+        print("\n=== Testing Leak Detection Endpoints (NEW FEATURE) ===")
+        
+        # Test active leaks endpoint
+        success, leaks = self.run_test("Active Leaks", "GET", "leaks", 200)
+        if success:
+            print(f"   Found {len(leaks)} active leaks")
+            if len(leaks) > 0:
+                leak = leaks[0]
+                required_fields = ['id', 'zone_id', 'zone_name', 'severity', 'estimated_loss', 'confidence', 'active', 'timestamp']
+                missing_fields = [field for field in required_fields if field not in leak]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in leak response: {missing_fields}")
+                else:
+                    print(f"   Sample leak: {leak.get('zone_name')} - {leak.get('severity')} ({leak.get('estimated_loss')} L/min)")
+        
+        # Test leak zones endpoint
+        success, zones = self.run_test("Leak Zones", "GET", "leaks/zones", 200)
+        if success:
+            print(f"   Found {len(zones)} leak zones")
+            active_zones = [z for z in zones if z.get('has_leak')]
+            print(f"   Active leak zones: {len(active_zones)}")
+            
+            if len(zones) > 0:
+                zone = zones[0]
+                required_fields = ['id', 'name', 'x', 'y', 'has_leak']
+                missing_fields = [field for field in required_fields if field not in zone]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in zone response: {missing_fields}")
+                else:
+                    print(f"   Sample zone: {zone.get('name')} at ({zone.get('x')}, {zone.get('y')}) - Leak: {zone.get('has_leak')}")
+                    if zone.get('has_leak'):
+                        print(f"     Severity: {zone.get('severity')}, Loss: {zone.get('estimated_loss')} L/min, Confidence: {zone.get('confidence')}")
+        
+        return success
+
+    def test_compliance_reports(self):
+        """Test the new compliance reports endpoint (NEW FEATURE)"""
+        print("\n=== Testing Compliance Reports Endpoint (NEW FEATURE) ===")
+        
+        time_ranges = ["1h", "6h", "24h", "7d", "30d"]
+        
+        for time_range in time_ranges:
+            success, report = self.run_test(
+                f"Compliance Report ({time_range})", 
+                "GET", 
+                f"reports/compliance?time_range={time_range}", 
+                200
+            )
+            
+            if success and report:
+                required_fields = ['report_generated', 'range', 'range_start', 'range_end', 'compliance_data', 'alert_summary', 'total_leak_events']
+                missing_fields = [field for field in required_fields if field not in report]
+                
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in {time_range} report: {missing_fields}")
+                else:
+                    compliance_data = report.get('compliance_data', [])
+                    alert_summary = report.get('alert_summary', {})
+                    print(f"   📊 {time_range}: {len(compliance_data)} compliance instruments")
+                    print(f"   🚨 {time_range}: {sum(alert_summary.values())} total alerts, {report.get('total_leak_events')} leak events")
+                    
+                    # Validate compliance data structure
+                    if compliance_data:
+                        sample = compliance_data[0]
+                        required_compliance_fields = ['instrument_id', 'instrument_name', 'unit', 'low_limit', 'high_limit', 'readings_count', 'compliance_pct']
+                        missing_compliance_fields = [field for field in required_compliance_fields if field not in sample]
+                        if missing_compliance_fields:
+                            print(f"     ⚠️  Missing compliance data fields: {missing_compliance_fields}")
+                        else:
+                            print(f"     ✅ Compliance data structure valid for {sample.get('instrument_name')}: {sample.get('compliance_pct')}% compliant")
+            else:
+                print(f"   ❌ Compliance report failed for {time_range}")
+                return False
+        
+        return True
 
 def main():
     print("🚀 Starting Digital Twin API Tests")
@@ -276,7 +343,9 @@ def main():
         tester.test_latest_sensors,
         tester.test_alerts,
         tester.test_anomalies,
-        tester.test_sensor_analytics,  # NEW: Test analytics endpoint
+        tester.test_sensor_analytics,  # UPDATED: Test analytics with time range filtering
+        tester.test_leak_detection,    # NEW: Test leak detection endpoints
+        tester.test_compliance_reports, # NEW: Test compliance reports endpoint
         tester.test_ai_query,
         tester.test_acknowledge_alert
     ]

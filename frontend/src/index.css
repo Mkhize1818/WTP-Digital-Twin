@@ -90,4 +90,10 @@ code, pre {
     0%, 100% { border-color: var(--border-default); }
     50% { border-color: var(--status-error); }
   }
+
+  @keyframes leak-pulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  }
 }

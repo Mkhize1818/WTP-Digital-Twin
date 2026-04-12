@@ -75,6 +75,17 @@ class SystemStats(BaseModel):
     online_sensors: int
     total_sensors: int
 
+class LeakEvent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    zone_id: str
+    zone_name: str
+    severity: Literal["critical", "warning", "minor"]
+    estimated_loss: float  # L/min
+    confidence: float
+    active: bool = True
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 instruments = [
     {"id": "FIT_10", "name": "Main Feed Flow", "type": "flow", "unit": "L/min", "baseline": 150.0, "variance": 15.0},
     {"id": "FIT_8", "name": "Nano Recovery Tank Flow", "type": "flow", "unit": "L/min", "baseline": 85.0, "variance": 8.0},
@@ -86,6 +97,15 @@ instruments = [
     {"id": "CL_001", "name": "Free Chlorine", "type": "chlorine", "unit": "mg/L", "baseline": 0.8, "variance": 0.15},
     {"id": "EC_001", "name": "Water Conductivity", "type": "conductivity", "unit": "µS/cm", "baseline": 450.0, "variance": 50.0},
     {"id": "LIT_001", "name": "Main Reservoir Level", "type": "level", "unit": "m³", "baseline": 450.0, "variance": 30.0},
+]
+
+leak_zones = [
+    {"id": "LZ_01", "name": "Main Feed Line", "x": "30%", "y": "12%"},
+    {"id": "LZ_02", "name": "RO Feed Junction", "x": "40%", "y": "40%"},
+    {"id": "LZ_03", "name": "Recovery Line", "x": "55%", "y": "80%"},
+    {"id": "LZ_04", "name": "CIP Distribution", "x": "82%", "y": "25%"},
+    {"id": "LZ_05", "name": "Nano Recovery Pipe", "x": "60%", "y": "70%"},
+    {"id": "LZ_06", "name": "WWTP Outflow", "x": "90%", "y": "85%"},
 ]
 
 async def generate_sensor_reading(instrument):
@@ -163,6 +183,35 @@ async def sensor_simulation_loop():
         try:
             for instrument in instruments:
                 await generate_sensor_reading(instrument)
+
+            # Leak simulation: ~3% chance per cycle
+            if random.random() < 0.03:
+                zone = random.choice(leak_zones)
+                severity = random.choices(["minor", "warning", "critical"], weights=[0.5, 0.35, 0.15])[0]
+                loss_map = {"minor": (0.5, 3.0), "warning": (3.0, 10.0), "critical": (10.0, 30.0)}
+                lo, hi = loss_map[severity]
+                leak = LeakEvent(
+                    zone_id=zone["id"],
+                    zone_name=zone["name"],
+                    severity=severity,
+                    estimated_loss=round(random.uniform(lo, hi), 2),
+                    confidence=round(random.uniform(0.6, 0.98), 2),
+                )
+                leak_doc = leak.model_dump()
+                leak_doc["timestamp"] = leak_doc["timestamp"].isoformat()
+                await db.leaks.insert_one(leak_doc)
+
+                alert = Alert(
+                    type="leak",
+                    severity="critical" if severity == "critical" else "warning",
+                    message=f"Leak detected at {zone['name']}: ~{leak.estimated_loss} L/min loss ({severity})",
+                    instrument_id=zone["id"],
+                    instrument_name=zone["name"],
+                )
+                alert_doc = alert.model_dump()
+                alert_doc["timestamp"] = alert_doc["timestamp"].isoformat()
+                await db.alerts.insert_one(alert_doc)
+
             await asyncio.sleep(5)
         except Exception as e:
             logger.error(f"Error in sensor simulation: {e}")
@@ -205,15 +254,29 @@ async def get_sensor_history(instrument_id: str, limit: int = 50):
     return readings
 
 @api_router.get("/sensors/{instrument_id}/analytics")
-async def get_sensor_analytics(instrument_id: str):
+async def get_sensor_analytics(instrument_id: str, time_range: str = "all"):
     instrument = next((i for i in instruments if i["id"] == instrument_id), None)
     if not instrument:
         raise HTTPException(status_code=404, detail="Instrument not found")
 
+    # Build time filter based on range
+    time_filter = {"instrument_id": instrument_id}
+    now = datetime.now(timezone.utc)
+    range_map = {
+        "1h": timedelta(hours=1),
+        "6h": timedelta(hours=6),
+        "24h": timedelta(hours=24),
+        "7d": timedelta(days=7),
+        "30d": timedelta(days=30),
+    }
+    if time_range in range_map:
+        cutoff = (now - range_map[time_range]).isoformat()
+        time_filter["timestamp"] = {"$gte": cutoff}
+
     readings = await db.sensor_readings.find(
-        {"instrument_id": instrument_id},
+        time_filter,
         {"_id": 0}
-    ).sort("timestamp", 1).limit(200).to_list(200)
+    ).sort("timestamp", 1).limit(500).to_list(500)
 
     for r in readings:
         if isinstance(r['timestamp'], str):
@@ -422,6 +485,101 @@ async def get_chat_history(session_id: str):
             msg['timestamp'] = datetime.fromisoformat(msg['timestamp'])
     
     return messages
+
+# ── Leak Detection ──────────────────────────────────────────
+@api_router.get("/leaks")
+async def get_leaks(active_only: bool = True, limit: int = 50):
+    query = {}
+    if active_only:
+        query["active"] = True
+    leaks = await db.leaks.find(query, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
+    for lk in leaks:
+        if isinstance(lk["timestamp"], str):
+            lk["timestamp"] = datetime.fromisoformat(lk["timestamp"])
+        lk["timestamp"] = lk["timestamp"].isoformat() if isinstance(lk["timestamp"], datetime) else lk["timestamp"]
+    return leaks
+
+@api_router.get("/leaks/zones")
+async def get_leak_zones():
+    zones_with_status = []
+    for zone in leak_zones:
+        active_leak = await db.leaks.find_one(
+            {"zone_id": zone["id"], "active": True},
+            {"_id": 0},
+            sort=[("timestamp", -1)],
+        )
+        has_leak = active_leak is not None
+        zones_with_status.append({
+            **zone,
+            "has_leak": has_leak,
+            "severity": active_leak["severity"] if has_leak else None,
+            "estimated_loss": active_leak["estimated_loss"] if has_leak else 0,
+            "confidence": active_leak["confidence"] if has_leak else 0,
+        })
+    return zones_with_status
+
+# ── Compliance Report ───────────────────────────────────────
+@api_router.get("/reports/compliance")
+async def get_compliance_report(time_range: str = "24h"):
+    now = datetime.now(timezone.utc)
+    range_map = {"1h": timedelta(hours=1), "6h": timedelta(hours=6), "24h": timedelta(hours=24), "7d": timedelta(days=7), "30d": timedelta(days=30)}
+    delta = range_map.get(time_range, timedelta(hours=24))
+    cutoff = (now - delta).isoformat()
+
+    # Compliance instruments
+    compliance_specs = {
+        "pH_001": {"name": "RO Water pH", "unit": "pH", "low": 6.5, "high": 8.5},
+        "CL_001": {"name": "Free Chlorine", "unit": "mg/L", "low": 0.5, "high": 1.2},
+        "EC_001": {"name": "Water Conductivity", "unit": "µS/cm", "low": 200.0, "high": 800.0},
+    }
+
+    report_rows = []
+    for inst_id, spec in compliance_specs.items():
+        readings = await db.sensor_readings.find(
+            {"instrument_id": inst_id, "timestamp": {"$gte": cutoff}},
+            {"_id": 0}
+        ).sort("timestamp", 1).to_list(5000)
+
+        values = [r["value"] for r in readings]
+        if not values:
+            continue
+
+        out_of_spec = [v for v in values if v < spec["low"] or v > spec["high"]]
+        compliance_pct = round(((len(values) - len(out_of_spec)) / len(values)) * 100, 1) if values else 100.0
+
+        report_rows.append({
+            "instrument_id": inst_id,
+            "instrument_name": spec["name"],
+            "unit": spec["unit"],
+            "low_limit": spec["low"],
+            "high_limit": spec["high"],
+            "readings_count": len(values),
+            "min_value": round(min(values), 2),
+            "max_value": round(max(values), 2),
+            "mean_value": round(sum(values) / len(values), 2),
+            "out_of_spec_count": len(out_of_spec),
+            "compliance_pct": compliance_pct,
+        })
+
+    # Alert summary
+    alert_counts = {
+        "compliance": await db.alerts.count_documents({"type": "compliance", "timestamp": {"$gte": cutoff}}),
+        "leak": await db.alerts.count_documents({"type": "leak", "timestamp": {"$gte": cutoff}}),
+        "anomaly": await db.alerts.count_documents({"type": "anomaly", "timestamp": {"$gte": cutoff}}),
+        "offline": await db.alerts.count_documents({"type": "offline", "timestamp": {"$gte": cutoff}}),
+    }
+
+    leak_events = await db.leaks.count_documents({"timestamp": {"$gte": cutoff}})
+
+    return {
+        "report_generated": now.isoformat(),
+        "range": time_range,
+        "range_start": cutoff,
+        "range_end": now.isoformat(),
+        "compliance_data": report_rows,
+        "alert_summary": alert_counts,
+        "total_leak_events": leak_events,
+    }
 
 app.include_router(api_router)
 

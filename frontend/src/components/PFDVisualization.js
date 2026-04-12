@@ -1,8 +1,28 @@
-import React, { useState } from "react";
-import { Crosshair } from "@phosphor-icons/react";
+import React, { useState, useEffect } from "react";
+import { Crosshair, Drop } from "@phosphor-icons/react";
+import axios from "axios";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const PFDVisualization = ({ sensors, onSensorClick }) => {
   const [hoveredSensor, setHoveredSensor] = useState(null);
+  const [leakZones, setLeakZones] = useState([]);
+  const [hoveredLeak, setHoveredLeak] = useState(null);
+
+  useEffect(() => {
+    const fetchLeaks = async () => {
+      try {
+        const res = await axios.get(`${API}/leaks/zones`);
+        setLeakZones(res.data);
+      } catch (e) {
+        console.error("Error fetching leak zones:", e);
+      }
+    };
+    fetchLeaks();
+    const interval = setInterval(fetchLeaks, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getSensorStatus = (instrumentId) => {
     const sensor = sensors.find((s) => s.instrument_id === instrumentId);
@@ -34,6 +54,8 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
     }
   };
 
+  const activeLeaks = leakZones.filter((z) => z.has_leak);
+
   return (
     <div
       className="grid-border p-4 md:p-6 relative"
@@ -47,11 +69,25 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
         >
           Process Flow Diagram
         </h3>
-        <div className="flex items-center gap-2">
-          <Crosshair size={16} color="#A3A3A3" />
-          <span className="text-xs" style={{ color: "#A3A3A3" }}>
-            Click any sensor for analytics
-          </span>
+        <div className="flex items-center gap-4">
+          {activeLeaks.length > 0 && (
+            <div
+              className="flex items-center gap-2 px-2 py-1 rounded-sm animate-pulse-border"
+              style={{ border: "1px solid #FF3B30" }}
+              data-testid="leak-indicator-badge"
+            >
+              <Drop size={14} color="#FF3B30" weight="fill" />
+              <span className="text-xs font-bold" style={{ color: "#FF3B30" }}>
+                {activeLeaks.length} LEAK{activeLeaks.length > 1 ? "S" : ""} DETECTED
+              </span>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Crosshair size={16} color="#A3A3A3" />
+            <span className="text-xs" style={{ color: "#A3A3A3" }}>
+              Click sensor for analytics
+            </span>
+          </div>
         </div>
       </div>
 
@@ -63,6 +99,110 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
           style={{ filter: "brightness(0.9)" }}
         />
 
+        {/* Leak Zone Overlays */}
+        {leakZones.map((zone) => {
+          if (!zone.has_leak) return null;
+          const sevColors = {
+            critical: { ring: "#FF3B30", bg: "rgba(255,59,48,0.15)" },
+            warning: { ring: "#FF9500", bg: "rgba(255,149,0,0.12)" },
+            minor: { ring: "#FF9500", bg: "rgba(255,149,0,0.08)" },
+          };
+          const sc = sevColors[zone.severity] || sevColors.minor;
+
+          return (
+            <div
+              key={zone.id}
+              className="absolute"
+              style={{
+                left: zone.x,
+                top: zone.y,
+                transform: "translate(-50%, -50%)",
+              }}
+              onMouseEnter={() => setHoveredLeak(zone)}
+              onMouseLeave={() => setHoveredLeak(null)}
+              data-testid={`pfd-leak-${zone.id}`}
+            >
+              {/* Outer pulse ring */}
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  border: `2px solid ${sc.ring}`,
+                  animation: "leak-pulse 1.5s ease-in-out infinite",
+                  opacity: 0.6,
+                }}
+              />
+              {/* Mid ring */}
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: sc.bg,
+                  border: `1px solid ${sc.ring}88`,
+                }}
+              />
+              {/* Icon center */}
+              <div
+                className="relative z-10 flex items-center justify-center"
+                style={{ width: "16px", height: "16px" }}
+              >
+                <Drop size={16} color={sc.ring} weight="fill" />
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Leak Tooltip */}
+        {hoveredLeak && (
+          <div
+            className="absolute z-20 p-3 rounded-sm border pointer-events-none"
+            style={{
+              backgroundColor: "#1A1A1A",
+              borderColor: "#FF3B30",
+              left: "50%",
+              bottom: "10px",
+              transform: "translateX(-50%)",
+              minWidth: "240px",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Drop size={16} color="#FF3B30" weight="fill" />
+              <span className="text-sm font-bold text-white">
+                Leak Detected
+              </span>
+            </div>
+            <p className="text-xs text-[#A3A3A3] mb-1">{hoveredLeak.name}</p>
+            <div className="flex items-center justify-between text-xs">
+              <span style={{ color: "#FF3B30" }}>
+                Est. Loss: {hoveredLeak.estimated_loss} L/min
+              </span>
+              <span style={{ color: "#A3A3A3" }}>
+                Conf: {(hoveredLeak.confidence * 100).toFixed(0)}%
+              </span>
+            </div>
+            <span
+              className="text-xs uppercase font-bold mt-1 block"
+              style={{
+                color:
+                  hoveredLeak.severity === "critical"
+                    ? "#FF3B30"
+                    : "#FF9500",
+              }}
+            >
+              {hoveredLeak.severity}
+            </span>
+          </div>
+        )}
+
+        {/* Sensor Dots */}
         {instrumentPositions.map((pos) => {
           const status = getSensorStatus(pos.id);
           const sensor = sensors.find((s) => s.instrument_id === pos.id);
@@ -82,7 +222,6 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
               onClick={() => handleClick(sensor)}
               data-testid={`pfd-sensor-${pos.id}`}
             >
-              {/* Outer ring on hover */}
               <div
                 className="absolute rounded-full transition-all duration-200"
                 style={{
@@ -99,7 +238,6 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
                     : "none",
                 }}
               />
-              {/* Core dot */}
               <div
                 className="w-3 h-3 rounded-full transition-transform duration-200"
                 style={{
@@ -116,8 +254,8 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
           );
         })}
 
-        {/* Tooltip */}
-        {hoveredSensor && (
+        {/* Sensor Tooltip */}
+        {hoveredSensor && !hoveredLeak && (
           <div
             className="absolute z-10 p-3 rounded-sm border pointer-events-none"
             style={{
@@ -142,7 +280,10 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
             </div>
             <p
               className="text-xs mb-2"
-              style={{ color: "#A3A3A3", fontFamily: "JetBrains Mono, monospace" }}
+              style={{
+                color: "#A3A3A3",
+                fontFamily: "JetBrains Mono, monospace",
+              }}
             >
               {hoveredSensor.instrument_id}
             </p>
@@ -159,7 +300,10 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
             </div>
             <div
               className="text-xs flex items-center gap-1 pt-2 border-t"
-              style={{ borderColor: "rgba(255,255,255,0.1)", color: "#007AFF" }}
+              style={{
+                borderColor: "rgba(255,255,255,0.1)",
+                color: "#007AFF",
+              }}
             >
               <Crosshair size={12} />
               Click to view analytics

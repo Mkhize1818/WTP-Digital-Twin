@@ -8,6 +8,7 @@ import AIAgentPanel from "../components/AIAgentPanel";
 import AnomalyPanel from "../components/AnomalyPanel";
 import SensorGrid from "../components/SensorGrid";
 import SensorAnalytics from "../components/SensorAnalytics";
+import ComplianceExport from "../components/ComplianceExport";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -136,6 +137,11 @@ const Dashboard = () => {
             {/* Alerts Feed */}
             <div className="lg:col-span-4">
               <AlertsFeed alerts={alerts} onRefresh={fetchData} />
+            </div>
+
+            {/* Compliance Export */}
+            <div className="lg:col-span-4">
+              <ComplianceExport />
             </div>
           </div>
         )}
