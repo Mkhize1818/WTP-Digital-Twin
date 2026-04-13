@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import React, { useState, useCallback } from "react";
 import Header from "../components/Header";
 import MetricCard from "../components/MetricCard";
 import PFDVisualization from "../components/PFDVisualization";
@@ -9,43 +8,11 @@ import AnomalyPanel from "../components/AnomalyPanel";
 import SensorGrid from "../components/SensorGrid";
 import SensorAnalytics from "../components/SensorAnalytics";
 import ComplianceExport from "../components/ComplianceExport";
-import { toast } from "sonner";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { useDashboardData } from "../hooks/useDashboardData";
 
 const Dashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [sensors, setSensors] = useState([]);
-  const [alerts, setAlerts] = useState([]);
-  const [anomalies, setAnomalies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { stats, sensors, alerts, anomalies, loading, fetchData } = useDashboardData();
   const [selectedSensor, setSelectedSensor] = useState(null);
-
-  const fetchData = useCallback(async () => {
-    try {
-      const [statsRes, sensorsRes, alertsRes, anomaliesRes] = await Promise.all([
-        axios.get(`${API}/stats`),
-        axios.get(`${API}/sensors/latest`),
-        axios.get(`${API}/alerts?acknowledged=false`),
-        axios.get(`${API}/anomalies`),
-      ]);
-
-      setStats(statsRes.data);
-      setSensors(sensorsRes.data);
-      setAlerts(alertsRes.data);
-      setAnomalies(anomaliesRes.data);
-      setLoading(false);
-    } catch (err) {
-      toast.error("Failed to fetch system data");
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
-  }, [fetchData]);
 
   const handleSensorClick = useCallback((instrumentId) => {
     setSelectedSensor(instrumentId);

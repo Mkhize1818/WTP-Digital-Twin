@@ -164,7 +164,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
     try {
       const res = await axios.get(`${API}/leaks/zones`);
       setLeakZones(res.data);
-    } catch (_) { /* retry on next interval */ }
+    } catch (err) { console.error("Failed to fetch leak zones:", err); }
   }, []);
 
   useEffect(() => {

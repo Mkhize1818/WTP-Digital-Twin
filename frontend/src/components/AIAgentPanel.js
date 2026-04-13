@@ -1,10 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import axios from "axios";
+import React from "react";
 import { PaperPlaneRight, CircleNotch } from "@phosphor-icons/react";
-import { toast } from "sonner";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { useAIChat } from "../hooks/useAIChat";
+import ChatMessage from "./ChatMessage";
 
 const SUGGESTED_QUERIES = [
   "How much water has passed through today?",
@@ -14,55 +11,7 @@ const SUGGESTED_QUERIES = [
 ];
 
 const AIAgentPanel = () => {
-  const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [sessionId] = useState(() => `session-${Date.now()}`);
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!query.trim() || loading) return;
-
-    const userMessage = { role: "user", content: query, id: `user-${Date.now()}` };
-    setMessages((prev) => [...prev, userMessage]);
-    setQuery("");
-    setLoading(true);
-
-    try {
-      const response = await axios.post(`${API}/ai/query`, {
-        query,
-        session_id: sessionId,
-      });
-
-      const assistantMessage = {
-        role: "assistant",
-        content: response.data.response,
-        id: `assistant-${Date.now()}`,
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (err) {
-      toast.error("Failed to get AI response");
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Sorry, I encountered an error processing your request.",
-          id: `error-${Date.now()}`,
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { query, setQuery, messages, loading, handleSubmit, messagesEndRef } = useAIChat();
 
   return (
     <div
@@ -113,40 +62,7 @@ const AIAgentPanel = () => {
         )}
 
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className="p-2 rounded-sm"
-            style={{
-              backgroundColor: msg.role === "user" ? "#1A1A1A" : "#121212",
-              borderLeft:
-                msg.role === "assistant"
-                  ? "2px solid #007AFF"
-                  : "2px solid #A3A3A3",
-            }}
-            data-testid={`chat-message-${msg.id}`}
-          >
-            <span
-              className="text-xs font-bold uppercase tracking-wider mb-1 block"
-              style={{
-                color: msg.role === "user" ? "#A3A3A3" : "#007AFF",
-                fontFamily: "JetBrains Mono, monospace",
-              }}
-            >
-              {msg.role}
-            </span>
-            <p
-              className="text-sm leading-relaxed"
-              style={{
-                color: "#FFFFFF",
-                fontFamily:
-                  msg.role === "assistant"
-                    ? "IBM Plex Sans, sans-serif"
-                    : "JetBrains Mono, monospace",
-              }}
-            >
-              {msg.content}
-            </p>
-          </div>
+          <ChatMessage key={msg.id} msg={msg} />
         ))}
 
         {loading && (
