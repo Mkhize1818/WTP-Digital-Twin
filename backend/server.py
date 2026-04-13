@@ -609,6 +609,146 @@ async def get_compliance_report(time_range: str = "24h"):
         "total_leak_events": await db.leaks.count_documents({"timestamp": {"$gte": cutoff}}),
     }
 
+# ── Water Balance ────────────────────────────────────────────
+
+WATER_BALANCE_NODES = {
+    "municipal_intake": {"label": "Municipal Intake", "source_sensor": "FIT_10"},
+    "cip_consumption": {"label": "CIP Lines", "source_sensor": "FIT_CIP"},
+    "fire_line": {"label": "Fire / Production Line", "source_sensor": "FIT_FL"},
+    "nano_recovery_1": {"label": "Nano Recovery 1", "source_sensor": "FIT_6"},
+    "nano_recovery_2": {"label": "Nano Recovery 2", "source_sensor": "FIT_8"},
+    "backwash_recovery": {"label": "Backwash Recovery", "source_sensor": "LIT_BRT"},
+}
+
+# Production line split ratios (from fire line flow)
+PRODUCTION_SPLIT = {
+    "pet_lines": {"label": "PET Lines", "ratio": 0.45},
+    "canline": {"label": "Canline", "ratio": 0.30},
+    "syrup_room": {"label": "Syrup Room", "ratio": 0.25},
+}
+
+
+@api_router.get("/water-balance")
+async def get_water_balance():
+    # Fetch latest readings for flow sensors
+    sensor_values = {}
+    for key, node in WATER_BALANCE_NODES.items():
+        reading = await db.sensor_readings.find_one(
+            {"instrument_id": node["source_sensor"]},
+            {"_id": 0},
+            sort=[("timestamp", -1)],
+        )
+        sensor_values[key] = reading["value"] if reading else 0.0
+
+    municipal = sensor_values["municipal_intake"]
+    cip = sensor_values["cip_consumption"]
+    fire_line = sensor_values["fire_line"]
+    nano_r1 = sensor_values["nano_recovery_1"]
+    nano_r2 = sensor_values["nano_recovery_2"]
+    backwash_level = sensor_values["backwash_recovery"]
+
+    # Derive backwash recovery flow from tank level change (estimated)
+    backwash_flow = round(backwash_level * 0.35, 2)
+
+    # Total recovery
+    total_recovery = round(nano_r1 + nano_r2 + backwash_flow, 2)
+
+    # Total system water (intake + recovery recirculation)
+    total_system = round(municipal + total_recovery, 2)
+
+    # Treatment output (intake minus ~5% treatment losses)
+    treatment_loss_pct = 0.05 + _rng.uniform(-0.01, 0.01)
+    treatment_loss = round(municipal * treatment_loss_pct, 2)
+    treated_output = round(municipal - treatment_loss, 2)
+
+    # Distribution: proportional allocation from treated water
+    # CIP is directly measured; the rest are proportional shares of remaining
+    production_from_cip = min(cip, treated_output * 0.40)
+    remaining = treated_output - production_from_cip
+    pet_lines = round(remaining * 0.28, 2)
+    canline = round(remaining * 0.18, 2)
+    syrup_room = round(remaining * 0.12, 2)
+    total_production = round(production_from_cip + pet_lines + canline + syrup_room, 2)
+
+    # Wastewater: portion of treated water that goes to WWTP
+    wastewater = round(treated_output * (0.18 + _rng.uniform(-0.02, 0.02)), 2)
+
+    # Unaccounted losses: balance remainder
+    accounted_output = total_production + wastewater + treatment_loss
+    unaccounted = round(max(0, municipal - accounted_output), 2)
+    total_losses = round(treatment_loss + unaccounted, 2)
+
+    # Efficiency metrics
+    useful_output = total_production
+    water_use_ratio = round((useful_output / municipal) * 100, 1) if municipal > 0 else 0
+    recovery_rate = round((total_recovery / total_system) * 100, 1) if total_system > 0 else 0
+    loss_rate = round((total_losses / municipal) * 100, 1) if municipal > 0 else 0
+
+    # Fetch active leak losses (recent only - last hour)
+    recent_cutoff = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    active_leaks = await db.leaks.find(
+        {"active": True, "timestamp": {"$gte": recent_cutoff}}, {"_id": 0}
+    ).to_list(50)
+    leak_losses = round(sum(lk.get("estimated_loss", 0) for lk in active_leaks), 2)
+
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "intake": {
+            "municipal": {"flow_rate": round(municipal, 2), "unit": "L/min", "sensor": "FIT_10", "label": "Municipal Intake"},
+            "total": round(municipal, 2),
+        },
+        "treatment": {
+            "treated_output": round(treated_output, 2),
+            "treatment_loss": treatment_loss,
+            "loss_pct": round(treatment_loss_pct * 100, 1),
+        },
+        "distribution": {
+            "cip_lines": {"flow_rate": round(cip, 2), "unit": "L/min", "sensor": "FIT_CIP", "label": "CIP Lines"},
+            "pet_lines": {"flow_rate": pet_lines, "unit": "L/min", "label": "PET Lines"},
+            "canline": {"flow_rate": canline, "unit": "L/min", "label": "Canline"},
+            "syrup_room": {"flow_rate": syrup_room, "unit": "L/min", "label": "Syrup Room"},
+            "total": total_production,
+        },
+        "recovery": {
+            "nano_recovery_1": {"flow_rate": round(nano_r1, 2), "unit": "L/min", "sensor": "FIT_6", "label": "Nano Recovery 1"},
+            "nano_recovery_2": {"flow_rate": round(nano_r2, 2), "unit": "L/min", "sensor": "FIT_8", "label": "Nano Recovery 2"},
+            "backwash": {"flow_rate": backwash_flow, "unit": "L/min", "sensor": "LIT_BRT", "label": "Backwash Recovery"},
+            "total": total_recovery,
+        },
+        "wastewater": {
+            "wwtp_output": round(wastewater, 2),
+            "unit": "L/min",
+        },
+        "losses": {
+            "treatment": treatment_loss,
+            "unaccounted": unaccounted,
+            "leak_losses": leak_losses,
+            "total": round(total_losses + leak_losses, 2),
+        },
+        "efficiency": {
+            "water_use_ratio": water_use_ratio,
+            "recovery_rate": recovery_rate,
+            "loss_rate": loss_rate,
+            "system_efficiency": round(100 - loss_rate, 1),
+        },
+        "total_system_water": total_system,
+        "flow_paths": [
+            {"from": "Municipal", "to": "Treatment", "value": round(municipal, 1)},
+            {"from": "Treatment", "to": "Distribution", "value": round(treated_output, 1)},
+            {"from": "Distribution", "to": "CIP Lines", "value": round(cip, 1)},
+            {"from": "Distribution", "to": "PET Lines", "value": round(pet_lines, 1)},
+            {"from": "Distribution", "to": "Canline", "value": round(canline, 1)},
+            {"from": "Distribution", "to": "Syrup Room", "value": round(syrup_room, 1)},
+            {"from": "Process", "to": "Nano Recovery 1", "value": round(nano_r1, 1)},
+            {"from": "Process", "to": "Nano Recovery 2", "value": round(nano_r2, 1)},
+            {"from": "Process", "to": "Backwash Recovery", "value": round(backwash_flow, 1)},
+            {"from": "Recovery", "to": "Treatment", "value": round(total_recovery, 1)},
+            {"from": "Treatment", "to": "Losses", "value": round(treatment_loss, 1)},
+            {"from": "Process", "to": "Wastewater", "value": round(wastewater, 1)},
+        ],
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
