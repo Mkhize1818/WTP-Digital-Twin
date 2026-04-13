@@ -1,480 +1,168 @@
 {
-  "summary": {
-    "tests_run": 31,
-    "tests_passed": 31,
-    "success_rate": 100.0
-  },
-  "test_results": [
+  "timestamp": "2026-04-13T08:42:12.924841",
+  "tests_run": 32,
+  "tests_passed": 32,
+  "success_rate": "100.0%",
+  "detailed_results": [
     {
-      "test_name": "Root API",
-      "endpoint": "",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 30,
-      "response_keys": [
-        "message"
-      ]
+      "test": "API Root",
+      "status": "PASSED",
+      "response_size": 31
     },
     {
-      "test_name": "System Stats",
-      "endpoint": "stats",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 125,
-      "response_keys": [
-        "total_flow",
-        "avg_pressure",
-        "active_alerts",
-        "anomalies_detected",
-        "online_sensors",
-        "total_sensors"
-      ]
+      "test": "System Stats",
+      "status": "PASSED",
+      "response_size": 138
     },
     {
-      "test_name": "Latest Sensors",
-      "endpoint": "sensors/latest",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 5752,
-      "response_items": 27
+      "test": "Latest Sensors",
+      "status": "PASSED",
+      "response_size": 6186
     },
     {
-      "test_name": "Active Alerts",
-      "endpoint": "alerts?acknowledged=false",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 26038,
-      "response_items": 100
+      "test": "Analytics Default - Main Feed Flow",
+      "status": "PASSED",
+      "response_size": 35695
     },
     {
-      "test_name": "Anomalies",
-      "endpoint": "anomalies",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 12676,
-      "response_items": 50
+      "test": "Analytics 24H Range - Main Feed Flow",
+      "status": "PASSED",
+      "response_size": 35679
     },
     {
-      "test_name": "Analytics LIT_MR (1h)",
-      "endpoint": "sensors/LIT_MR/analytics?time_range=1h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4855,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Custom Range - Main Feed Flow",
+      "status": "PASSED",
+      "response_size": 35679
     },
     {
-      "test_name": "Analytics LIT_MR (24h)",
-      "endpoint": "sensors/LIT_MR/analytics?time_range=24h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4855,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Invalid Sensor",
+      "status": "PASSED",
+      "response_size": 34
     },
     {
-      "test_name": "Analytics LIT_MR (all)",
-      "endpoint": "sensors/LIT_MR/analytics?time_range=all",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4855,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Default - Main Reservoir Level",
+      "status": "PASSED",
+      "response_size": 35856
     },
     {
-      "test_name": "Analytics PIT_RACF1 (1h)",
-      "endpoint": "sensors/PIT_RACF1/analytics?time_range=1h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4270,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics 24H Range - Main Reservoir Level",
+      "status": "PASSED",
+      "response_size": 35856
     },
     {
-      "test_name": "Analytics PIT_RACF1 (24h)",
-      "endpoint": "sensors/PIT_RACF1/analytics?time_range=24h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4270,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Custom Range - Main Reservoir Level",
+      "status": "PASSED",
+      "response_size": 35856
     },
     {
-      "test_name": "Analytics PIT_RACF1 (all)",
-      "endpoint": "sensors/PIT_RACF1/analytics?time_range=all",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4270,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Invalid Sensor",
+      "status": "PASSED",
+      "response_size": 34
     },
     {
-      "test_name": "Analytics FIT_10 (1h)",
-      "endpoint": "sensors/FIT_10/analytics?time_range=1h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 33354,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Default - RACF 1 Pressure",
+      "status": "PASSED",
+      "response_size": 32780
     },
     {
-      "test_name": "Analytics FIT_10 (24h)",
-      "endpoint": "sensors/FIT_10/analytics?time_range=24h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 33341,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics 24H Range - RACF 1 Pressure",
+      "status": "PASSED",
+      "response_size": 32780
     },
     {
-      "test_name": "Analytics FIT_10 (all)",
-      "endpoint": "sensors/FIT_10/analytics?time_range=all",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 33357,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Custom Range - RACF 1 Pressure",
+      "status": "PASSED",
+      "response_size": 32780
     },
     {
-      "test_name": "Analytics pH_RO (1h)",
-      "endpoint": "sensors/pH_RO/analytics?time_range=1h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4530,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Invalid Sensor",
+      "status": "PASSED",
+      "response_size": 34
     },
     {
-      "test_name": "Analytics pH_RO (24h)",
-      "endpoint": "sensors/pH_RO/analytics?time_range=24h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4530,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Default - RO Break Tank pH",
+      "status": "PASSED",
+      "response_size": 32721
     },
     {
-      "test_name": "Analytics pH_RO (all)",
-      "endpoint": "sensors/pH_RO/analytics?time_range=all",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 4530,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics 24H Range - RO Break Tank pH",
+      "status": "PASSED",
+      "response_size": 32721
     },
     {
-      "test_name": "Analytics EC_NANO (1h)",
-      "endpoint": "sensors/EC_NANO/analytics?time_range=1h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 5178,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Custom Range - RO Break Tank pH",
+      "status": "PASSED",
+      "response_size": 32721
     },
     {
-      "test_name": "Analytics EC_NANO (24h)",
-      "endpoint": "sensors/EC_NANO/analytics?time_range=24h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 5178,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Invalid Sensor",
+      "status": "PASSED",
+      "response_size": 34
     },
     {
-      "test_name": "Analytics EC_NANO (all)",
-      "endpoint": "sensors/EC_NANO/analytics?time_range=all",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 5178,
-      "response_keys": [
-        "instrument",
-        "time_series",
-        "stats",
-        "thresholds",
-        "recent_alerts",
-        "recent_anomalies"
-      ]
+      "test": "Analytics Default - Free Chlorine",
+      "status": "PASSED",
+      "response_size": 32605
     },
     {
-      "test_name": "Analytics for Invalid ID",
-      "endpoint": "sensors/INVALID_ID/analytics",
-      "method": "GET",
-      "expected_status": 404,
-      "actual_status": 404,
-      "success": true,
-      "response_size": 33,
-      "response_keys": [
-        "detail"
-      ]
+      "test": "Analytics 24H Range - Free Chlorine",
+      "status": "PASSED",
+      "response_size": 32653
     },
     {
-      "test_name": "Active Leaks",
-      "endpoint": "leaks",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 2572,
-      "response_items": 12
+      "test": "Analytics Custom Range - Free Chlorine",
+      "status": "PASSED",
+      "response_size": 32653
     },
     {
-      "test_name": "Leak Zones",
-      "endpoint": "leaks/zones",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 816,
-      "response_items": 6
+      "test": "Analytics Invalid Sensor",
+      "status": "PASSED",
+      "response_size": 34
     },
     {
-      "test_name": "Compliance Report (1h)",
-      "endpoint": "reports/compliance?time_range=1h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 962,
-      "response_keys": [
-        "report_generated",
-        "range",
-        "range_start",
-        "range_end",
-        "compliance_data",
-        "alert_summary",
-        "total_leak_events"
-      ]
+      "test": "Alerts",
+      "status": "PASSED",
+      "response_size": 27842
     },
     {
-      "test_name": "Compliance Report (6h)",
-      "endpoint": "reports/compliance?time_range=6h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 962,
-      "response_keys": [
-        "report_generated",
-        "range",
-        "range_start",
-        "range_end",
-        "compliance_data",
-        "alert_summary",
-        "total_leak_events"
-      ]
+      "test": "Unacknowledged Alerts",
+      "status": "PASSED",
+      "response_size": 27842
     },
     {
-      "test_name": "Compliance Report (24h)",
-      "endpoint": "reports/compliance?time_range=24h",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 963,
-      "response_keys": [
-        "report_generated",
-        "range",
-        "range_start",
-        "range_end",
-        "compliance_data",
-        "alert_summary",
-        "total_leak_events"
-      ]
+      "test": "Anomalies",
+      "status": "PASSED",
+      "response_size": 13566
     },
     {
-      "test_name": "Compliance Report (7d)",
-      "endpoint": "reports/compliance?time_range=7d",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 965,
-      "response_keys": [
-        "report_generated",
-        "range",
-        "range_start",
-        "range_end",
-        "compliance_data",
-        "alert_summary",
-        "total_leak_events"
-      ]
+      "test": "Active Leaks",
+      "status": "PASSED",
+      "response_size": 11557
     },
     {
-      "test_name": "Compliance Report (30d)",
-      "endpoint": "reports/compliance?time_range=30d",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 966,
-      "response_keys": [
-        "report_generated",
-        "range",
-        "range_start",
-        "range_end",
-        "compliance_data",
-        "alert_summary",
-        "total_leak_events"
-      ]
+      "test": "Leak Zones",
+      "status": "PASSED",
+      "response_size": 909
     },
     {
-      "test_name": "AI Query",
-      "endpoint": "ai/query",
-      "method": "POST",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 1523,
-      "response_keys": [
-        "response"
-      ]
+      "test": "Compliance Report",
+      "status": "PASSED",
+      "response_size": 1052
     },
     {
-      "test_name": "Get Alerts for Ack",
-      "endpoint": "alerts?acknowledged=false",
-      "method": "GET",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 26038,
-      "response_items": 100
+      "test": "Compliance Report 7D",
+      "status": "PASSED",
+      "response_size": 1053
     },
     {
-      "test_name": "Acknowledge Alert",
-      "endpoint": "alerts/d5268bd4-16d7-482a-af9b-de24beac1295/acknowledge",
-      "method": "POST",
-      "expected_status": 200,
-      "actual_status": 200,
-      "success": true,
-      "response_size": 32,
-      "response_keys": [
-        "message"
-      ]
+      "test": "AI Query",
+      "status": "PASSED",
+      "response_size": 1369
+    },
+    {
+      "test": "AI Chat History",
+      "status": "PASSED",
+      "response_size": 1712
     }
-  ],
-  "timestamp": "2026-04-12T19:04:14.801747"
+  ]
 }

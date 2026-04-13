@@ -343,13 +343,17 @@ async def _fetch_recent_docs(collection, instrument_id, limit=10):
 
 
 @api_router.get("/sensors/{instrument_id}/analytics")
-async def get_sensor_analytics(instrument_id: str, time_range: str = "all"):
+async def get_sensor_analytics(instrument_id: str, time_range: str = "all", start_date: Optional[str] = None, end_date: Optional[str] = None):
     instrument = next((i for i in instruments if i["id"] == instrument_id), None)
     if not instrument:
         raise HTTPException(status_code=404, detail="Instrument not found")
 
     time_filter = {"instrument_id": instrument_id}
-    if time_range in RANGE_MAP:
+
+    # Custom date range takes precedence over preset ranges
+    if start_date and end_date:
+        time_filter["timestamp"] = {"$gte": start_date, "$lte": end_date}
+    elif time_range in RANGE_MAP:
         cutoff = (datetime.now(timezone.utc) - RANGE_MAP[time_range]).isoformat()
         time_filter["timestamp"] = {"$gte": cutoff}
 
