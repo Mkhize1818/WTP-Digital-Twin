@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-13T08:42:12.924841",
+  "timestamp": "2026-04-13T08:52:16.441185",
   "tests_run": 32,
   "tests_passed": 32,
   "success_rate": "100.0%",
@@ -17,7 +17,7 @@
     {
       "test": "Latest Sensors",
       "status": "PASSED",
-      "response_size": 6186
+      "response_size": 6185
     },
     {
       "test": "Analytics Default - Main Feed Flow",
@@ -42,17 +42,17 @@
     {
       "test": "Analytics Default - Main Reservoir Level",
       "status": "PASSED",
-      "response_size": 35856
+      "response_size": 35855
     },
     {
       "test": "Analytics 24H Range - Main Reservoir Level",
       "status": "PASSED",
-      "response_size": 35856
+      "response_size": 35855
     },
     {
       "test": "Analytics Custom Range - Main Reservoir Level",
       "status": "PASSED",
-      "response_size": 35856
+      "response_size": 35855
     },
     {
       "test": "Analytics Invalid Sensor",
@@ -102,17 +102,17 @@
     {
       "test": "Analytics Default - Free Chlorine",
       "status": "PASSED",
-      "response_size": 32605
+      "response_size": 32604
     },
     {
       "test": "Analytics 24H Range - Free Chlorine",
       "status": "PASSED",
-      "response_size": 32653
+      "response_size": 32652
     },
     {
       "test": "Analytics Custom Range - Free Chlorine",
       "status": "PASSED",
-      "response_size": 32653
+      "response_size": 32652
     },
     {
       "test": "Analytics Invalid Sensor",
@@ -122,27 +122,27 @@
     {
       "test": "Alerts",
       "status": "PASSED",
-      "response_size": 27842
+      "response_size": 27677
     },
     {
       "test": "Unacknowledged Alerts",
       "status": "PASSED",
-      "response_size": 27842
+      "response_size": 27677
     },
     {
       "test": "Anomalies",
       "status": "PASSED",
-      "response_size": 13566
+      "response_size": 13431
     },
     {
       "test": "Active Leaks",
       "status": "PASSED",
-      "response_size": 11557
+      "response_size": 11561
     },
     {
       "test": "Leak Zones",
       "status": "PASSED",
-      "response_size": 909
+      "response_size": 912
     },
     {
       "test": "Compliance Report",
@@ -157,12 +157,12 @@
     {
       "test": "AI Query",
       "status": "PASSED",
-      "response_size": 1369
+      "response_size": 1200
     },
     {
       "test": "AI Chat History",
       "status": "PASSED",
-      "response_size": 1712
+      "response_size": 1543
     }
   ]
 }
