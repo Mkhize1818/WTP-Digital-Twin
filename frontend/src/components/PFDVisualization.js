@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Crosshair, Drop, Scales } from "@phosphor-icons/react";
+import { Crosshair, Drop, Scales, ChartLine, Heartbeat, Flask } from "@phosphor-icons/react";
 import axios from "axios";
 import WaterBalance from "./WaterBalance";
+import NRWAnalytics from "./analytics/NRWAnalytics";
+import DemandIntelligence from "./analytics/DemandIntelligence";
+import AssetHealth from "./analytics/AssetHealth";
+import WaterQualityIntelligence from "./analytics/WaterQualityIntelligence";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -160,7 +164,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
   const [hoveredSensor, setHoveredSensor] = useState(null);
   const [leakZones, setLeakZones] = useState([]);
   const [hoveredLeak, setHoveredLeak] = useState(null);
-  const [activeView, setActiveView] = useState("pfd"); // "pfd" | "balance"
+  const [activeView, setActiveView] = useState("pfd"); // "pfd" | "balance" | "nrw" | "demand" | "assets" | "quality"
 
   const fetchLeaks = useCallback(async () => {
     try {
@@ -201,34 +205,32 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <div
-            className="flex items-center rounded-sm border overflow-hidden"
+            className="flex items-center rounded-sm border overflow-hidden flex-wrap"
             style={{ borderColor: "rgba(255, 255, 255, 0.1)", backgroundColor: "#1A1A1A" }}
             data-testid="pfd-view-toggle"
           >
-            <button
-              onClick={() => setActiveView("pfd")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-colors"
-              style={{
-                backgroundColor: activeView === "pfd" ? "#007AFF" : "transparent",
-                color: activeView === "pfd" ? "#FFFFFF" : "#A3A3A3",
-              }}
-              data-testid="pfd-tab-button"
-            >
-              <Crosshair size={14} weight="bold" />
-              Process Flow
-            </button>
-            <button
-              onClick={() => setActiveView("balance")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-colors"
-              style={{
-                backgroundColor: activeView === "balance" ? "#007AFF" : "transparent",
-                color: activeView === "balance" ? "#FFFFFF" : "#A3A3A3",
-              }}
-              data-testid="water-balance-tab-button"
-            >
-              <Scales size={14} weight="bold" />
-              Water Balance
-            </button>
+            {[
+              { id: "pfd", label: "Process Flow", icon: <Crosshair size={12} weight="bold" /> },
+              { id: "balance", label: "Water Balance", icon: <Scales size={12} weight="bold" /> },
+              { id: "nrw", label: "NRW Analytics", icon: <Drop size={12} weight="bold" /> },
+              { id: "demand", label: "Demand", icon: <ChartLine size={12} weight="bold" /> },
+              { id: "assets", label: "Asset Health", icon: <Heartbeat size={12} weight="bold" /> },
+              { id: "quality", label: "Water Quality", icon: <Flask size={12} weight="bold" /> },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveView(tab.id)}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold transition-colors"
+                style={{
+                  backgroundColor: activeView === tab.id ? "#007AFF" : "transparent",
+                  color: activeView === tab.id ? "#FFFFFF" : "#A3A3A3",
+                }}
+                data-testid={`${tab.id}-tab-button`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -255,9 +257,17 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
         </div>
       </div>
 
-      {/* Conditional View: PFD or Water Balance */}
+      {/* Conditional View: PFD or Analytics Tabs */}
       {activeView === "balance" ? (
         <WaterBalance />
+      ) : activeView === "nrw" ? (
+        <NRWAnalytics />
+      ) : activeView === "demand" ? (
+        <DemandIntelligence />
+      ) : activeView === "assets" ? (
+        <AssetHealth />
+      ) : activeView === "quality" ? (
+        <WaterQualityIntelligence />
       ) : (
         <>
           {/* Legend */}

@@ -749,6 +749,408 @@ async def get_water_balance():
     }
 
 
+# ── Analytics: Non-Revenue Water (NRW) ──────────────────────
+
+DMA_ZONES = [
+    {"id": "DMA_01", "name": "Main Treatment", "pipe_km": 2.4, "age_years": 12, "material": "Steel"},
+    {"id": "DMA_02", "name": "RO & Filtration", "pipe_km": 1.8, "age_years": 8, "material": "PVC"},
+    {"id": "DMA_03", "name": "CIP Distribution", "pipe_km": 3.1, "age_years": 15, "material": "Steel"},
+    {"id": "DMA_04", "name": "Production Lines", "pipe_km": 4.2, "age_years": 10, "material": "HDPE"},
+    {"id": "DMA_05", "name": "Recovery Network", "pipe_km": 2.0, "age_years": 6, "material": "PVC"},
+    {"id": "DMA_06", "name": "WWTP & Outflow", "pipe_km": 1.5, "age_years": 18, "material": "Cast Iron"},
+]
+
+PIPE_SEGMENTS = [
+    {"id": "PS_01", "name": "Main Feed Header", "dma": "DMA_01", "length_m": 450, "diameter_mm": 200, "material": "Steel", "age_years": 12, "last_break": "2025-08-14"},
+    {"id": "PS_02", "name": "RO Feed Pipe", "dma": "DMA_02", "length_m": 280, "diameter_mm": 150, "material": "PVC", "age_years": 8, "last_break": None},
+    {"id": "PS_03", "name": "CIP Supply Main", "dma": "DMA_03", "length_m": 620, "diameter_mm": 100, "material": "Steel", "age_years": 15, "last_break": "2025-03-22"},
+    {"id": "PS_04", "name": "PET Line Header", "dma": "DMA_04", "length_m": 350, "diameter_mm": 150, "material": "HDPE", "age_years": 10, "last_break": None},
+    {"id": "PS_05", "name": "Canline Supply", "dma": "DMA_04", "length_m": 300, "diameter_mm": 100, "material": "HDPE", "age_years": 10, "last_break": "2024-11-05"},
+    {"id": "PS_06", "name": "Syrup Room Feed", "dma": "DMA_04", "length_m": 180, "diameter_mm": 80, "material": "HDPE", "age_years": 10, "last_break": None},
+    {"id": "PS_07", "name": "Nano Recovery Main", "dma": "DMA_05", "length_m": 400, "diameter_mm": 100, "material": "PVC", "age_years": 6, "last_break": None},
+    {"id": "PS_08", "name": "Backwash Return", "dma": "DMA_05", "length_m": 250, "diameter_mm": 80, "material": "PVC", "age_years": 6, "last_break": None},
+    {"id": "PS_09", "name": "WWTP Outfall", "dma": "DMA_06", "length_m": 380, "diameter_mm": 200, "material": "Cast Iron", "age_years": 18, "last_break": "2025-06-11"},
+    {"id": "PS_10", "name": "Fire Line Branch", "dma": "DMA_01", "length_m": 520, "diameter_mm": 150, "material": "Steel", "age_years": 14, "last_break": "2025-01-19"},
+]
+
+
+@api_router.get("/analytics/nrw")
+async def get_nrw_analytics():
+    now = datetime.now(timezone.utc)
+
+    # Water balance: input vs consumption vs losses (24h hourly)
+    hourly_balance = []
+    for h in range(24):
+        hour = (now - timedelta(hours=23 - h)).replace(minute=0, second=0, microsecond=0)
+        base_input = 150 + _rng.uniform(-20, 20)
+        # Night hours (0-5) have lower consumption
+        consumption_ratio = 0.35 if h < 6 else (0.85 + _rng.uniform(-0.05, 0.1))
+        consumption = round(base_input * consumption_ratio, 1)
+        losses = round(base_input - consumption + _rng.uniform(-2, 5), 1)
+        hourly_balance.append({
+            "hour": hour.strftime("%H:00"),
+            "input": round(base_input, 1),
+            "consumption": consumption,
+            "losses": max(0, losses),
+        })
+
+    # DMA analysis
+    dma_analysis = []
+    for zone in DMA_ZONES:
+        input_vol = round(_rng.uniform(80, 250), 1)
+        loss_pct = _rng.uniform(3, 25) if zone["age_years"] > 10 else _rng.uniform(1, 12)
+        dma_analysis.append({
+            **zone,
+            "input_volume": input_vol,
+            "loss_pct": round(loss_pct, 1),
+            "loss_volume": round(input_vol * loss_pct / 100, 1),
+            "severity": "critical" if loss_pct > 18 else ("warning" if loss_pct > 10 else "normal"),
+            "mnf_ratio": round(_rng.uniform(0.15, 0.55), 2),
+        })
+
+    # MNF (Minimum Night Flow) - 24h profile
+    mnf_profile = []
+    for h in range(24):
+        hour_label = f"{h:02d}:00"
+        # Night (1-4am) has minimum flow, day peaks at 10am and 2pm
+        if 1 <= h <= 4:
+            flow = 25 + _rng.uniform(-3, 3)
+        elif 8 <= h <= 17:
+            flow = 130 + _rng.uniform(-15, 25)
+        else:
+            flow = 65 + _rng.uniform(-10, 10)
+        mnf_profile.append({"hour": hour_label, "flow": round(flow, 1)})
+
+    mnf_baseline = min(p["flow"] for p in mnf_profile if p["hour"] in ["01:00", "02:00", "03:00", "04:00"])
+
+    # Apparent vs Real losses
+    total_loss = sum(d["loss_volume"] for d in dma_analysis)
+    meter_inaccuracy = round(total_loss * _rng.uniform(0.15, 0.30), 1)
+    unauthorized = round(total_loss * _rng.uniform(0.02, 0.08), 1)
+    apparent_loss = round(meter_inaccuracy + unauthorized, 1)
+    real_loss = round(total_loss - apparent_loss, 1)
+
+    # Leak probability per pipe segment
+    pipe_risk = []
+    for seg in PIPE_SEGMENTS:
+        age_factor = min(seg["age_years"] / 20, 1.0)
+        material_factor = {"Cast Iron": 0.9, "Steel": 0.6, "PVC": 0.3, "HDPE": 0.2}[seg["material"]]
+        break_factor = 0.3 if seg["last_break"] else 0.0
+        prob = round(min(0.95, (age_factor * 0.4 + material_factor * 0.35 + break_factor + _rng.uniform(-0.05, 0.05))), 2)
+        pipe_risk.append({
+            **seg,
+            "leak_probability": prob,
+            "risk_level": "high" if prob > 0.6 else ("medium" if prob > 0.35 else "low"),
+        })
+
+    # Anomaly flags
+    anomaly_flags = []
+    for zone in dma_analysis:
+        if zone["loss_pct"] > 15:
+            anomaly_flags.append({
+                "zone": zone["name"],
+                "type": "high_loss",
+                "message": f"Loss rate {zone['loss_pct']}% exceeds threshold",
+                "severity": "critical" if zone["loss_pct"] > 20 else "warning",
+            })
+    if mnf_baseline > 35:
+        anomaly_flags.append({
+            "zone": "System",
+            "type": "high_mnf",
+            "message": f"MNF baseline {mnf_baseline:.1f} L/min suggests background leakage",
+            "severity": "warning",
+        })
+
+    return {
+        "timestamp": now.isoformat(),
+        "hourly_balance": hourly_balance,
+        "dma_analysis": dma_analysis,
+        "mnf_profile": mnf_profile,
+        "mnf_baseline": round(mnf_baseline, 1),
+        "loss_separation": {
+            "total_loss": round(total_loss, 1),
+            "apparent": {"total": apparent_loss, "meter_inaccuracy": meter_inaccuracy, "unauthorized": unauthorized},
+            "real": {"total": real_loss, "pipe_leaks": round(real_loss * 0.7, 1), "overflow": round(real_loss * 0.3, 1)},
+        },
+        "pipe_risk": pipe_risk,
+        "anomaly_flags": anomaly_flags,
+    }
+
+
+# ── Analytics: Demand & Usage Intelligence ──────────────────
+
+@api_router.get("/analytics/demand")
+async def get_demand_analytics():
+    now = datetime.now(timezone.utc)
+
+    # Demand forecast (next 24h, hourly)
+    forecast = []
+    for h in range(24):
+        hour = (now + timedelta(hours=h)).replace(minute=0, second=0, microsecond=0)
+        # Base pattern: low at night, high during production
+        if 1 <= hour.hour <= 5:
+            base = 40 + _rng.uniform(-5, 5)
+        elif 8 <= hour.hour <= 17:
+            base = 145 + _rng.uniform(-15, 20)
+        else:
+            base = 75 + _rng.uniform(-10, 10)
+        forecast.append({
+            "hour": hour.strftime("%H:00"),
+            "actual": round(base + _rng.uniform(-8, 8), 1),
+            "predicted": round(base, 1),
+            "lower_bound": round(base * 0.85, 1),
+            "upper_bound": round(base * 1.15, 1),
+        })
+
+    # Peak demand heatmap (7 days x 24 hours)
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    heatmap = []
+    for d_idx, day in enumerate(days):
+        for h in range(24):
+            if 1 <= h <= 5:
+                val = 30 + _rng.uniform(-5, 10)
+            elif 8 <= h <= 17:
+                val = 140 + _rng.uniform(-20, 25) if d_idx < 5 else 80 + _rng.uniform(-10, 15)
+            else:
+                val = 65 + _rng.uniform(-10, 15)
+            heatmap.append({"day": day, "hour": h, "value": round(val, 1)})
+
+    # Consumer segmentation (production lines)
+    total_demand = sum(f["actual"] for f in forecast) / len(forecast)
+    segments = [
+        {"name": "CIP Lines", "type": "industrial", "share_pct": round(38 + _rng.uniform(-3, 3), 1), "avg_flow": round(total_demand * 0.38, 1)},
+        {"name": "PET Lines", "type": "industrial", "share_pct": round(28 + _rng.uniform(-2, 2), 1), "avg_flow": round(total_demand * 0.28, 1)},
+        {"name": "Canline", "type": "industrial", "share_pct": round(18 + _rng.uniform(-2, 2), 1), "avg_flow": round(total_demand * 0.18, 1)},
+        {"name": "Syrup Room", "type": "industrial", "share_pct": round(10 + _rng.uniform(-1, 1), 1), "avg_flow": round(total_demand * 0.10, 1)},
+        {"name": "Utilities & Other", "type": "commercial", "share_pct": round(6 + _rng.uniform(-1, 1), 1), "avg_flow": round(total_demand * 0.06, 1)},
+    ]
+
+    # Seasonal trend (12 months)
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    seasonal = []
+    for i, month in enumerate(months):
+        # Summer (Dec-Feb in SA) higher demand
+        summer_factor = 1.2 if i in [0, 1, 11] else (0.9 if i in [5, 6, 7] else 1.0)
+        seasonal.append({
+            "month": month,
+            "avg_demand": round(120 * summer_factor + _rng.uniform(-10, 10), 1),
+            "peak_demand": round(180 * summer_factor + _rng.uniform(-15, 15), 1),
+            "temperature": round(25 * summer_factor + _rng.uniform(-3, 3), 1),
+        })
+
+    return {
+        "timestamp": now.isoformat(),
+        "forecast": forecast,
+        "heatmap": heatmap,
+        "segments": segments,
+        "seasonal_trend": seasonal,
+        "summary": {
+            "current_demand": round(total_demand, 1),
+            "predicted_peak": round(max(f["predicted"] for f in forecast), 1),
+            "avg_daily": round(sum(f["predicted"] for f in forecast) / len(forecast), 1),
+        },
+    }
+
+
+# ── Analytics: Asset Health & Predictive Maintenance ────────
+
+@api_router.get("/analytics/asset-health")
+async def get_asset_health():
+    now = datetime.now(timezone.utc)
+
+    assets = []
+    for seg in PIPE_SEGMENTS:
+        age_score = max(0, 100 - seg["age_years"] * 4)
+        material_bonus = {"HDPE": 15, "PVC": 10, "Steel": -5, "Cast Iron": -15}[seg["material"]]
+        pressure_penalty = round(_rng.uniform(0, 15), 1)
+        condition_score = round(min(100, max(0, age_score + material_bonus - pressure_penalty + _rng.uniform(-5, 5))), 1)
+
+        # RUL estimation
+        base_life = {"HDPE": 50, "PVC": 40, "Steel": 30, "Cast Iron": 25}[seg["material"]]
+        rul_years = round(max(0, base_life - seg["age_years"] + _rng.uniform(-3, 3)), 1)
+
+        # Failure probability
+        fail_prob = round(min(0.95, max(0.01, (1 - condition_score / 100) * 0.8 + _rng.uniform(-0.05, 0.05))), 2)
+
+        assets.append({
+            **seg,
+            "condition_score": condition_score,
+            "condition_grade": "A" if condition_score >= 80 else ("B" if condition_score >= 60 else ("C" if condition_score >= 40 else "D")),
+            "rul_years": rul_years,
+            "failure_probability": fail_prob,
+            "risk_level": "high" if fail_prob > 0.5 else ("medium" if fail_prob > 0.25 else "low"),
+            "pressure_variability": round(_rng.uniform(0.1, 0.8), 2),
+            "last_inspection": (now - timedelta(days=_rng.randint(30, 365))).strftime("%Y-%m-%d"),
+        })
+
+    # Break history (last 12 months)
+    break_history = []
+    for m in range(12):
+        month_date = now - timedelta(days=30 * (11 - m))
+        count = _rng.choices([0, 1, 2, 3], weights=[0.4, 0.35, 0.2, 0.05])[0]
+        break_history.append({
+            "month": month_date.strftime("%b %Y"),
+            "breaks": count,
+            "cost_estimate": round(count * _rng.uniform(5000, 25000), 0) if count > 0 else 0,
+        })
+
+    # Maintenance schedule
+    maintenance = []
+    for asset in sorted(assets, key=lambda a: a["failure_probability"], reverse=True)[:5]:
+        days_until = _rng.randint(7, 90)
+        maintenance.append({
+            "asset_id": asset["id"],
+            "asset_name": asset["name"],
+            "type": "preventive" if asset["failure_probability"] < 0.5 else "urgent",
+            "scheduled_date": (now + timedelta(days=days_until)).strftime("%Y-%m-%d"),
+            "priority": "high" if asset["failure_probability"] > 0.5 else "medium",
+            "estimated_cost": round(_rng.uniform(3000, 50000), 0),
+        })
+
+    avg_score = round(sum(a["condition_score"] for a in assets) / len(assets), 1)
+    high_risk_count = sum(1 for a in assets if a["risk_level"] == "high")
+
+    return {
+        "timestamp": now.isoformat(),
+        "assets": assets,
+        "break_history": break_history,
+        "maintenance_schedule": maintenance,
+        "summary": {
+            "total_assets": len(assets),
+            "avg_condition_score": avg_score,
+            "high_risk_count": high_risk_count,
+            "total_pipe_length_m": sum(a["length_m"] for a in assets),
+            "avg_rul_years": round(sum(a["rul_years"] for a in assets) / len(assets), 1),
+            "total_breaks_12m": sum(b["breaks"] for b in break_history),
+        },
+    }
+
+
+# ── Analytics: Water Quality Intelligence ───────────────────
+
+QUALITY_ZONES = [
+    {"id": "QZ_01", "name": "Pre-Treatment", "sensors": ["pH_RO"]},
+    {"id": "QZ_02", "name": "Post-RO", "sensors": ["EC_RO"]},
+    {"id": "QZ_03", "name": "Chlorination", "sensors": ["CL_001", "pH_NACF"]},
+    {"id": "QZ_04", "name": "Nano Filtration", "sensors": ["EC_NANO"]},
+    {"id": "QZ_05", "name": "Distribution", "sensors": ["CL_001", "EC_RO"]},
+]
+
+
+@api_router.get("/analytics/water-quality")
+async def get_water_quality():
+    now = datetime.now(timezone.utc)
+
+    # Live quality metrics
+    quality_params = []
+    for pid, spec in [
+        ("pH", {"name": "pH Level", "unit": "pH", "value": 7.2, "variance": 0.3, "low": 6.5, "high": 8.5}),
+        ("chlorine", {"name": "Free Chlorine", "unit": "mg/L", "value": 0.8, "variance": 0.15, "low": 0.5, "high": 1.2}),
+        ("conductivity", {"name": "Conductivity", "unit": "uS/cm", "value": 420, "variance": 50, "low": 200, "high": 800}),
+        ("turbidity", {"name": "Turbidity", "unit": "NTU", "value": 0.4, "variance": 0.2, "low": 0, "high": 1.0}),
+    ]:
+        val = round(spec["value"] + _rng.uniform(-spec["variance"], spec["variance"]), 2)
+        in_spec = spec["low"] <= val <= spec["high"]
+        quality_params.append({
+            "id": pid,
+            "name": spec["name"],
+            "unit": spec["unit"],
+            "value": val,
+            "low_limit": spec["low"],
+            "high_limit": spec["high"],
+            "in_spec": in_spec,
+            "status": "normal" if in_spec else "alarm",
+        })
+
+    # Chlorine decay model (decay over distance from dosing point)
+    decay_curve = []
+    cl_initial = 1.0 + _rng.uniform(-0.1, 0.1)
+    decay_rate = 0.12 + _rng.uniform(-0.02, 0.02)
+    for dist in range(0, 2100, 200):
+        import math
+        cl_level = cl_initial * math.exp(-decay_rate * dist / 1000)
+        decay_curve.append({
+            "distance_m": dist,
+            "chlorine_mg_l": round(cl_level, 3),
+            "min_required": 0.2,
+        })
+
+    # Spatial quality map (per zone)
+    spatial_quality = []
+    for zone in QUALITY_ZONES:
+        ph_val = round(7.0 + _rng.uniform(-0.5, 0.5), 2)
+        cl_val = round(0.8 + _rng.uniform(-0.3, 0.3), 2)
+        ec_val = round(400 + _rng.uniform(-100, 100), 0)
+        ph_ok = 6.5 <= ph_val <= 8.5
+        cl_ok = 0.5 <= cl_val <= 1.2
+        ec_ok = 200 <= ec_val <= 800
+        all_ok = ph_ok and cl_ok and ec_ok
+        spatial_quality.append({
+            **zone,
+            "ph": ph_val,
+            "chlorine": cl_val,
+            "conductivity": ec_val,
+            "status": "compliant" if all_ok else "non-compliant",
+            "parameters_ok": sum([ph_ok, cl_ok, ec_ok]),
+            "parameters_total": 3,
+        })
+
+    # Contamination events log
+    events = []
+    event_types = ["pH spike", "Chlorine drop", "Conductivity anomaly", "Turbidity spike"]
+    for i in range(6):
+        hours_ago = _rng.randint(1, 168)
+        evt_type = _rng.choice(event_types)
+        severity = _rng.choices(["critical", "warning", "info"], weights=[0.15, 0.45, 0.4])[0]
+        source_zone = _rng.choice(QUALITY_ZONES)
+        events.append({
+            "id": f"CE_{i+1:03d}",
+            "type": evt_type,
+            "severity": severity,
+            "zone": source_zone["name"],
+            "timestamp": (now - timedelta(hours=hours_ago)).isoformat(),
+            "source_trace": f"Likely originated at {source_zone['name']} ({source_zone['id']})",
+            "resolved": hours_ago > 24,
+            "duration_hours": round(_rng.uniform(0.5, 12), 1),
+        })
+    events.sort(key=lambda e: e["timestamp"], reverse=True)
+
+    # Quality degradation predictions
+    predictions = []
+    for param in quality_params:
+        trend = _rng.choice(["stable", "degrading", "improving"])
+        hours_to_breach = None
+        if trend == "degrading":
+            hours_to_breach = round(_rng.uniform(12, 72), 0)
+        predictions.append({
+            "parameter": param["name"],
+            "current_value": param["value"],
+            "trend": trend,
+            "hours_to_breach": hours_to_breach,
+            "confidence": round(_rng.uniform(0.7, 0.95), 2),
+        })
+
+    compliant_zones = sum(1 for z in spatial_quality if z["status"] == "compliant")
+    all_params_ok = all(p["in_spec"] for p in quality_params)
+
+    return {
+        "timestamp": now.isoformat(),
+        "quality_parameters": quality_params,
+        "decay_curve": decay_curve,
+        "spatial_quality": spatial_quality,
+        "contamination_events": events,
+        "predictions": predictions,
+        "summary": {
+            "overall_status": "compliant" if all_params_ok else "non-compliant",
+            "compliant_zones": compliant_zones,
+            "total_zones": len(spatial_quality),
+            "active_events": sum(1 for e in events if not e["resolved"]),
+            "parameters_in_spec": sum(1 for p in quality_params if p["in_spec"]),
+            "total_parameters": len(quality_params),
+        },
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
