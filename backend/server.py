@@ -630,7 +630,6 @@ PRODUCTION_SPLIT = {
 
 @api_router.get("/water-balance")
 async def get_water_balance():
-    # Fetch latest readings for flow sensors
     sensor_values = {}
     for key, node in WATER_BALANCE_NODES.items():
         reading = await db.sensor_readings.find_one(
@@ -646,23 +645,22 @@ async def get_water_balance():
     nano_r1 = sensor_values["nano_recovery_1"]
     nano_r2 = sensor_values["nano_recovery_2"]
     backwash_level = sensor_values["backwash_recovery"]
-
-    # Derive backwash recovery flow from tank level change (estimated)
     backwash_flow = round(backwash_level * 0.35, 2)
 
-    # Total recovery
+    # Additional inflows (simulated)
+    rainfall_runoff = round(_rng.uniform(2.5, 8.0), 2)
+    borehole = round(_rng.uniform(5.0, 15.0), 2)
+    total_inflows = round(municipal + rainfall_runoff + borehole, 2)
+
     total_recovery = round(nano_r1 + nano_r2 + backwash_flow, 2)
+    total_system = round(total_inflows + total_recovery, 2)
 
-    # Total system water (intake + recovery recirculation)
-    total_system = round(municipal + total_recovery, 2)
-
-    # Treatment output (intake minus ~5% treatment losses)
+    # Treatment
     treatment_loss_pct = 0.05 + _rng.uniform(-0.01, 0.01)
-    treatment_loss = round(municipal * treatment_loss_pct, 2)
-    treated_output = round(municipal - treatment_loss, 2)
+    treatment_loss = round(total_inflows * treatment_loss_pct, 2)
+    treated_output = round(total_inflows - treatment_loss, 2)
 
-    # Distribution: proportional allocation from treated water
-    # CIP is directly measured; the rest are proportional shares of remaining
+    # Distribution
     production_from_cip = min(cip, treated_output * 0.40)
     remaining = treated_output - production_from_cip
     pet_lines = round(remaining * 0.28, 2)
@@ -670,32 +668,115 @@ async def get_water_balance():
     syrup_room = round(remaining * 0.12, 2)
     total_production = round(production_from_cip + pet_lines + canline + syrup_room, 2)
 
-    # Wastewater: portion of treated water that goes to WWTP
-    wastewater = round(treated_output * (0.18 + _rng.uniform(-0.02, 0.02)), 2)
+    # Wastewater
+    wastewater_val = round(treated_output * (0.18 + _rng.uniform(-0.02, 0.02)), 2)
 
-    # Unaccounted losses: balance remainder
-    accounted_output = total_production + wastewater + treatment_loss
-    unaccounted = round(max(0, municipal - accounted_output), 2)
-    total_losses = round(treatment_loss + unaccounted, 2)
+    # Loss categories (like Barberton WSB)
+    evaporation = round(total_inflows * _rng.uniform(0.02, 0.04), 2)
+    seepage = round(total_inflows * _rng.uniform(0.01, 0.025), 2)
+    accounted_output = total_production + wastewater_val + treatment_loss + evaporation + seepage
+    unaccounted = round(max(0, total_inflows - accounted_output), 2)
 
-    # Efficiency metrics
-    useful_output = total_production
-    water_use_ratio = round((useful_output / municipal) * 100, 1) if municipal > 0 else 0
-    recovery_rate = round((total_recovery / total_system) * 100, 1) if total_system > 0 else 0
-    loss_rate = round((total_losses / municipal) * 100, 1) if municipal > 0 else 0
-
-    # Fetch active leak losses (recent only - last hour)
+    # Leak losses
     recent_cutoff = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
     active_leaks = await db.leaks.find(
         {"active": True, "timestamp": {"$gte": recent_cutoff}}, {"_id": 0}
     ).to_list(50)
     leak_losses = round(sum(lk.get("estimated_loss", 0) for lk in active_leaks), 2)
 
+    total_losses = round(treatment_loss + evaporation + seepage + unaccounted + leak_losses, 2)
+    total_outflows = round(total_production + wastewater_val + total_losses, 2)
+
+    # Change in storage & balance check (like Barberton doc)
+    change_in_storage = round(total_inflows - total_outflows + total_recovery * 0.1, 2)
+    balance_check = round(abs(change_in_storage) / max(total_inflows, 1) * 100, 1)
+
+    # Efficiency
+    water_use_ratio = round((total_production / total_inflows) * 100, 1) if total_inflows > 0 else 0
+    recovery_rate = round((total_recovery / total_system) * 100, 1) if total_system > 0 else 0
+    loss_rate = round((total_losses / total_inflows) * 100, 1) if total_inflows > 0 else 0
+
+    # L/min to m3/d conversion factor: 1 L/min = 1.44 m3/d
+    conv = 1.44
+
+    # Facility-level balance (like Barberton Figures 4-9 to 4-11)
+    facilities = [
+        {"name": "Main Reservoir", "sensor": "LIT_MR",
+         "inflows": [{"label": "Municipal Supply", "value": round(municipal, 1)}, {"label": "Rainfall/Runoff", "value": rainfall_runoff}, {"label": "Borehole", "value": borehole}],
+         "outflows": [{"label": "To Treatment Plant", "value": round(treated_output, 1)}, {"label": "Evaporation", "value": round(evaporation * 0.3, 1)}, {"label": "Overflow/Spill", "value": round(_rng.uniform(0, 2), 1)}],
+         "storage_change": round(_rng.uniform(-3, 5), 1)},
+        {"name": "Treatment Plant", "sensor": "LIT_STW",
+         "inflows": [{"label": "From Main Reservoir", "value": round(treated_output, 1)}, {"label": "Recovery Return", "value": round(total_recovery * 0.6, 1)}],
+         "outflows": [{"label": "Treated Water", "value": round(treated_output * 0.92, 1)}, {"label": "Treatment Losses", "value": treatment_loss}, {"label": "Backwash", "value": round(backwash_flow * 0.5, 1)}],
+         "storage_change": round(_rng.uniform(-2, 3), 1)},
+        {"name": "Distribution System", "sensor": "LIT_TWT",
+         "inflows": [{"label": "Treated Water", "value": round(treated_output * 0.92, 1)}],
+         "outflows": [{"label": "CIP Lines", "value": round(production_from_cip, 1)}, {"label": "PET Lines", "value": pet_lines}, {"label": "Canline", "value": canline}, {"label": "Syrup Room", "value": syrup_room}, {"label": "Leakage", "value": leak_losses}],
+         "storage_change": round(_rng.uniform(-1, 2), 1)},
+        {"name": "Recovery System", "sensor": "LIT_BRT",
+         "inflows": [{"label": "Nano Recovery 1", "value": round(nano_r1, 1)}, {"label": "Nano Recovery 2", "value": round(nano_r2, 1)}, {"label": "Backwash", "value": backwash_flow}],
+         "outflows": [{"label": "Return to Treatment", "value": round(total_recovery * 0.6, 1)}, {"label": "Seepage", "value": round(seepage * 0.5, 1)}, {"label": "Evaporation", "value": round(evaporation * 0.2, 1)}],
+         "storage_change": round(_rng.uniform(-1, 3), 1)},
+        {"name": "WWTP", "sensor": "LIT_HT",
+         "inflows": [{"label": "Process Wastewater", "value": round(wastewater_val, 1)}],
+         "outflows": [{"label": "Treated Discharge", "value": round(wastewater_val * 0.85, 1)}, {"label": "Sludge", "value": round(wastewater_val * 0.1, 1)}, {"label": "Evaporation", "value": round(wastewater_val * 0.05, 1)}],
+         "storage_change": round(_rng.uniform(-0.5, 1), 1)},
+    ]
+
+    # 24H time series for water balance chart
+    now = datetime.now(timezone.utc)
+    hourly_balance = []
+    for h in range(24):
+        ts = (now - timedelta(hours=23 - h)).isoformat()
+        hour = (now - timedelta(hours=23 - h)).hour
+        # Simulate diurnal pattern
+        if 1 <= hour <= 5:
+            demand_factor = 0.4 + _rng.uniform(-0.05, 0.05)
+        elif 8 <= hour <= 17:
+            demand_factor = 1.1 + _rng.uniform(-0.1, 0.1)
+        else:
+            demand_factor = 0.7 + _rng.uniform(-0.08, 0.08)
+        h_inflow = round(municipal * demand_factor, 1)
+        h_outflow = round(h_inflow * (0.85 + _rng.uniform(-0.05, 0.05)), 1)
+        h_loss = round(h_inflow * _rng.uniform(0.05, 0.15), 1)
+        h_recovery = round(total_recovery * demand_factor * 0.8, 1)
+        hourly_balance.append({
+            "timestamp": ts,
+            "hour": f"{hour:02d}:00",
+            "inflows": h_inflow,
+            "outflows": h_outflow,
+            "losses": h_loss,
+            "recovery": h_recovery,
+            "net": round(h_inflow - h_outflow - h_loss + h_recovery, 1),
+        })
+
+    # TDS/Salt balance at key points (like Barberton Section 5)
+    quality_balance = [
+        {"point": "Municipal Intake", "tds_mg_l": round(180 + _rng.uniform(-20, 20), 0), "flow_l_min": round(municipal, 1),
+         "salt_load_kg_d": 0},
+        {"point": "Post-RO Treatment", "tds_mg_l": round(80 + _rng.uniform(-10, 10), 0), "flow_l_min": round(treated_output * 0.5, 1),
+         "salt_load_kg_d": 0},
+        {"point": "Post-NACF", "tds_mg_l": round(120 + _rng.uniform(-15, 15), 0), "flow_l_min": round(treated_output * 0.3, 1),
+         "salt_load_kg_d": 0},
+        {"point": "Treated Water (Distribution)", "tds_mg_l": round(95 + _rng.uniform(-10, 10), 0), "flow_l_min": round(treated_output, 1),
+         "salt_load_kg_d": 0},
+        {"point": "Recovery Return", "tds_mg_l": round(350 + _rng.uniform(-40, 40), 0), "flow_l_min": round(total_recovery, 1),
+         "salt_load_kg_d": 0},
+        {"point": "WWTP Discharge", "tds_mg_l": round(600 + _rng.uniform(-60, 60), 0), "flow_l_min": round(wastewater_val, 1),
+         "salt_load_kg_d": 0},
+    ]
+    # Calculate salt loads: kg/d = TDS(mg/L) * flow(L/min) * 1.44 / 1000
+    for pt in quality_balance:
+        pt["salt_load_kg_d"] = round(pt["tds_mg_l"] * pt["flow_l_min"] * conv / 1000, 2)
+
     return {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": now.isoformat(),
         "intake": {
             "municipal": {"flow_rate": round(municipal, 2), "unit": "L/min", "sensor": "FIT_10", "label": "Municipal Intake"},
-            "total": round(municipal, 2),
+            "rainfall_runoff": {"flow_rate": rainfall_runoff, "unit": "L/min", "label": "Rainfall/Runoff"},
+            "borehole": {"flow_rate": borehole, "unit": "L/min", "label": "Borehole Supply"},
+            "total": total_inflows,
+            "total_m3d": round(total_inflows * conv, 1),
         },
         "treatment": {
             "treated_output": round(treated_output, 2),
@@ -715,15 +796,24 @@ async def get_water_balance():
             "backwash": {"flow_rate": backwash_flow, "unit": "L/min", "sensor": "LIT_BRT", "label": "Backwash Recovery"},
             "total": total_recovery,
         },
-        "wastewater": {
-            "wwtp_output": round(wastewater, 2),
-            "unit": "L/min",
-        },
+        "wastewater": {"wwtp_output": round(wastewater_val, 2), "unit": "L/min"},
         "losses": {
             "treatment": treatment_loss,
-            "unaccounted": unaccounted,
+            "evaporation": evaporation,
+            "seepage": seepage,
             "leak_losses": leak_losses,
-            "total": round(total_losses + leak_losses, 2),
+            "unaccounted": unaccounted,
+            "total": total_losses,
+        },
+        "balance_summary": {
+            "total_inflows": total_inflows,
+            "total_inflows_m3d": round(total_inflows * conv, 1),
+            "total_outflows": total_outflows,
+            "total_outflows_m3d": round(total_outflows * conv, 1),
+            "total_recovery": total_recovery,
+            "change_in_storage": change_in_storage,
+            "change_in_storage_m3d": round(change_in_storage * conv, 1),
+            "balance_check_pct": balance_check,
         },
         "efficiency": {
             "water_use_ratio": water_use_ratio,
@@ -732,19 +822,27 @@ async def get_water_balance():
             "system_efficiency": round(100 - loss_rate, 1),
         },
         "total_system_water": total_system,
+        "facilities": facilities,
+        "hourly_balance": hourly_balance,
+        "quality_balance": quality_balance,
         "flow_paths": [
-            {"from": "Municipal", "to": "Treatment", "value": round(municipal, 1)},
-            {"from": "Treatment", "to": "Distribution", "value": round(treated_output, 1)},
-            {"from": "Distribution", "to": "CIP Lines", "value": round(cip, 1)},
-            {"from": "Distribution", "to": "PET Lines", "value": round(pet_lines, 1)},
-            {"from": "Distribution", "to": "Canline", "value": round(canline, 1)},
-            {"from": "Distribution", "to": "Syrup Room", "value": round(syrup_room, 1)},
-            {"from": "Process", "to": "Nano Recovery 1", "value": round(nano_r1, 1)},
-            {"from": "Process", "to": "Nano Recovery 2", "value": round(nano_r2, 1)},
-            {"from": "Process", "to": "Backwash Recovery", "value": round(backwash_flow, 1)},
-            {"from": "Recovery", "to": "Treatment", "value": round(total_recovery, 1)},
-            {"from": "Treatment", "to": "Losses", "value": round(treatment_loss, 1)},
-            {"from": "Process", "to": "Wastewater", "value": round(wastewater, 1)},
+            {"from": "Municipal Supply", "to": "Main Reservoir", "value": round(municipal, 1), "color": "#007AFF"},
+            {"from": "Rainfall/Runoff", "to": "Main Reservoir", "value": rainfall_runoff, "color": "#32ADE6"},
+            {"from": "Borehole", "to": "Main Reservoir", "value": borehole, "color": "#007AFF"},
+            {"from": "Main Reservoir", "to": "Treatment Plant", "value": round(total_inflows, 1), "color": "#007AFF"},
+            {"from": "Treatment Plant", "to": "Distribution", "value": round(treated_output, 1), "color": "#32ADE6"},
+            {"from": "Distribution", "to": "CIP Lines", "value": round(production_from_cip, 1), "color": "#34C759"},
+            {"from": "Distribution", "to": "PET Lines", "value": pet_lines, "color": "#34C759"},
+            {"from": "Distribution", "to": "Canline", "value": canline, "color": "#34C759"},
+            {"from": "Distribution", "to": "Syrup Room", "value": syrup_room, "color": "#34C759"},
+            {"from": "Process", "to": "Nano Recovery 1", "value": round(nano_r1, 1), "color": "#AF52DE"},
+            {"from": "Process", "to": "Nano Recovery 2", "value": round(nano_r2, 1), "color": "#AF52DE"},
+            {"from": "Process", "to": "Backwash Recovery", "value": backwash_flow, "color": "#AF52DE"},
+            {"from": "Recovery", "to": "Treatment Plant", "value": round(total_recovery, 1), "color": "#AF52DE"},
+            {"from": "Treatment Plant", "to": "Losses", "value": treatment_loss, "color": "#FF3B30"},
+            {"from": "Process", "to": "WWTP", "value": round(wastewater_val, 1), "color": "#FF9500"},
+            {"from": "System", "to": "Evaporation", "value": evaporation, "color": "#FF9500"},
+            {"from": "System", "to": "Seepage", "value": seepage, "color": "#FF3B30"},
         ],
     }
 

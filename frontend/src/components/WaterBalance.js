@@ -1,125 +1,251 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Drop, ArrowRight, Recycle, Factory, Flask, Warning, Gauge } from "@phosphor-icons/react";
+import { Drop, ArrowRight, Recycle, Factory, Flask, Warning, Gauge, ArrowsClockwise, Thermometer, ChartLine } from "@phosphor-icons/react";
+import { AreaChart, Area, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-/* ── Summary Stat Card ──────────────────────────────────── */
-const BalanceCard = ({ label, value, unit, color, icon, subtext, testId }) => (
-  <div
-    className="p-3 rounded-sm border"
-    style={{ backgroundColor: "#1A1A1A", borderColor: `${color}33` }}
-    data-testid={testId}
-  >
+/* ── Shared Sub-components ─────────────────────────────── */
+
+const SummaryCard = ({ label, value, unit, subValue, subUnit, color, icon }) => (
+  <div className="p-3 rounded-sm border" style={{ backgroundColor: "#1A1A1A", borderColor: `${color}33` }}>
     <div className="flex items-center gap-2 mb-2">
-      <div className="p-1.5 rounded-sm" style={{ backgroundColor: `${color}15` }}>
-        {icon}
-      </div>
-      <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: "#A3A3A3" }}>
-        {label}
-      </span>
+      <div className="p-1.5 rounded-sm" style={{ backgroundColor: `${color}15` }}>{icon}</div>
+      <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "#A3A3A3" }}>{label}</span>
     </div>
     <div className="flex items-baseline gap-1">
-      <span className="text-2xl font-black tracking-tighter" style={{ fontFamily: "Chivo, sans-serif", color }}>
-        {value}
-      </span>
-      <span className="text-xs" style={{ color: "#525252" }}>{unit}</span>
+      <span className="text-xl font-black tracking-tighter" style={{ fontFamily: "Chivo, sans-serif", color }}>{value}</span>
+      <span className="text-[10px]" style={{ color: "#525252" }}>{unit}</span>
     </div>
-    {subtext && (
-      <p className="text-[10px] mt-1" style={{ color: "#525252" }}>{subtext}</p>
+    {subValue !== undefined && (
+      <p className="text-[10px] mt-0.5" style={{ color: "#525252" }}>{subValue} {subUnit}</p>
     )}
   </div>
 );
 
-/* ── Flow Arrow ─────────────────────────────────────────── */
-const FlowArrow = ({ from, to, value, color, style: customStyle }) => (
-  <div className="flex items-center gap-1" style={customStyle}>
-    <span className="text-[9px] font-bold" style={{ color: "#A3A3A3" }}>{from}</span>
-    <div className="flex items-center gap-0.5">
-      <div className="h-[2px] w-4" style={{ backgroundColor: color }} />
-      <ArrowRight size={10} color={color} weight="bold" />
+const EfficiencyBar = ({ label, value, color }) => (
+  <div className="flex flex-col gap-1">
+    <div className="flex items-center justify-between">
+      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#A3A3A3" }}>{label}</span>
+      <span className="text-xs font-bold" style={{ color, fontFamily: "JetBrains Mono, monospace" }}>{value}%</span>
     </div>
-    <span className="text-[9px] font-bold" style={{ color }}>
-      {value} L/min
-    </span>
-    <div className="flex items-center gap-0.5">
-      <div className="h-[2px] w-4" style={{ backgroundColor: color }} />
-      <ArrowRight size={10} color={color} weight="bold" />
+    <div className="h-1.5 rounded-full w-full" style={{ backgroundColor: "#252525" }}>
+      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(100, value)}%`, backgroundColor: color }} />
     </div>
-    <span className="text-[9px] font-bold" style={{ color: "#A3A3A3" }}>{to}</span>
   </div>
 );
 
-/* ── Flow Node ──────────────────────────────────────────── */
-const FlowNode = ({ label, value, unit, color, isLarge }) => (
-  <div
-    className="flex flex-col items-center justify-center rounded-sm border text-center"
-    style={{
-      backgroundColor: `${color}0D`,
-      borderColor: `${color}44`,
-      padding: isLarge ? "12px 16px" : "8px 12px",
-      minWidth: isLarge ? "120px" : "90px",
-    }}
-  >
-    <span className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: "#A3A3A3" }}>
-      {label}
-    </span>
-    <span
-      className={`font-black tracking-tighter ${isLarge ? "text-xl" : "text-sm"}`}
-      style={{ fontFamily: "Chivo, sans-serif", color }}
-    >
-      {value}
-    </span>
-    <span className="text-[9px]" style={{ color: "#525252" }}>{unit}</span>
-  </div>
-);
+/* ── SVG Water Balance Flow Diagram ─────────────────────── */
 
-/* ── Connector Line ─────────────────────────────────────── */
-const Connector = ({ color, width = 40, thickness = 2, dashed }) => (
-  <div className="flex items-center">
-    <div
-      style={{
-        width: `${width}px`,
-        height: `${thickness}px`,
-        backgroundColor: dashed ? "transparent" : color,
-        borderTop: dashed ? `${thickness}px dashed ${color}` : "none",
-      }}
-    />
-    <ArrowRight size={12} color={color} weight="bold" />
-  </div>
-);
+const FLOW_NODES = [
+  // Left: Inflows
+  { id: "municipal", label: "Municipal\nSupply", x: 30, y: 50, w: 90, h: 44, color: "#007AFF", side: "left" },
+  { id: "rainfall", label: "Rainfall\n/Runoff", x: 30, y: 110, w: 90, h: 44, color: "#32ADE6", side: "left" },
+  { id: "borehole", label: "Borehole\nSupply", x: 30, y: 170, w: 90, h: 44, color: "#007AFF", side: "left" },
+  // Center: Process
+  { id: "reservoir", label: "Main\nReservoir", x: 210, y: 80, w: 100, h: 52, color: "#007AFF", side: "center" },
+  { id: "treatment", label: "Treatment\nPlant", x: 390, y: 80, w: 100, h: 52, color: "#32ADE6", side: "center" },
+  { id: "distribution", label: "Distribution\nSystem", x: 570, y: 80, w: 100, h: 52, color: "#34C759", side: "center" },
+  // Right: Outflows
+  { id: "cip", label: "CIP Lines", x: 740, y: 20, w: 80, h: 36, color: "#34C759", side: "right" },
+  { id: "pet", label: "PET Lines", x: 740, y: 64, w: 80, h: 36, color: "#34C759", side: "right" },
+  { id: "canline", label: "Canline", x: 740, y: 108, w: 80, h: 36, color: "#34C759", side: "right" },
+  { id: "syrup", label: "Syrup Room", x: 740, y: 152, w: 80, h: 36, color: "#34C759", side: "right" },
+  { id: "wwtp", label: "WWTP", x: 740, y: 200, w: 80, h: 36, color: "#FF9500", side: "right" },
+  // Bottom: Recovery & Losses
+  { id: "recovery", label: "Recovery\nSystem", x: 390, y: 210, w: 100, h: 44, color: "#AF52DE", side: "bottom" },
+  { id: "evap", label: "Evaporation", x: 570, y: 210, w: 80, h: 36, color: "#FF9500", side: "bottom" },
+  { id: "seepage", label: "Seepage", x: 570, y: 260, w: 80, h: 36, color: "#FF3B30", side: "bottom" },
+];
 
-/* ── Distribution Row ───────────────────────────────────── */
-const DistributionItem = ({ label, value, color }) => (
-  <div className="flex items-center justify-between py-1.5 px-2 rounded-sm" style={{ backgroundColor: "#0A0A0A" }}>
-    <span className="text-[10px]" style={{ color: "#A3A3A3" }}>{label}</span>
-    <span className="text-xs font-bold" style={{ color, fontFamily: "JetBrains Mono, monospace" }}>
-      {value} <span style={{ color: "#525252", fontWeight: 400 }}>L/min</span>
-    </span>
-  </div>
-);
+const FlowDiagram = ({ data }) => {
+  if (!data) return null;
+  const { intake, treatment, distribution, recovery, wastewater, losses } = data;
 
-/* ── Efficiency Gauge ───────────────────────────────────── */
-const EfficiencyGauge = ({ label, value, color }) => {
-  const clampedValue = Math.min(100, Math.max(0, value));
+  const connections = [
+    { from: "municipal", to: "reservoir", value: intake.municipal.flow_rate, color: "#007AFF" },
+    { from: "rainfall", to: "reservoir", value: intake.rainfall_runoff?.flow_rate || 0, color: "#32ADE6" },
+    { from: "borehole", to: "reservoir", value: intake.borehole?.flow_rate || 0, color: "#007AFF" },
+    { from: "reservoir", to: "treatment", value: intake.total, color: "#007AFF" },
+    { from: "treatment", to: "distribution", value: treatment.treated_output, color: "#32ADE6" },
+    { from: "distribution", to: "cip", value: distribution.cip_lines.flow_rate, color: "#34C759" },
+    { from: "distribution", to: "pet", value: distribution.pet_lines.flow_rate, color: "#34C759" },
+    { from: "distribution", to: "canline", value: distribution.canline.flow_rate, color: "#34C759" },
+    { from: "distribution", to: "syrup", value: distribution.syrup_room.flow_rate, color: "#34C759" },
+    { from: "distribution", to: "wwtp", value: wastewater.wwtp_output, color: "#FF9500" },
+    { from: "recovery", to: "treatment", value: recovery.total, color: "#AF52DE" },
+    { from: "distribution", to: "evap", value: losses.evaporation, color: "#FF9500" },
+    { from: "distribution", to: "seepage", value: losses.seepage, color: "#FF3B30" },
+  ];
+
+  const nodeMap = {};
+  FLOW_NODES.forEach((n) => { nodeMap[n.id] = n; });
+
+  const getPort = (nodeId, dir) => {
+    const n = nodeMap[nodeId];
+    if (!n) return { x: 0, y: 0 };
+    if (dir === "right") return { x: n.x + n.w, y: n.y + n.h / 2 };
+    if (dir === "left") return { x: n.x, y: n.y + n.h / 2 };
+    if (dir === "bottom") return { x: n.x + n.w / 2, y: n.y + n.h };
+    return { x: n.x + n.w / 2, y: n.y };
+  };
+
+  const makePath = (fromId, toId) => {
+    const fn = nodeMap[fromId];
+    const tn = nodeMap[toId];
+    if (!fn || !tn) return "";
+    // Determine direction
+    let start, end;
+    if (fromId === "recovery" && toId === "treatment") {
+      start = getPort(fromId, "top");
+      end = getPort(toId, "bottom");
+      return `M${start.x},${start.y} C${start.x},${start.y - 30} ${end.x},${end.y + 30} ${end.x},${end.y}`;
+    }
+    if (tn.x > fn.x + fn.w - 20) {
+      start = getPort(fromId, "right");
+      end = getPort(toId, "left");
+    } else if (tn.y > fn.y + fn.h - 10) {
+      start = getPort(fromId, "bottom");
+      end = getPort(toId, "top");
+    } else {
+      start = getPort(fromId, "right");
+      end = getPort(toId, "left");
+    }
+    const cx = (start.x + end.x) / 2;
+    return `M${start.x},${start.y} C${cx},${start.y} ${cx},${end.y} ${end.x},${end.y}`;
+  };
+
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#A3A3A3" }}>{label}</span>
-        <span className="text-xs font-bold" style={{ color, fontFamily: "JetBrains Mono, monospace" }}>{value}%</span>
-      </div>
-      <div className="h-1.5 rounded-full w-full" style={{ backgroundColor: "#252525" }}>
-        <div
-          className="h-full rounded-full transition-all duration-700"
-          style={{ width: `${clampedValue}%`, backgroundColor: color }}
-        />
-      </div>
+    <svg viewBox="0 0 860 310" className="w-full" style={{ minHeight: "260px" }}>
+      <defs>
+        <marker id="arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#A3A3A3" />
+        </marker>
+      </defs>
+      {/* Connections */}
+      {connections.map((c, i) => {
+        const d = makePath(c.from, c.to);
+        if (!d) return null;
+        return (
+          <g key={i}>
+            <path d={d} fill="none" stroke={`${c.color}25`} strokeWidth="8" />
+            <path d={d} fill="none" stroke={c.color} strokeWidth="2" strokeDasharray="6 4" markerEnd="url(#arrow)" opacity="0.7">
+              <animate attributeName="stroke-dashoffset" from="20" to="0" dur="2s" repeatCount="indefinite" />
+            </path>
+            {/* Flow value label at midpoint */}
+            <text x="0" y="0" fill={c.color} fontSize="8" fontWeight="700" fontFamily="JetBrains Mono, monospace" textAnchor="middle" opacity="0.9">
+              <textPath href={`#fpath-${i}`} startOffset="50%">{c.value} L/min</textPath>
+            </text>
+            <path id={`fpath-${i}`} d={d} fill="none" stroke="none" />
+          </g>
+        );
+      })}
+      {/* Nodes */}
+      {FLOW_NODES.map((n) => (
+        <g key={n.id}>
+          <rect x={n.x} y={n.y} width={n.w} height={n.h} rx="3" ry="3"
+            fill={`${n.color}12`} stroke={`${n.color}55`} strokeWidth="1" />
+          {n.label.split("\n").map((line, li) => (
+            <text key={li} x={n.x + n.w / 2} y={n.y + n.h / 2 + (li - (n.label.split("\n").length - 1) / 2) * 11}
+              fill="#E0E0E0" fontSize="9" fontWeight="600" textAnchor="middle" dominantBaseline="central">
+              {line}
+            </text>
+          ))}
+        </g>
+      ))}
+      {/* Recovery arrow label */}
+      <text x="345" y="175" fill="#AF52DE" fontSize="8" fontWeight="600" fontFamily="JetBrains Mono" textAnchor="middle" opacity="0.6">
+        RECOVERY LOOP
+      </text>
+    </svg>
+  );
+};
+
+/* ── Facility Balance Table ──────────────────────────────── */
+
+const FacilityTable = ({ facilities }) => {
+  if (!facilities?.length) return null;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-[10px] border-collapse" data-testid="facility-balance-table">
+        <thead>
+          <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Facility</th>
+            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Inflows (L/min)</th>
+            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Outflows (L/min)</th>
+            <th className="text-right py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Storage (L/min)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {facilities.map((f, i) => {
+            const totalIn = f.inflows.reduce((s, x) => s + x.value, 0);
+            const totalOut = f.outflows.reduce((s, x) => s + x.value, 0);
+            return (
+              <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                <td className="py-2.5 px-3 font-bold" style={{ color: "#FFF" }}>{f.name}</td>
+                <td className="py-2.5 px-3" style={{ color: "#A3A3A3" }}>
+                  {f.inflows.map((fl, j) => (
+                    <div key={j} className="flex justify-between mb-0.5">
+                      <span>{fl.label}</span>
+                      <span className="font-bold" style={{ color: "#007AFF", fontFamily: "JetBrains Mono" }}>{fl.value}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between mt-1 pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    <span className="font-bold" style={{ color: "#FFF" }}>Total</span>
+                    <span className="font-bold" style={{ color: "#007AFF", fontFamily: "JetBrains Mono" }}>{totalIn.toFixed(1)}</span>
+                  </div>
+                </td>
+                <td className="py-2.5 px-3" style={{ color: "#A3A3A3" }}>
+                  {f.outflows.map((fl, j) => (
+                    <div key={j} className="flex justify-between mb-0.5">
+                      <span>{fl.label}</span>
+                      <span className="font-bold" style={{ color: "#FF9500", fontFamily: "JetBrains Mono" }}>{fl.value}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between mt-1 pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    <span className="font-bold" style={{ color: "#FFF" }}>Total</span>
+                    <span className="font-bold" style={{ color: "#FF9500", fontFamily: "JetBrains Mono" }}>{totalOut.toFixed(1)}</span>
+                  </div>
+                </td>
+                <td className="py-2.5 px-3 text-right align-top">
+                  <span className="font-bold text-xs" style={{
+                    color: f.storage_change >= 0 ? "#34C759" : "#FF3B30",
+                    fontFamily: "JetBrains Mono",
+                  }}>
+                    {f.storage_change >= 0 ? "+" : ""}{f.storage_change}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-/* ── Main Component ─────────────────────────────────────── */
+/* ── Custom Tooltip for charts ───────────────────────────── */
+const ChartTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-sm border p-2" style={{ backgroundColor: "#1A1A1AEE", borderColor: "rgba(255,255,255,0.1)" }}>
+      <p className="text-[10px] font-bold mb-1" style={{ color: "#A3A3A3" }}>{label}</p>
+      {payload.map((p, i) => (
+        <div key={i} className="flex items-center gap-2 text-[10px]">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+          <span style={{ color: "#A3A3A3" }}>{p.name}:</span>
+          <span className="font-bold" style={{ color: p.color, fontFamily: "JetBrains Mono" }}>{p.value} L/min</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ── Loss Pie Colors ─────────────────────────────────────── */
+const LOSS_COLORS = ["#FF3B30", "#FF9500", "#FFD60A", "#AF52DE", "#FF6961"];
+
+/* ── MAIN COMPONENT ─────────────────────────────────────── */
+
 const WaterBalance = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -137,7 +263,7 @@ const WaterBalance = () => {
 
   useEffect(() => {
     fetchBalance();
-    const interval = setInterval(fetchBalance, 5000);
+    const interval = setInterval(fetchBalance, 8000);
     return () => clearInterval(interval);
   }, [fetchBalance]);
 
@@ -149,163 +275,168 @@ const WaterBalance = () => {
     );
   }
 
-  const { intake, treatment, distribution, recovery, wastewater, losses, efficiency } = data;
+  const { intake, treatment, distribution, recovery, wastewater, losses, efficiency, balance_summary, facilities, hourly_balance, quality_balance } = data;
+  const bs = balance_summary || {};
+
+  // Build loss pie data
+  const lossData = [
+    { name: "Treatment", value: losses.treatment || 0 },
+    { name: "Evaporation", value: losses.evaporation || 0 },
+    { name: "Seepage", value: losses.seepage || 0 },
+    { name: "Leakage", value: losses.leak_losses || 0 },
+    { name: "Unaccounted", value: losses.unaccounted || 0 },
+  ].filter((d) => d.value > 0);
 
   return (
-    <div data-testid="water-balance-panel">
-      {/* Summary Cards Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <BalanceCard
-          label="Municipal Intake"
-          value={intake.municipal.flow_rate}
-          unit="L/min"
-          color="#007AFF"
-          icon={<Drop size={16} color="#007AFF" weight="duotone" />}
-          subtext="FIT_10 · Main Feed"
-          testId="wb-card-intake"
-        />
-        <BalanceCard
-          label="Treated Output"
-          value={treatment.treated_output}
-          unit="L/min"
-          color="#32ADE6"
-          icon={<Flask size={16} color="#32ADE6" weight="duotone" />}
-          subtext={`${treatment.loss_pct}% treatment loss`}
-          testId="wb-card-treated"
-        />
-        <BalanceCard
-          label="Production"
-          value={distribution.total}
-          unit="L/min"
-          color="#34C759"
-          icon={<Factory size={16} color="#34C759" weight="duotone" />}
-          subtext="CIP + PET + Can + Syrup"
-          testId="wb-card-production"
-        />
-        <BalanceCard
-          label="Recovery"
-          value={recovery.total}
-          unit="L/min"
-          color="#AF52DE"
-          icon={<Recycle size={16} color="#AF52DE" weight="duotone" />}
-          subtext="Nano + Backwash"
-          testId="wb-card-recovery"
-        />
-        <BalanceCard
-          label="Wastewater"
-          value={wastewater.wwtp_output}
-          unit="L/min"
-          color="#FF9500"
-          icon={<Warning size={16} color="#FF9500" weight="duotone" />}
-          subtext="WWTP Output"
-          testId="wb-card-wastewater"
-        />
-        <BalanceCard
-          label="Total Losses"
-          value={losses.total}
-          unit="L/min"
-          color="#FF3B30"
-          icon={<Gauge size={16} color="#FF3B30" weight="duotone" />}
-          subtext={`Incl. ${losses.leak_losses} leak loss`}
-          testId="wb-card-losses"
-        />
+    <div data-testid="water-balance-panel" className="space-y-4">
+
+      {/* ── SECTION 1: Balance Overview ────────────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <SummaryCard label="Total Inflows" value={bs.total_inflows || intake.total} unit="L/min"
+          subValue={bs.total_inflows_m3d} subUnit="m³/d" color="#007AFF"
+          icon={<Drop size={14} color="#007AFF" weight="duotone" />} />
+        <SummaryCard label="Total Outflows" value={bs.total_outflows} unit="L/min"
+          subValue={bs.total_outflows_m3d} subUnit="m³/d" color="#FF9500"
+          icon={<ArrowRight size={14} color="#FF9500" weight="bold" />} />
+        <SummaryCard label="Recovery" value={recovery.total} unit="L/min"
+          color="#AF52DE" icon={<Recycle size={14} color="#AF52DE" weight="duotone" />} />
+        <SummaryCard label="Production" value={distribution.total} unit="L/min"
+          color="#34C759" icon={<Factory size={14} color="#34C759" weight="duotone" />} />
+        <SummaryCard label="WWTP" value={wastewater.wwtp_output} unit="L/min"
+          color="#FF9500" icon={<Warning size={14} color="#FF9500" weight="duotone" />} />
+        <SummaryCard label="Total Losses" value={losses.total} unit="L/min"
+          color="#FF3B30" icon={<Thermometer size={14} color="#FF3B30" weight="duotone" />} />
+        <SummaryCard label="Storage" value={bs.change_in_storage || 0} unit="L/min"
+          subValue={bs.change_in_storage_m3d} subUnit="m³/d"
+          color={bs.change_in_storage >= 0 ? "#34C759" : "#FF3B30"}
+          icon={<ArrowsClockwise size={14} color="#32ADE6" weight="duotone" />} />
+        <SummaryCard label="Balance Check" value={bs.balance_check_pct || 0} unit="%"
+          color={bs.balance_check_pct < 5 ? "#34C759" : "#FF9500"}
+          icon={<Gauge size={14} color="#34C759" weight="duotone" />} />
       </div>
 
-      {/* Flow Diagram */}
-      <div className="rounded-sm border p-4 md:p-6 mb-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-        <h4 className="text-sm font-bold uppercase tracking-wider mb-5" style={{ color: "#A3A3A3" }}>
-          System Flow Diagram
-        </h4>
-
-        {/* Main horizontal flow */}
-        <div className="flex items-center justify-between gap-2 mb-6 overflow-x-auto pb-2">
-          <FlowNode label="Municipal" value={intake.total} unit="L/min" color="#007AFF" isLarge />
-          <Connector color="#007AFF" width={30} />
-          <FlowNode label="Treatment" value={treatment.treated_output} unit="L/min" color="#32ADE6" isLarge />
-          <Connector color="#32ADE6" width={30} />
-          <FlowNode label="Distribution" value={distribution.total} unit="L/min" color="#34C759" isLarge />
-          <Connector color="#34C759" width={20} dashed />
-          <FlowNode label="Production" value={distribution.total} unit="L/min" color="#34C759" isLarge />
-        </div>
-
-        {/* Bottom detail rows */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Distribution Breakdown */}
-          <div className="rounded-sm border p-3" style={{ backgroundColor: "#121212", borderColor: "rgba(52,199,89,0.2)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Factory size={14} color="#34C759" weight="duotone" />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#34C759" }}>
-                Production Lines
-              </span>
-            </div>
-            <div className="space-y-1.5">
-              <DistributionItem label="CIP Lines" value={distribution.cip_lines.flow_rate} color="#34C759" />
-              <DistributionItem label="PET Lines" value={distribution.pet_lines.flow_rate} color="#34C759" />
-              <DistributionItem label="Canline" value={distribution.canline.flow_rate} color="#34C759" />
-              <DistributionItem label="Syrup Room" value={distribution.syrup_room.flow_rate} color="#34C759" />
-            </div>
-          </div>
-
-          {/* Recovery Breakdown */}
-          <div className="rounded-sm border p-3" style={{ backgroundColor: "#121212", borderColor: "rgba(175,82,222,0.2)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Recycle size={14} color="#AF52DE" weight="duotone" />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#AF52DE" }}>
-                Water Recovery
-              </span>
-            </div>
-            <div className="space-y-1.5">
-              <DistributionItem label="Nano Recovery 1" value={recovery.nano_recovery_1.flow_rate} color="#AF52DE" />
-              <DistributionItem label="Nano Recovery 2" value={recovery.nano_recovery_2.flow_rate} color="#AF52DE" />
-              <DistributionItem label="Backwash Recovery" value={recovery.backwash.flow_rate} color="#AF52DE" />
-            </div>
-            <FlowArrow from="Recovery" to="Treatment" value={recovery.total} color="#AF52DE" style={{ marginTop: "8px" }} />
-          </div>
-
-          {/* Losses + Wastewater */}
-          <div className="rounded-sm border p-3" style={{ backgroundColor: "#121212", borderColor: "rgba(255,59,48,0.2)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Warning size={14} color="#FF9500" weight="duotone" />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#FF9500" }}>
-                Outflows & Losses
-              </span>
-            </div>
-            <div className="space-y-1.5">
-              <DistributionItem label="WWTP Output" value={wastewater.wwtp_output} color="#FF9500" />
-              <DistributionItem label="Treatment Loss" value={losses.treatment} color="#FF3B30" />
-              <DistributionItem label="Leak Losses" value={losses.leak_losses} color="#FF3B30" />
-              <DistributionItem label="Unaccounted" value={losses.unaccounted} color="#FF3B30" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Efficiency Gauges */}
+      {/* ── SECTION 2: Water Balance Flow Diagram (SVG) ── */}
       <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-        <h4 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "#A3A3A3" }}>
-          System Efficiency
+        <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#007AFF" }} />
+          Average Daily Water Balance (Sankey)
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <EfficiencyGauge
-            label="System Efficiency"
-            value={efficiency.system_efficiency}
-            color={efficiency.system_efficiency > 90 ? "#34C759" : efficiency.system_efficiency > 80 ? "#FF9500" : "#FF3B30"}
-          />
-          <EfficiencyGauge
-            label="Water Use Ratio"
-            value={efficiency.water_use_ratio}
-            color={efficiency.water_use_ratio > 80 ? "#34C759" : "#FF9500"}
-          />
-          <EfficiencyGauge
-            label="Recovery Rate"
-            value={efficiency.recovery_rate}
-            color="#AF52DE"
-          />
-          <EfficiencyGauge
-            label="Loss Rate"
-            value={efficiency.loss_rate}
-            color={efficiency.loss_rate < 10 ? "#34C759" : efficiency.loss_rate < 20 ? "#FF9500" : "#FF3B30"}
-          />
+        <FlowDiagram data={data} />
+      </div>
+
+      {/* ── SECTION 3: Facility Balance + Loss Analysis ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Facility Table (2 cols wide) */}
+        <div className="lg:col-span-2 rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#32ADE6" }} />
+            Facility-Level Water Balance
+          </h4>
+          <FacilityTable facilities={facilities} />
+        </div>
+
+        {/* Loss Analysis Pie */}
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF3B30" }} />
+            Loss Analysis
+          </h4>
+          <div style={{ height: "160px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={lossData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={2} dataKey="value" stroke="none">
+                  {lossData.map((_, i) => <Cell key={i} fill={LOSS_COLORS[i % LOSS_COLORS.length]} />)}
+                </Pie>
+                <Tooltip content={<ChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-1.5 mt-2">
+            {lossData.map((d, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: LOSS_COLORS[i % LOSS_COLORS.length] }} />
+                  <span className="text-[10px]" style={{ color: "#A3A3A3" }}>{d.name}</span>
+                </div>
+                <span className="text-[10px] font-bold" style={{ color: LOSS_COLORS[i % LOSS_COLORS.length], fontFamily: "JetBrains Mono" }}>
+                  {d.value} L/min
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── SECTION 4: 24H Time Series ───────────────────── */}
+      <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
+        <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#007AFF" }} />
+          24H Water Balance Trend
+        </h4>
+        <div style={{ height: "220px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={hourly_balance || []}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#25252555" />
+              <XAxis dataKey="hour" tick={{ fill: "#525252", fontSize: 9 }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fill: "#525252", fontSize: 9 }} tickLine={false} axisLine={false} />
+              <Tooltip content={<ChartTooltip />} />
+              <Legend wrapperStyle={{ fontSize: "10px", color: "#A3A3A3" }} />
+              <Area type="monotone" dataKey="inflows" name="Inflows" stroke="#007AFF" fill="#007AFF22" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="outflows" name="Outflows" stroke="#FF9500" fill="#FF950022" strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="losses" name="Losses" stroke="#FF3B30" fill="#FF3B3022" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="recovery" name="Recovery" stroke="#AF52DE" strokeWidth={2} strokeDasharray="4 2" dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* ── SECTION 5: Efficiency + Quality Balance ──────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Efficiency Gauges */}
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#34C759" }} />
+            System Efficiency
+          </h4>
+          <div className="space-y-4">
+            <EfficiencyBar label="System Efficiency" value={efficiency.system_efficiency}
+              color={efficiency.system_efficiency > 90 ? "#34C759" : efficiency.system_efficiency > 80 ? "#FF9500" : "#FF3B30"} />
+            <EfficiencyBar label="Water Use Ratio" value={efficiency.water_use_ratio}
+              color={efficiency.water_use_ratio > 80 ? "#34C759" : "#FF9500"} />
+            <EfficiencyBar label="Recovery Rate" value={efficiency.recovery_rate} color="#AF52DE" />
+            <EfficiencyBar label="Loss Rate" value={efficiency.loss_rate}
+              color={efficiency.loss_rate < 10 ? "#34C759" : efficiency.loss_rate < 20 ? "#FF9500" : "#FF3B30"} />
+          </div>
+        </div>
+
+        {/* TDS/Salt Balance (like Barberton Section 5) */}
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF9500" }} />
+            Quality / Salt Balance (TDS)
+          </h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-[10px] border-collapse" data-testid="quality-balance-table">
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                  <th className="text-left py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Point</th>
+                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>TDS (mg/L)</th>
+                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Flow (L/min)</th>
+                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Salt (kg/d)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(quality_balance || []).map((q, i) => (
+                  <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                    <td className="py-2 px-2 font-semibold" style={{ color: "#FFF" }}>{q.point}</td>
+                    <td className="py-2 px-2 text-right font-bold" style={{ color: "#32ADE6", fontFamily: "JetBrains Mono" }}>{q.tds_mg_l}</td>
+                    <td className="py-2 px-2 text-right" style={{ color: "#A3A3A3", fontFamily: "JetBrains Mono" }}>{q.flow_l_min}</td>
+                    <td className="py-2 px-2 text-right font-bold" style={{ color: "#FF9500", fontFamily: "JetBrains Mono" }}>{q.salt_load_kg_d}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
