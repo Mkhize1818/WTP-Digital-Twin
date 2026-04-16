@@ -474,6 +474,8 @@ function renderWB(){const m=R(140,170),rain=R(2.5,8),bore=R(5,15),ti=Math.round(
     <div style="display:flex;flex-direction:column;gap:6px">${ld.map(d=>`<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:${d.c};flex-shrink:0"></div><span style="flex:1;font-size:10px;color:#A3A3A3">${d.n}</span><span style="font-size:10px;font-weight:700;color:${d.c};font-family:JetBrains Mono">${d.v} L/min</span><span style="font-size:9px;color:#525252">${Math.round(d.v/ldTotal*1000)/10}%</span></div>`).join('')}
     <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between"><span style="font-size:10px;font-weight:700;color:#fff">Total Losses</span><span style="font-size:10px;font-weight:700;color:#FF3B30;font-family:JetBrains Mono">${tloss} L/min</span></div></div></div>
   </div>
+  <!-- 24H Water Balance Trend Chart -->
+  <div class="pd"><div class="st"><div class="dot" style="background:#007AFF"></div>24H Water Balance Trend</div><div style="height:220px"><canvas id="wbTrendC"></canvas></div></div>
   <!-- Quality/Salt Balance + Efficiency -->
   <div class="g2">
     <div class="pd"><div class="st"><div class="dot" style="background:#FF9500"></div>Quality / Salt Balance (TDS)</div>
@@ -482,6 +484,16 @@ function renderWB(){const m=R(140,170),rain=R(2.5,8),bore=R(5,15),ti=Math.round(
     </tbody></table></div>
     <div class="pd"><div class="st"><div class="dot" style="background:#34C759"></div>System Efficiency</div><div class="gr" style="grid-template-columns:1fr">${[{l:'System Efficiency',v:eff,c:eff>90?'#34C759':eff>80?'#FF9500':'#FF3B30'},{l:'Water Use Ratio',v:wur,c:wur>80?'#34C759':'#FF9500'},{l:'Recovery Rate',v:rr,c:'#AF52DE'},{l:'Loss Rate',v:lr,c:lr<10?'#34C759':lr<20?'#FF9500':'#FF3B30'}].map(g=>`<div class="gi" style="margin-bottom:12px"><div class="gh"><span class="gl">${g.l}</span><span class="gv" style="color:${g.c}">${g.v}%</span></div><div class="gb"><div class="gf" style="width:${Math.min(100,g.v)}%;background:${g.c}"></div></div></div>`).join('')}</div></div>
   </div>`;
+  // 24H trend chart data
+  const hb=Array.from({length:24},(_,h)=>{const hr=(new Date().getHours()-23+h+24)%24;let df;if(hr>=1&&hr<=5)df=0.4+R(-.05,.05);else if(hr>=8&&hr<=17)df=1.1+R(-.1,.1);else df=0.7+R(-.08,.08);
+    return{h:`${String(hr).padStart(2,'0')}:00`,i:Math.round(m*df*10)/10,o:Math.round(m*df*(0.85+R(-.05,.05))*10)/10,l:Math.round(m*df*R(.05,.15)*10)/10,r:Math.round(rec*df*0.8*10)/10};
+  });
+  setTimeout(()=>{cC('wbTrendC',{type:'line',data:{labels:hb.map(h=>h.h),datasets:[
+    {label:'Inflows',data:hb.map(h=>h.i),borderColor:'#007AFF',backgroundColor:'#007AFF22',fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:'Outflows',data:hb.map(h=>h.o),borderColor:'#FF9500',backgroundColor:'#FF950022',fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:'Losses',data:hb.map(h=>h.l),borderColor:'#FF3B30',backgroundColor:'#FF3B3022',fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:'Recovery',data:hb.map(h=>h.r),borderColor:'#AF52DE',borderWidth:2,borderDash:[4,2],tension:.3,pointRadius:0,fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#A3A3A3',font:{size:10}}}},scales:{x:{ticks:{color:'#525252',font:{size:9},maxTicksLimit:8},grid:{color:'#25252555'}},y:{ticks:{color:'#525252',font:{size:9}},grid:{color:'#25252555'}}}}})},50);
 }
 
 // ── NRW Analytics ──
