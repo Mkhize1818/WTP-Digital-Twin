@@ -61,13 +61,42 @@
 .sq:hover{border-color:var(--bl)}
 .air{display:flex;gap:8px;margin-top:auto}.air input{flex:1;padding:8px 12px;font-size:12px;border:1px solid var(--bd2);background:var(--bg2);color:#fff;font-family:'JetBrains Mono',monospace;border-radius:2px;outline:none}
 .air input:focus{border-color:var(--bl)}.air button{padding:8px 16px;background:var(--bl);color:#fff;border:none;cursor:pointer;border-radius:2px;font-weight:700}
-/* PFD */
-.pfd-wrap{position:relative;width:100%;min-height:450px}
-.pfd-wrap img{width:100%;height:auto;opacity:.9;filter:brightness(.9)}
-.itag{position:absolute;cursor:pointer;transform:translate(-50%,-50%);z-index:5;transition:all .15s}
-.itag:hover{z-index:15;transform:translate(-50%,-50%) scale(1.15)}
-.itag-inner{display:flex;align-items:center;gap:3px;padding:2px 6px;border-radius:2px;border:1px solid;font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;backdrop-filter:blur(4px);white-space:nowrap;background:rgba(0,0,0,.75)}
-.itag-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+/* PFD - Isometric 3D */
+.iso-scene{position:relative;width:100%;min-height:640px;background:#060810;border:1px solid rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.iso-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,122,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,122,255,0.03) 1px,transparent 1px);background-size:50px 50px;mask-image:radial-gradient(ellipse at center,black 40%,transparent 80%)}
+.iso-zones{position:absolute;inset:0;z-index:0;pointer-events:none}
+.iso-zlbl{position:absolute;font-size:11px;font-weight:900;font-family:'JetBrains Mono',monospace;letter-spacing:3px;white-space:nowrap;user-select:none}
+.iso-pipes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.iso-pipe-flow{animation:pipeFlow 2s linear infinite}
+@keyframes pipeFlow{0%{stroke-dashoffset:48}100%{stroke-dashoffset:0}}
+.iso-layer{position:absolute;inset:0;z-index:2}.iso-layer-inst{position:absolute;inset:0;z-index:3;pointer-events:none}
+.iso-inst{pointer-events:auto}
+.iso-tank{position:absolute;cursor:pointer;transition:transform .2s ease,filter .2s ease;transform-origin:center bottom}
+.iso-tank:hover{transform:scale(1.06) translateY(-4px);filter:brightness(1.25);z-index:50 !important}
+.iso-tank-cap{width:100%;height:18px;border:1px solid;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));position:relative;z-index:3;backdrop-filter:blur(2px)}
+.iso-tank-body{position:relative;width:100%;border:1px solid;border-top:none;background:linear-gradient(180deg,rgba(10,15,30,0.95),rgba(5,8,20,0.98));overflow:hidden;z-index:2;border-radius:0 0 4px 4px}
+.iso-tank-water{position:absolute;bottom:0;left:0;right:0;transition:height 1.5s cubic-bezier(0.4,0,0.2,1);border-radius:0 0 3px 3px}
+.iso-water-shimmer{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.08) 30%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.08) 70%,transparent 100%);animation:shimmer 3s ease-in-out infinite}
+@keyframes shimmer{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+.iso-tank-level{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:5;pointer-events:none}
+.iso-lv{display:block;font-family:'Chivo',sans-serif;font-size:18px;font-weight:900;letter-spacing:-1px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.8)}
+.iso-lu{display:block;font-size:9px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace}
+.iso-tank-base{width:100%;height:10px;border:1px solid;border-top:none;border-radius:0 0 50% 50%;background:rgba(0,0,0,0.3);position:relative;z-index:1}
+.iso-tank-lbl{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;font-size:9px;font-weight:600;color:#A3A3A3;text-align:center;white-space:nowrap}
+.iso-sdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.iso-tank-id{text-align:center;font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;margin-top:2px}
+.iso-inst{position:absolute;cursor:pointer;transition:transform .15s ease}.iso-inst:hover{transform:scale(1.18);z-index:50 !important}
+.iso-inst-in{display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:2px;border:1px solid;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);white-space:nowrap}
+.iso-inst-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.iso-inst-lbl{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px}
+.iso-inst-val{font-size:8px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace}
+.iso-legend{position:absolute;top:12px;right:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;z-index:10;padding:6px 10px;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);border-radius:2px;border:1px solid rgba(255,255,255,0.06)}
+.iso-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:#A3A3A3;font-family:'JetBrains Mono',monospace}
+.iso-legend-dot{width:6px;height:6px;border-radius:50%}
+.iso-legend-sep{width:1px;height:14px;background:rgba(255,255,255,0.1)}
+.iso-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;color:#525252;z-index:10}
+@media(max-width:1200px){.iso-scene{min-height:520px}.iso-layer,.iso-layer-inst,.iso-zones{transform:scale(0.85);transform-origin:top left}}
+@media(max-width:768px){.iso-scene{min-height:420px;overflow-x:auto}.iso-layer,.iso-layer-inst,.iso-zones{transform:scale(0.6);transform-origin:top left}}
 /* Sensor Grid */
 .sg{background:var(--bg2);border:1px solid var(--bd);padding:20px 24px;margin-bottom:16px}
 .sg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-height:256px;overflow-y:auto}
@@ -225,30 +254,114 @@ function renderMetrics(){
   ].map(c=>`<div class="mc"><div class="lb">${c.l}</div><div class="vl" style="color:${c.sev?'var(--rd)':'#fff'}">${c.v}<span class="un">${c.u}</span></div></div>`).join('');
 }
 
-// ── PFD ──
-function renderPFD(){
-  document.getElementById('view-pfd').innerHTML=`
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:12px">
-      ${[{l:'LIT (Level)',c:TC.level},{l:'FIT (Flow)',c:TC.flow},{l:'PIT (Pressure)',c:TC.pressure},{l:'pH / Cl',c:TC.ph},{l:'EC',c:TC.conductivity}].map(i=>`<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${i.c}"></div><span class="mono" style="font-size:10px;color:var(--t2)">${i.l}</span></div>`).join('')}
-      ${[{l:'Online',c:SC.online},{l:'Warning',c:SC.warning},{l:'Offline',c:SC.offline}].map(i=>`<div style="display:flex;align-items:center;gap:4px"><div style="width:8px;height:8px;border-radius:50%;background:${i.c}"></div><span style="font-size:10px;color:var(--t2)">${i.l}</span></div>`).join('')}
-    </div>
-    <div class="pfd-wrap" id="pfdContainer">
-      <img src="https://customer-assets.emergentagent.com/job_08778319-680e-4dcc-9637-79a56dea1c9a/artifacts/z7wc49hm_CCBA%20Digital%20Twin.png" alt="PFD" onerror="this.parentElement.innerHTML='<div style=padding:80px;text-align:center;color:var(--t2)><p style=font-size:48px>&#9881;</p><p>Process Flow Diagram</p></div>'">
-      ${sensors.map(s=>{const tc=TC[s.type]||'#007AFF';return`<div class="itag" style="left:${s.x};top:${s.y}" onclick="openAnalytics('${s.id}')" onmouseenter="showTooltip(event,'${s.id}')" onmouseleave="hideTooltip()"><div class="itag-inner" style="border-color:${tc}"><div class="itag-dot" style="background:${SC[s.status]}"></div><span style="color:${tc}">${s.label}</span><span style="color:var(--t2);font-size:7px">${s.value}</span></div></div>`;}).join('')}
-      <div id="pfdTooltip" class="tooltip" style="display:none"></div>
-    </div>
-    <p style="font-size:10px;color:var(--t3);text-align:center;margin-top:8px">Click any instrument tag to view detailed analytics</p>`;
-}
+// ── PFD (3D Isometric) ──
+const TANKS=[
+  {id:'LIT_MR',label:'Main Reservoir',x:0.5,y:0.45,w:1.3,h:130,group:'intake'},
+  {id:'LIT_RT4',label:'Reservoir T4',x:5.6,y:0.45,w:1.1,h:115,group:'distribution'},
+  {id:'LIT_RR2',label:'RO Recovery',x:2.2,y:1.25,w:1.0,h:110,group:'treatment'},
+  {id:'LIT_STW',label:'Semi-Treated Water',x:3.8,y:1.0,w:1.2,h:125,group:'treatment'},
+  {id:'LIT_TWT',label:'Treated Water',x:7.0,y:1.05,w:1.3,h:135,group:'distribution'},
+  {id:'LIT_BRT',label:'Backwash Recovery',x:0.4,y:2.2,w:1.0,h:100,group:'recovery'},
+  {id:'LIT_HT',label:'Holding Tank',x:2.2,y:2.4,w:1.0,h:100,group:'treatment'},
+  {id:'LIT_ST',label:'Storage Tank',x:4.3,y:3.2,w:1.0,h:100,group:'production'},
+  {id:'LIT_NR1',label:'Nano Recovery 1',x:3.2,y:3.75,w:0.9,h:90,group:'recovery'},
+  {id:'LIT_NR2',label:'Nano Recovery 2',x:5.8,y:3.4,w:0.9,h:90,group:'recovery'},
+];
+const INSTS=[
+  {id:'FIT_10',label:'FIT 10',x:1.5,y:1.7,group:'intake'},
+  {id:'FIT_FL',label:'FIT FL',x:3.4,y:0.5,group:'distribution'},
+  {id:'FIT_CIP',label:'FIT CIP',x:8.8,y:1.15,group:'production'},
+  {id:'FIT_6',label:'FIT 6',x:2.3,y:3.6,group:'recovery'},
+  {id:'FIT_8',label:'FIT 8',x:4.8,y:3.5,group:'recovery'},
+  {id:'PIT_RACF1',label:'PIT 1',x:5.0,y:1.35,group:'treatment'},
+  {id:'PIT_RACF2',label:'PIT 2',x:5.6,y:1.55,group:'treatment'},
+  {id:'PIT_RACF3',label:'PIT 3',x:6.2,y:1.35,group:'treatment'},
+  {id:'PIT_NACF1',label:'PIT N1',x:1.5,y:2.9,group:'treatment'},
+  {id:'PIT_NACF2',label:'PIT N2',x:2.5,y:3.0,group:'treatment'},
+  {id:'pH_RO',label:'pH/ORP',x:5.6,y:2.25,group:'quality'},
+  {id:'pH_NACF',label:'pH/Cl',x:3.3,y:2.75,group:'quality'},
+  {id:'CL_001',label:'Cl',x:6.5,y:2.2,group:'quality'},
+  {id:'EC_RO',label:'EC',x:7.2,y:2.2,group:'quality'},
+  {id:'EC_NANO',label:'EC',x:5.5,y:3.0,group:'quality'},
+  {id:'DPT_BF',label:'DPT',x:3.0,y:0.9,group:'treatment'},
+  {id:'DPT_PF',label:'DPT',x:4.4,y:2.7,group:'treatment'},
+];
+const ISO_PIPES=[
+  {from:[-0.5,0.85],to:[0.5,0.85],label:'Municipal In',color:'#007AFF'},
+  {from:[1.8,0.85],to:[3.8,1.05],label:'',color:'#007AFF'},
+  {from:[2.5,0.95],to:[2.5,1.25],label:'',color:'#32ADE6'},
+  {from:[3.2,1.55],to:[3.8,1.35],label:'',color:'#32ADE6'},
+  {from:[5.0,1.3],to:[7.0,1.45],label:'',color:'#32ADE6'},
+  {from:[7.5,1.05],to:[6.7,0.65],label:'',color:'#34C759'},
+  {from:[8.3,1.45],to:[9.5,1.15],label:'CIP Out',color:'#34C759'},
+  {from:[6.7,0.65],to:[9.5,0.65],label:'Prod Out',color:'#34C759'},
+  {from:[0.8,1.45],to:[0.7,2.2],label:'',color:'#AF52DE'},
+  {from:[1.4,2.35],to:[2.2,1.75],label:'',color:'#AF52DE'},
+  {from:[3.2,2.85],to:[4.3,3.2],label:'',color:'#32ADE6'},
+  {from:[3.5,3.75],to:[2.7,2.85],label:'',color:'#AF52DE'},
+  {from:[6.0,3.4],to:[6.5,2.35],label:'',color:'#AF52DE'},
+  {from:[8.0,1.95],to:[9.5,3.55],label:'WWTP',color:'#FF9500'},
+];
+const GC={intake:'#007AFF',treatment:'#32ADE6',distribution:'#34C759',production:'#34C759',recovery:'#AF52DE',quality:'#FF9500'};
+const SG={online:'0 0 12px rgba(52,199,89,0.4)',warning:'0 0 12px rgba(255,149,0,0.5)',offline:'0 0 12px rgba(255,59,48,0.5)'};
 
-function showTooltip(e,id){
-  const s=sensors.find(x=>x.id===id);if(!s)return;const tt=document.getElementById('pfdTooltip');
-  tt.style.display='block';tt.style.left='50%';tt.style.top='10px';tt.style.transform='translateX(-50%)';tt.style.borderColor=TC[s.type]||'var(--bl)';
-  tt.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#fff">${s.name}</span><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:${SC[s.status]}">${s.status}</span></div>
-    <p class="mono" style="font-size:10px;color:var(--t2);margin-bottom:8px">${s.id}</p>
-    <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px"><span class="chivo" style="font-size:20px;font-weight:900;letter-spacing:-1px">${s.value}</span><span style="font-size:10px;color:var(--t2)">${s.unit}</span></div>
-    <div style="font-size:10px;color:var(--bl);border-top:1px solid var(--bd);padding-top:8px">&#8853; Click to view analytics</div>`;
+function renderPFD(){
+  const sMap={};sensors.forEach(s=>{sMap[s.id]=s});
+  // Build SVG pipes
+  let pipeSvg='';ISO_PIPES.forEach((p,i)=>{
+    const x1=p.from[0]*100+40,y1=p.from[1]*110+40,x2=p.to[0]*100+40,y2=p.to[1]*110+40;
+    pipeSvg+=`<line x1="${x1}" y1="${y1+2}" x2="${x2}" y2="${y2+2}" stroke="rgba(0,0,0,0.3)" stroke-width="6" stroke-linecap="round"/>`;
+    pipeSvg+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${p.color}44" stroke-width="4" stroke-linecap="round"/>`;
+    pipeSvg+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${p.color}" stroke-width="2" stroke-linecap="round" stroke-dasharray="8 16" class="iso-pipe-flow" style="animation-delay:${i*0.3}s"/>`;
+    if(p.label)pipeSvg+=`<text x="${(x1+x2)/2}" y="${(y1+y2)/2-8}" fill="${p.color}" font-size="9" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">${p.label}</text>`;
+  });
+  // Build tanks
+  let tanksHtml='';TANKS.forEach(t=>{
+    const s=sMap[t.id];const level=s?Math.min(100,Math.max(0,s.value)):50;const st=s?.status||'offline';
+    const gc=GC[t.group]||'#007AFF';const wh=(level/100)*t.h*0.75;
+    tanksHtml+=`<div class="iso-tank" style="left:${t.x*100}px;top:${t.y*110}px;width:${t.w*90}px;z-index:${Math.round(t.y*10)}" onclick="openAnalytics('${t.id}')">
+      <div class="iso-tank-cap" style="border-color:${gc}66"></div>
+      <div class="iso-tank-body" style="height:${t.h}px;border-color:${gc}44;box-shadow:${SG[st]||SG.offline}">
+        <div class="iso-tank-water" style="height:${wh}px;background:linear-gradient(to top,${gc}88,${gc}22)"><div class="iso-water-shimmer"></div></div>
+        <div class="iso-tank-level"><span class="iso-lv">${s?.value??'—'}</span><span class="iso-lu">${s?.unit||'%'}</span></div>
+      </div>
+      <div class="iso-tank-base" style="border-color:${gc}44"></div>
+      <div class="iso-tank-lbl"><div class="iso-sdot" style="background:${SC[st]}"></div><span>${t.label}</span></div>
+      <div class="iso-tank-id" style="color:${gc}">${t.id}</div>
+    </div>`;
+  });
+  // Build instruments
+  let instHtml='';INSTS.forEach(inst=>{
+    const s=sMap[inst.id];const st=s?.status||'offline';const gc=GC[inst.group]||'#007AFF';
+    const typeColor={flow:'#007AFF',level:'#32ADE6',pressure:'#FF9500',ph:'#34C759',chlorine:'#34C759',conductivity:'#AF52DE'}[s?.type]||gc;
+    instHtml+=`<div class="iso-inst" style="left:${inst.x*100}px;top:${inst.y*110}px;z-index:${Math.round(inst.y*10)+5}" onclick="openAnalytics('${inst.id}')">
+      <div class="iso-inst-in" style="border-color:${typeColor}"><div class="iso-inst-dot" style="background:${SC[st]}"></div>
+      <span class="iso-inst-lbl" style="color:${typeColor}">${inst.label}</span>${s?`<span class="iso-inst-val">${s.value} ${s.unit||''}</span>`:''}</div></div>`;
+  });
+  // Zone labels
+  const zones=[{l:'INTAKE',x:0.3,y:0.15,c:'#007AFF'},{l:'TREATMENT',x:3.0,y:0.15,c:'#32ADE6'},{l:'DISTRIBUTION',x:6.5,y:0.15,c:'#34C759'},{l:'RECOVERY',x:1.5,y:4.1,c:'#AF52DE'}];
+  let zonesHtml='';zones.forEach(z=>{zonesHtml+=`<div class="iso-zlbl" style="left:${z.x*100}px;top:${z.y*110+12}px;color:${z.c}30">${z.l}</div>`});
+  // Legend
+  const legend=[{l:'Intake',c:GC.intake},{l:'Treatment',c:GC.treatment},{l:'Distribution',c:GC.distribution},{l:'Recovery',c:GC.recovery},{l:'Quality',c:GC.quality}];
+  const statLeg=[{l:'Online',c:SC.online},{l:'Warning',c:SC.warning},{l:'Offline',c:SC.offline}];
+  let legHtml=legend.map(i=>`<div class="iso-legend-item"><div class="iso-legend-dot" style="background:${i.c}"></div><span>${i.l}</span></div>`).join('');
+  legHtml+=`<div class="iso-legend-sep"></div>`;
+  legHtml+=statLeg.map(i=>`<div class="iso-legend-item"><div class="iso-legend-dot" style="background:${i.c}"></div><span>${i.l}</span></div>`).join('');
+
+  document.getElementById('view-pfd').innerHTML=`
+    <div class="iso-scene">
+      <div class="iso-grid"></div>
+      <div class="iso-zones">${zonesHtml}</div>
+      <svg class="iso-pipes" viewBox="0 0 1050 600" preserveAspectRatio="xMidYMid meet">
+        <defs><filter id="pipeGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <g filter="url(#pipeGlow)">${pipeSvg}</g>
+      </svg>
+      <div class="iso-layer">${tanksHtml}</div>
+      <div class="iso-layer-inst">${instHtml}</div>
+      <div class="iso-legend">${legHtml}</div>
+      <div class="iso-hint">Click any tank or sensor for detailed analytics</div>
+    </div>`;
 }
-function hideTooltip(){document.getElementById('pfdTooltip').style.display='none'}
 
 // ── Sensor Analytics (drill-down) ──
 function openAnalytics(id){

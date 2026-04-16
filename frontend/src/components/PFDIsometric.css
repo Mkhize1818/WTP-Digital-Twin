@@ -3,23 +3,41 @@
 .iso-scene {
   position: relative;
   width: 100%;
-  min-height: 560px;
+  min-height: 640px;
   background: #060810;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 2px;
   overflow: hidden;
-  perspective: 1200px;
 }
 
 /* Subtle grid background */
 .iso-grid {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background-image:
     linear-gradient(rgba(0, 122, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 122, 255, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+/* Zone labels layer */
+.iso-zones-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.iso-zone-label {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 3px;
+  white-space: nowrap;
+  user-select: none;
 }
 
 /* SVG pipe layer */
@@ -50,6 +68,7 @@
 }
 .iso-instruments-layer {
   z-index: 3;
+  pointer-events: none; /* Allow clicks to pass through to tanks */
 }
 
 /* ── Tank ───────────────────────────────────────────── */
@@ -61,8 +80,8 @@
   transform-origin: center bottom;
 }
 .iso-tank:hover {
-  transform: scale(1.05) translateY(-4px);
-  filter: brightness(1.2);
+  transform: scale(1.06) translateY(-4px);
+  filter: brightness(1.25);
   z-index: 50 !important;
 }
 
@@ -72,7 +91,7 @@
   height: 18px;
   border: 1px solid;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
   position: relative;
   z-index: 3;
   backdrop-filter: blur(2px);
@@ -194,9 +213,10 @@
   position: absolute;
   cursor: pointer;
   transition: transform 0.15s ease;
+  pointer-events: auto; /* Re-enable clicks on individual instruments */
 }
 .iso-instrument:hover {
-  transform: scale(1.15);
+  transform: scale(1.18);
   z-index: 50 !important;
 }
 
@@ -237,14 +257,14 @@
 .iso-legend {
   position: absolute;
   top: 12px;
-  left: 12px;
+  right: 12px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   z-index: 10;
   padding: 6px 10px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(8px);
   border-radius: 2px;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -287,10 +307,11 @@
 
 @media (max-width: 1200px) {
   .iso-scene {
-    min-height: 480px;
+    min-height: 520px;
   }
   .iso-tanks-layer,
-  .iso-instruments-layer {
+  .iso-instruments-layer,
+  .iso-zones-layer {
     transform: scale(0.85);
     transform-origin: top left;
   }
@@ -298,12 +319,13 @@
 
 @media (max-width: 768px) {
   .iso-scene {
-    min-height: 400px;
+    min-height: 420px;
     overflow-x: auto;
   }
   .iso-tanks-layer,
-  .iso-instruments-layer {
-    transform: scale(0.65);
+  .iso-instruments-layer,
+  .iso-zones-layer {
+    transform: scale(0.6);
     transform-origin: top left;
   }
 }
