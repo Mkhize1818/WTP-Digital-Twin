@@ -6,6 +6,7 @@ import NRWAnalytics from "./analytics/NRWAnalytics";
 import DemandIntelligence from "./analytics/DemandIntelligence";
 import AssetHealth from "./analytics/AssetHealth";
 import WaterQualityIntelligence from "./analytics/WaterQualityIntelligence";
+import PFDIsometric from "./PFDIsometric";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -269,144 +270,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
       ) : activeView === "quality" ? (
         <WaterQualityIntelligence />
       ) : (
-        <>
-          {/* Legend */}
-          <div className="flex flex-wrap items-center gap-4 mb-3">
-            {[
-              { label: "LIT (Level)", color: TYPE_COLORS.level },
-              { label: "FIT (Flow)", color: TYPE_COLORS.flow },
-              { label: "PIT (Pressure)", color: TYPE_COLORS.pressure },
-              { label: "pH / Cl", color: TYPE_COLORS.ph },
-              { label: "EC", color: TYPE_COLORS.conductivity },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-[10px]" style={{ color: "#A3A3A3", fontFamily: "JetBrains Mono, monospace" }}>
-                  {item.label}
-                </span>
-              </div>
-            ))}
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#34C759" }} />
-              <span className="text-[10px] mr-2" style={{ color: "#A3A3A3" }}>Online</span>
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#FF9500" }} />
-              <span className="text-[10px] mr-2" style={{ color: "#A3A3A3" }}>Warning</span>
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#FF3B30" }} />
-              <span className="text-[10px]" style={{ color: "#A3A3A3" }}>Offline</span>
-            </div>
-          </div>
-
-          {/* PFD Image + Overlays */}
-          <div className="relative w-full" style={{ minHeight: "450px" }}>
-            <img
-              src="https://customer-assets.emergentagent.com/job_08778319-680e-4dcc-9637-79a56dea1c9a/artifacts/z7wc49hm_CCBA%20Digital%20Twin.png"
-              alt="Process Flow Diagram"
-              className="w-full h-auto opacity-90"
-              style={{ filter: "brightness(0.9)" }}
-            />
-
-            {/* Leak Overlays */}
-            {leakZones.map((zone) =>
-              zone.has_leak ? (
-                <LeakOverlay key={zone.id} zone={zone} onHoverEnter={setHoveredLeak} onHoverLeave={clearHoveredLeak} />
-              ) : null,
-            )}
-
-            {/* Instrument Tags */}
-            {INSTRUMENT_POSITIONS.map((pos) => {
-              const sensor = sensorMap[pos.id];
-              return (
-                <InstrumentTag
-                  key={pos.id}
-                  pos={pos}
-                  sensor={sensor}
-                  isHovered={hoveredSensor?.instrument_id === pos.id}
-                  onHoverEnter={setHoveredSensor}
-                  onHoverLeave={clearHoveredSensor}
-                  onClick={handleClick}
-                />
-              );
-            })}
-
-            {/* Leak Tooltip */}
-            {hoveredLeak && (
-              <div
-                className="absolute z-20 p-3 rounded-sm border pointer-events-none"
-                style={{
-                  backgroundColor: "#1A1A1AEE",
-                  borderColor: "#FF3B30",
-                  left: "50%", bottom: "10px",
-                  transform: "translateX(-50%)",
-                  minWidth: "240px",
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <Drop size={16} color="#FF3B30" weight="fill" />
-                  <span className="text-sm font-bold text-white">Leak Detected</span>
-                </div>
-                <p className="text-xs text-[#A3A3A3] mb-1">{hoveredLeak.name}</p>
-                <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: "#FF3B30" }}>Est. Loss: {hoveredLeak.estimated_loss} L/min</span>
-                  <span style={{ color: "#A3A3A3" }}>Conf: {(hoveredLeak.confidence * 100).toFixed(0)}%</span>
-                </div>
-                <span
-                  className="text-xs uppercase font-bold mt-1 block"
-                  style={{ color: hoveredLeak.severity === "critical" ? "#FF3B30" : "#FF9500" }}
-                >
-                  {hoveredLeak.severity}
-                </span>
-              </div>
-            )}
-
-            {/* Sensor Detail Tooltip */}
-            {hoveredSensor && !hoveredLeak && (
-              <div
-                className="absolute z-20 p-3 rounded-sm border pointer-events-none"
-                style={{
-                  backgroundColor: "#1A1A1AEE",
-                  borderColor: TYPE_COLORS[hoveredSensor.type] || "#007AFF",
-                  left: "50%", top: "10px",
-                  transform: "translateX(-50%)",
-                  minWidth: "240px",
-                }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-semibold text-white">{hoveredSensor.instrument_name}</p>
-                  <span
-                    className="text-xs uppercase font-bold"
-                    style={{ color: STATUS_COLORS[hoveredSensor.status] }}
-                  >
-                    {hoveredSensor.status}
-                  </span>
-                </div>
-                <p
-                  className="text-xs mb-2"
-                  style={{ color: "#A3A3A3", fontFamily: "JetBrains Mono, monospace" }}
-                >
-                  {hoveredSensor.instrument_id}
-                </p>
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span
-                    className="text-xl font-black tracking-tighter"
-                    style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}
-                  >
-                    {hoveredSensor.value}
-                  </span>
-                  <span className="text-xs" style={{ color: "#A3A3A3" }}>
-                    {hoveredSensor.unit}
-                  </span>
-                </div>
-                <div
-                  className="text-xs flex items-center gap-1 pt-2 border-t"
-                  style={{ borderColor: "rgba(255,255,255,0.1)", color: "#007AFF" }}
-                >
-                  <Crosshair size={12} />
-                  Click to view analytics
-                </div>
-              </div>
-            )}
-          </div>
-        </>
+        <PFDIsometric sensors={sensors} onSensorClick={handleClick} />
       )}
     </div>
   );

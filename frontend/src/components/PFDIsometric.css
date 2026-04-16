@@ -1,0 +1,309 @@
+/* ── Isometric PFD Styles ───────────────────────────── */
+
+.iso-scene {
+  position: relative;
+  width: 100%;
+  min-height: 560px;
+  background: #060810;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  perspective: 1200px;
+}
+
+/* Subtle grid background */
+.iso-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 122, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 122, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+/* SVG pipe layer */
+.iso-pipes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Animated flow dashes */
+.iso-pipe-flow {
+  animation: pipeFlowAnim 2s linear infinite;
+}
+@keyframes pipeFlowAnim {
+  0% { stroke-dashoffset: 48; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* Tank and instrument layers */
+.iso-tanks-layer,
+.iso-instruments-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.iso-instruments-layer {
+  z-index: 3;
+}
+
+/* ── Tank ───────────────────────────────────────────── */
+
+.iso-tank {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  transform-origin: center bottom;
+}
+.iso-tank:hover {
+  transform: scale(1.05) translateY(-4px);
+  filter: brightness(1.2);
+  z-index: 50 !important;
+}
+
+/* Elliptical cap */
+.iso-tank-cap {
+  width: 100%;
+  height: 18px;
+  border: 1px solid;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  position: relative;
+  z-index: 3;
+  backdrop-filter: blur(2px);
+}
+
+/* Tank body */
+.iso-tank-body {
+  position: relative;
+  width: 100%;
+  border: 1px solid;
+  border-top: none;
+  background: linear-gradient(180deg, rgba(10,15,30,0.95), rgba(5,8,20,0.98));
+  overflow: hidden;
+  z-index: 2;
+  border-radius: 0 0 4px 4px;
+}
+
+/* Water fill inside tank */
+.iso-tank-water {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 0 3px 3px;
+}
+
+/* Water shimmer effect */
+.iso-water-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.08) 70%,
+    transparent 100%
+  );
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+/* Level readout inside tank */
+.iso-tank-level {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 5;
+  pointer-events: none;
+}
+.iso-level-value {
+  display: block;
+  font-family: 'Chivo', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: #FFFFFF;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.iso-level-unit {
+  display: block;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Tank base shadow */
+.iso-tank-base {
+  width: 100%;
+  height: 10px;
+  border: 1px solid;
+  border-top: none;
+  border-radius: 0 0 50% 50%;
+  background: rgba(0,0,0,0.3);
+  position: relative;
+  z-index: 1;
+}
+
+/* Tank name label */
+.iso-tank-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #A3A3A3;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.iso-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Tank ID badge */
+.iso-tank-id {
+  text-align: center;
+  font-size: 8px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ── Instrument Markers ────────────────────────────── */
+
+.iso-instrument {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.iso-instrument:hover {
+  transform: scale(1.15);
+  z-index: 50 !important;
+}
+
+.iso-inst-inner {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border-radius: 2px;
+  border: 1px solid;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+}
+
+.iso-inst-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.iso-inst-label {
+  font-size: 8px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+.iso-inst-value {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Legend ──────────────────────────────────────────── */
+
+.iso-legend {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.iso-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: #A3A3A3;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.iso-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.iso-legend-sep {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Hint ───────────────────────────────────────────── */
+
+.iso-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #525252;
+  z-index: 10;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .iso-scene {
+    min-height: 480px;
+  }
+  .iso-tanks-layer,
+  .iso-instruments-layer {
+    transform: scale(0.85);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 768px) {
+  .iso-scene {
+    min-height: 400px;
+    overflow-x: auto;
+  }
+  .iso-tanks-layer,
+  .iso-instruments-layer {
+    transform: scale(0.65);
+    transform-origin: top left;
+  }
+}
