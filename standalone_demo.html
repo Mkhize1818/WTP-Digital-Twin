@@ -578,97 +578,193 @@ function doAI(pq){const inp=document.getElementById('aiIn');const mc=document.ge
   setTimeout(()=>{mc.innerHTML+=`<div style="padding:8px;background:#121212;border-left:2px solid #007AFF;border-radius:2px;margin-bottom:8px"><span style="font-size:9px;font-weight:700;text-transform:uppercase;color:#007AFF;display:block;margin-bottom:4px">ASSISTANT</span><p style="font-size:12px;color:#fff;line-height:1.6">${r}</p></div>`;mc.scrollTop=mc.scrollHeight},800);
 }
 
-// ── Plant Overview (3D Isometric) ──
+// ── Plant Overview (3D Isometric with full interactivity) ──
 function renderPlant(){
   const sMap={};sensors.forEach(s=>{sMap[s.id]=s});
   const eq=[
-    {id:'LIT_MR',x:-14,z:-10,w:4,d:4,h:4.5,col:'#2a5f9e',label:'Main Reservoir',tank:1},
-    {id:'LIT_RT4',x:2,z:-10,w:2.5,d:2.5,h:3,col:'#2a7fbf',label:'Reservoir T4',tank:1},
-    {id:'FIT_10',x:-9,z:-10,w:.8,d:.8,h:.8,col:'#e08020',label:'Pump M1'},
-    {id:'m2',x:-11,z:-10,w:.8,d:.8,h:.8,col:'#e08020',label:'Pump M2'},
-    {id:'LIT_RR2',x:-14,z:-3,w:2,d:2,h:3.5,col:'#c03020',label:'Red Reservoir 1',tank:1},
-    {id:'red2',x:-11,z:-3,w:2,d:2,h:3.5,col:'#c03020',label:'Red Reservoir 2',tank:1},
-    {id:'LIT_STW',x:-7,z:-3,w:2.5,d:2,h:2.8,col:'#2a7fbf',label:'Semi-Treated',tank:1},
-    {id:'LIT_BRT',x:-14,z:0,w:2.5,d:2,h:2.5,col:'#4a9f6e',label:'Backwash Recovery',tank:1},
-    {id:'LIT_HT',x:-11,z:0,w:2.5,d:2,h:2.2,col:'#4a8060',label:'Holding Tank',tank:1},
-    {id:'PIT_NACF1',x:-14,z:3,w:2.5,d:2,h:2.8,col:'#8a5fc0',label:'NACF 3'},
-    {id:'PIT_NACF2',x:-11,z:3,w:2.5,d:2,h:2.8,col:'#8a5fc0',label:'NACF 2'},
-    {id:'nacf1',x:-7.5,z:3,w:2.5,d:2,h:2.8,col:'#8a5fc0',label:'NACF 1'},
-    {id:'DPT_BF',x:-4.5,z:3,w:1.5,d:1.2,h:1.8,col:'#555a70',label:'Bag Filter'},
-    {id:'pH_NACF',x:-3,z:2,w:5,d:4,h:1.2,col:'#4a3870',label:'Nano Plant'},
-    {id:'LIT_ST',x:-1,z:7,w:2.5,d:2.5,h:2.8,col:'#2a7fbf',label:'Storage Tank',tank:1},
-    {id:'PIT_RACF1',x:1,z:-3,w:2,d:1.8,h:2.5,col:'#5a7fc0',label:'RACF 1'},
-    {id:'PIT_RACF2',x:4,z:-3,w:2,d:1.8,h:2.5,col:'#5a7fc0',label:'RACF 2'},
-    {id:'PIT_RACF3',x:7,z:-3,w:2,d:1.8,h:2.5,col:'#5a7fc0',label:'RACF 3'},
-    {id:'DPT_PF',x:10,z:-3,w:1.5,d:1.2,h:1.8,col:'#555a70',label:'Bag Filter (RO)'},
-    {id:'pH_RO',x:9,z:0,w:1.5,d:1.5,h:1.5,col:'#2a7fbf',label:'RO Break Tank',tank:1},
-    {id:'EC_RO',x:9,z:2,w:5,d:3,h:1.2,col:'#c07020',label:'RO Plant'},
-    {id:'LIT_TWT',x:13,z:-2,w:2,d:2,h:3.2,col:'#2a9fbf',label:'Treated Water',tank:1},
-    {id:'CL_001',x:13,z:.5,w:1,d:.8,h:1,col:'#e0e060',label:'UV Light 1'},
-    {id:'LIT_NR1',x:2,z:9,w:2,d:2,h:2.2,col:'#2aaa8a',label:'Nano Recovery 1',tank:1},
-    {id:'LIT_NR2',x:5,z:9,w:2,d:2,h:2.5,col:'#2aaa8a',label:'Nano Recovery 2',tank:1},
-    {id:'FIT_CIP',x:16,z:-1,w:3,d:1,h:1,col:'#c07020',label:'CIP Lines'},
-    {id:'FIT_FL',x:16,z:1,w:3,d:1,h:1,col:'#555a70',label:'PET Line 4'},
-    {id:'syrup',x:16,z:4,w:3,d:1.5,h:1.5,col:'#8a4040',label:'Syrup Room'},
-    {id:'canline',x:16,z:6,w:3,d:1.5,h:1.5,col:'#8a4040',label:'Canline'},
-    {id:'wwtp',x:18,z:10,w:3.5,d:3,h:1.5,col:'#2aaa8a',label:'WWTP'},
+    {id:'LIT_MR',x:-14,z:-10,w:4,d:4,h:4.5,col:'#2a5f9e',label:'Main Reservoir (500m³)',desc:'Main incoming water reservoir. LIT monitored. Feeds plant via M1/M2 pumps.',tank:1},
+    {id:'LIT_RT4',x:2,z:-10,w:2.5,d:2.5,h:3,col:'#2a7fbf',label:'Reservoir T4 (117m³)',desc:'Reservoir Tank 4. Receives treated water from RO plant.',tank:1},
+    {id:'FIT_10',x:-9,z:-10,w:.8,d:.8,h:.8,col:'#e08020',label:'Pump M1 (FIT_10)',desc:'Transfer pump from main reservoir. FIT_10 flow meter.'},
+    {id:'m2',x:-11,z:-10,w:.8,d:.8,h:.8,col:'#e08020',label:'Pump M2',desc:'Secondary transfer pump on main reservoir line.'},
+    {id:'m3',x:-14,z:-7,w:.8,d:.8,h:.8,col:'#e08020',label:'Pump M3',desc:'Feeds backwash recovery and NACF system.'},
+    {id:'LIT_RR2',x:-14,z:-3,w:2,d:2,h:3.5,col:'#c03020',label:'Red Reservoir 1',desc:'Red reservoir tank - raw water holding. LIT monitored.',tank:1},
+    {id:'red2',x:-11,z:-3,w:2,d:2,h:3.5,col:'#c03020',label:'Red Reservoir 2',desc:'Red reservoir tank - active.',tank:1},
+    {id:'LIT_STW',x:-7,z:-3,w:2.5,d:2,h:2.8,col:'#2a7fbf',label:'Semi-Treated (35m³)',desc:'Semi-treated water buffer. Feeds bag filters and RACF.',tank:1},
+    {id:'LIT_BRT',x:-14,z:0,w:2.5,d:2,h:2.5,col:'#4a9f6e',label:'Backwash Recovery',desc:'Backwash Recovery Tank 35m³. Returns water to process.',tank:1},
+    {id:'LIT_HT',x:-11,z:0,w:2.5,d:2,h:2.2,col:'#4a8060',label:'Holding Tank (60m³)',desc:'Intermediate storage between NACF and nano filtration.',tank:1},
+    {id:'m4',x:-8,z:0,w:.8,d:.8,h:.8,col:'#e08020',label:'Pump M4',desc:'Transfers from holding tank to NACF filters.'},
+    {id:'PIT_NACF1',x:-14,z:3,w:2.5,d:2,h:2.8,col:'#8a5fc0',label:'NACF 3 (25m³)',desc:'Nano Activated Carbon Filter 3. PIT monitored.'},
+    {id:'PIT_NACF2',x:-11,z:3,w:2.5,d:2,h:2.8,col:'#8a5fc0',label:'NACF 2 (25m³)',desc:'Nano Activated Carbon Filter 2. PIT monitored.'},
+    {id:'nacf1',x:-7.5,z:3,w:2.5,d:2,h:2.8,col:'#8a5fc0',label:'NACF 1 (25m³)',desc:'Nano Activated Carbon Filter 1. PIT monitored.'},
+    {id:'DPT_BF',x:-4.5,z:3,w:1.5,d:1.2,h:1.8,col:'#555a70',label:'Bag Filter',desc:'Polishing filter after NACF. DPT monitored.'},
+    {id:'m5',x:-14,z:5.5,w:.7,d:.7,h:.7,col:'#e08020',label:'Pump M5',desc:'NACF 3 transfer pump.'},
+    {id:'m6',x:-11,z:5.5,w:.7,d:.7,h:.7,col:'#e08020',label:'Pump M6',desc:'NACF 2 transfer pump.'},
+    {id:'FIT_6',x:-7.5,z:5.5,w:.7,d:.7,h:.7,col:'#e08020',label:'Pump M7 (FIT_6)',desc:'NACF 1 / nano feed pump. FIT_6 flow meter.'},
+    {id:'pH_NACF',x:-3,z:2,w:5,d:4,h:1.2,col:'#4a3870',label:'Nano Filtration Plant',desc:'46 m³/hr capacity. pH, Cl, EC instrumentation.'},
+    {id:'m9',x:0,z:5.5,w:.7,d:.7,h:.7,col:'#e08020',label:'Pump M9',desc:'UV light feed pump on nano filtration.'},
+    {id:'LIT_ST',x:-1,z:7,w:2.5,d:2.5,h:2.8,col:'#2a7fbf',label:'Storage Tank (19m³)',desc:'Buffer between nano filtration and recovery.',tank:1},
+    {id:'PIT_RACF1',x:1,z:-3,w:2,d:1.8,h:2.5,col:'#5a7fc0',label:'RACF 1 (17.5m³/hr)',desc:'Rapid Activated Carbon Filter 1. PIT monitored.'},
+    {id:'PIT_RACF2',x:4,z:-3,w:2,d:1.8,h:2.5,col:'#5a7fc0',label:'RACF 2 (17.5m³/hr)',desc:'Rapid Activated Carbon Filter 2. PIT monitored.'},
+    {id:'PIT_RACF3',x:7,z:-3,w:2,d:1.8,h:2.5,col:'#5a7fc0',label:'RACF 3 (17.5m³/hr)',desc:'Rapid Activated Carbon Filter 3. PIT monitored.'},
+    {id:'DPT_PF',x:10,z:-3,w:1.5,d:1.2,h:1.8,col:'#555a70',label:'Bag Filter (RACF)',desc:'Post-RACF polishing filter. DPT monitored.'},
+    {id:'pH_RO',x:9,z:0,w:1.5,d:1.5,h:1.5,col:'#2a7fbf',label:'RO Break Tank (5m³)',desc:'RO/CIP Break Tank. pH, ORP, EC monitored.',tank:1},
+    {id:'EC_RO',x:9,z:2,w:5,d:3,h:1.2,col:'#c07020',label:'RO Plant (30m³/hr)',desc:'Reverse Osmosis Filtration. Siemens HMI controlled.'},
+    {id:'m10',x:11,z:4.5,w:.7,d:.7,h:.7,col:'#e08020',label:'Pump M10',desc:'RO plant transfer pump.'},
+    {id:'LIT_TWT',x:13,z:-2,w:2,d:2,h:3.2,col:'#2a9fbf',label:'Treated Water (25m³)',desc:'Final treated water buffer before UV and distribution.',tank:1},
+    {id:'CL_001',x:13,z:.5,w:1,d:.8,h:1,col:'#e0e060',label:'UV Light 1 (CL)',desc:'UV disinfection unit. Post-treatment sterilisation.'},
+    {id:'EC_NANO',x:9,z:5,w:1,d:.8,h:1,col:'#e0e060',label:'UV Light 2 (EC)',desc:'UV disinfection on nano filtration stream.'},
+    {id:'LIT_NR1',x:2,z:9,w:2,d:2,h:2.2,col:'#2aaa8a',label:'Nano Recovery 1 (30m³)',desc:'Recovers nano filtration reject water. LIT monitored.',tank:1},
+    {id:'LIT_NR2',x:5,z:9,w:2,d:2,h:2.5,col:'#2aaa8a',label:'Nano Recovery 2 (30m³)',desc:'Nano recovery with FIT_8 and DPT monitoring.',tank:1},
+    {id:'FIT_8',x:-1,z:10,w:1.5,d:1.2,h:1,col:'#3a5a50',label:'Recovery Sump (FIT_8)',desc:'Nano Recovery Sump 1m³. FIT_8 flow meter.'},
+    {id:'polish',x:2,z:12,w:1.5,d:1.2,h:1.5,col:'#555a70',label:'Polishing Filter',desc:'Polishing filter on nano recovery line. DPT monitored.'},
+    {id:'admin',x:16,z:-10,w:3,d:2,h:2,col:'#404860',label:'Admin / Ablutions',desc:'Administrative block and ablution facilities.'},
+    {id:'condensers',x:16,z:-7,w:2,d:1.5,h:1.5,col:'#555a70',label:'Condensers',desc:'Process condensers. Water cooled.'},
+    {id:'softeners',x:16,z:-5,w:2,d:1.5,h:1.5,col:'#555a70',label:'Softeners',desc:'Water softeners. Removes hardness.'},
+    {id:'lab',x:16,z:-3,w:2,d:1.5,h:1.5,col:'#404860',label:'Lab',desc:'Laboratory. Treated water sample points.'},
+    {id:'FIT_CIP',x:16,z:-1,w:3,d:1,h:1,col:'#c07020',label:'CIP Lines (FIT_CIP)',desc:'Clean-In-Place lines. FIT monitored.'},
+    {id:'FIT_FL',x:16,z:1,w:3,d:1,h:1,col:'#555a70',label:'PET Line 4 (FIT_FL)',desc:'PET packaging line. FIT_FL flow meter.'},
+    {id:'pet3',x:16,z:2.5,w:3,d:1,h:1,col:'#555a70',label:'PET Line 3',desc:'PET packaging line 3.'},
+    {id:'syrup',x:16,z:4,w:3,d:1.5,h:1.5,col:'#8a4040',label:'Syrup Room',desc:'Syrup Room. High-quality treated water supply.'},
+    {id:'canline',x:16,z:6,w:3,d:1.5,h:1.5,col:'#8a4040',label:'Canline',desc:'Can filling line. Treated water + CIP supply.'},
+    {id:'wwtp',x:18,z:10,w:3.5,d:3,h:1.5,col:'#2aaa8a',label:'WWTP',desc:'Waste Water Treatment Plant.'},
+    {id:'sewage',x:13,z:10,w:3,d:2,h:1.5,col:'#3a5040',label:'Sewage / Manhole',desc:'Sewage collection and municipal connection.'},
   ];
   const flows=[
     {p:['LIT_MR','FIT_10','LIT_RT4'],c:'#2a7fbf'},{p:['LIT_MR','m2','LIT_RR2'],c:'#c03020'},
-    {p:['LIT_RR2','red2','LIT_STW'],c:'#c03020'},{p:['LIT_STW','PIT_RACF1','PIT_RACF2','PIT_RACF3','DPT_PF','pH_RO'],c:'#5a7fc0'},
-    {p:['pH_RO','EC_RO','LIT_TWT'],c:'#2a9fbf'},{p:['LIT_BRT','LIT_HT','nacf1','PIT_NACF2','PIT_NACF1'],c:'#8a5fc0'},
-    {p:['nacf1','DPT_BF','pH_NACF'],c:'#8a5fc0'},{p:['LIT_ST','LIT_NR1','LIT_NR2'],c:'#2aaa8a'},
-    {p:['LIT_TWT','FIT_CIP'],c:'#2a9fbf'},{p:['LIT_TWT','FIT_FL','syrup','canline'],c:'#2a9fbf'},
-    {p:['canline','wwtp'],c:'#2aaa8a'},
+    {p:['LIT_MR','m3','LIT_BRT'],c:'#4a9f6e'},{p:['LIT_RR2','red2','LIT_STW'],c:'#c03020'},
+    {p:['LIT_STW','PIT_RACF1','PIT_RACF2','PIT_RACF3','DPT_PF','pH_RO'],c:'#5a7fc0'},
+    {p:['pH_RO','EC_RO','m10','LIT_TWT'],c:'#2a9fbf'},{p:['LIT_TWT','CL_001'],c:'#2a9fbf'},
+    {p:['LIT_BRT','LIT_HT','m4','nacf1','PIT_NACF2','PIT_NACF1'],c:'#8a5fc0'},
+    {p:['nacf1','DPT_BF','pH_NACF','m9','EC_NANO'],c:'#8a5fc0'},
+    {p:['LIT_ST','LIT_NR1','LIT_NR2'],c:'#2aaa8a'},{p:['LIT_NR1','polish'],c:'#2aaa8a'},
+    {p:['FIT_8','polish'],c:'#2aaa8a'},{p:['LIT_TWT','FIT_CIP'],c:'#2a9fbf'},
+    {p:['LIT_TWT','FIT_FL','pet3','syrup','canline'],c:'#2a9fbf'},
+    {p:['canline','wwtp'],c:'#2aaa8a'},{p:['sewage','wwtp'],c:'#2aaa8a'},
   ];
   const eMap={};eq.forEach(e=>{eMap[e.id]=e});
-  const SC2=28,rX=.52,rY=.6,zm=1;
+  const SC2=28;
+  const knownSensors=['LIT_MR','LIT_RT4','LIT_RR2','LIT_STW','LIT_TWT','LIT_BRT','LIT_HT','LIT_ST','LIT_NR1','LIT_NR2','FIT_10','FIT_FL','FIT_CIP','FIT_6','FIT_8','PIT_RACF1','PIT_RACF2','PIT_RACF3','PIT_NACF1','PIT_NACF2','pH_RO','pH_NACF','CL_001','EC_RO','EC_NANO','DPT_BF','DPT_PF'];
+
   const el=document.getElementById('view-plant');
-  el.innerHTML='<canvas id="plantCv" style="width:100%;height:600px;border-radius:2px;background:#0a0f1a;cursor:grab"></canvas><div style="position:absolute;bottom:20px;left:20px;background:rgba(10,15,26,.85);border:.5px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 12px;z-index:10">'+
-    [{l:'Raw / Reservoir',c:'#4a9f6e'},{l:'Treated Water',c:'#2a7fbf'},{l:'Nano Filtration',c:'#8a5fc0'},{l:'RO / Polishing',c:'#c07020'},{l:'Infrastructure',c:'#555a70'},{l:'Recovery / WWTP',c:'#2aaa8a'},{l:'Pumps',c:'#e08020'}].map(i=>`<div style="display:flex;align-items:center;gap:6px;font-size:9px;color:#aab;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${i.c};display:inline-block;flex-shrink:0"></span>${i.l}</div>`).join('')+
-    '</div><div style="position:absolute;bottom:20px;right:20px;font-size:10px;color:rgba(255,255,255,.3);z-index:10">Click equipment for analytics</div>';
   el.style.position='relative';
+  el.innerHTML=`<canvas id="plantCv" style="width:100%;height:600px;border-radius:2px;background:#0a0f1a;cursor:grab"></canvas>
+    <div id="plantUI" style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:10">
+      <button class="tb ac" id="pv-iso" onclick="plantSetView('iso')" style="font-size:10px;padding:5px 10px;background:rgba(100,180,255,.25);border:.5px solid rgba(100,180,255,.6);color:#e0e8ff;border-radius:6px;cursor:pointer">Isometric</button>
+      <button class="tb" id="pv-top" onclick="plantSetView('top')" style="font-size:10px;padding:5px 10px;background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.2);color:#e0e8ff;border-radius:6px;cursor:pointer">Top View</button>
+      <button class="tb" id="pv-front" onclick="plantSetView('front')" style="font-size:10px;padding:5px 10px;background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.2);color:#e0e8ff;border-radius:6px;cursor:pointer">Front View</button>
+      <button onclick="plantResetCam()" style="font-size:10px;padding:5px 10px;background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.2);color:#e0e8ff;border-radius:6px;cursor:pointer">Reset</button>
+      <div style="border-top:.5px solid rgba(255,255,255,.15);margin:2px 0;padding-top:5px;font-size:9px;color:#8090aa;text-align:center">Flow</div>
+      <button id="plantFlowBtn" onclick="plantToggleFlow()" style="font-size:10px;padding:5px 10px;background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.2);color:#e0e8ff;border-radius:6px;cursor:pointer">Animate ▶</button>
+    </div>
+    <div style="position:absolute;bottom:10px;left:10px;background:rgba(10,15,26,.85);border:.5px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 12px;z-index:10">${[{l:'Raw / Reservoir',c:'#4a9f6e'},{l:'Treated Water',c:'#2a7fbf'},{l:'Nano Filtration',c:'#8a5fc0'},{l:'RO / Polishing',c:'#c07020'},{l:'Infrastructure',c:'#555a70'},{l:'Recovery / WWTP',c:'#2aaa8a'},{l:'Pumps',c:'#e08020'}].map(i=>`<div style="display:flex;align-items:center;gap:6px;font-size:9px;color:#aab;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${i.c};display:inline-block;flex-shrink:0"></span>${i.l}</div>`).join('')}</div>
+    <div id="plantInfo" style="position:absolute;top:10px;right:10px;background:rgba(10,15,26,.92);border:.5px solid rgba(100,180,255,.3);border-radius:8px;padding:10px 14px;z-index:10;max-width:220px;display:none"><h4 id="plantInfoTitle" style="font-size:12px;color:#7cf;margin-bottom:4px"></h4><p id="plantInfoDesc" style="font-size:10px;color:#9ab;line-height:1.5"></p><p id="plantInfoSensor" style="font-size:10px;color:#007AFF;margin-top:6px;cursor:pointer;display:none" onclick="plantDrillDown()">→ View Analytics</p></div>
+    <div style="position:absolute;bottom:10px;right:10px;font-size:10px;color:rgba(255,255,255,.3);z-index:10">Drag to orbit · Scroll to zoom · Click for info</div>`;
+
   const cv=document.getElementById('plantCv');
   const dpr=window.devicePixelRatio||1;
-  cv.width=cv.offsetWidth*dpr;cv.height=cv.offsetHeight*dpr;
+  let W,H;
+  function resize(){W=cv.width=cv.offsetWidth*dpr;H=cv.height=cv.offsetHeight*dpr}
+  resize();
   const ctx=cv.getContext('2d');
-  const W=cv.width,H=cv.height;
-  function proj(x,y,z){const cx2=x*Math.cos(rY)+z*Math.sin(rY),cz=-x*Math.sin(rY)+z*Math.cos(rY),cy2=y*Math.cos(rX)-cz*Math.sin(rX);return[W/2+cx2*SC2*zm,H/2+(-cy2)*SC2*zm]}
-  function hx(h,f){const r2=parseInt(h.slice(1,3),16),g2=parseInt(h.slice(3,5),16),b2=parseInt(h.slice(5,7),16);return`rgb(${Math.min(255,Math.round(r2*f))},${Math.min(255,Math.round(g2*f))},${Math.min(255,Math.round(b2*f))})`}
+
+  // Camera state
+  let cam={rotX:.52,rotY:.6,zoom:1};
+  let flowOn=false,flowT=0,animId=null;
+  let clk=[];
+  let selectedId=null;
+
+  function proj(x,y,z){
+    const cx2=x*Math.cos(cam.rotY)+z*Math.sin(cam.rotY),cz=-x*Math.sin(cam.rotY)+z*Math.cos(cam.rotY);
+    const cy2=y*Math.cos(cam.rotX)-cz*Math.sin(cam.rotX),cz2=y*Math.sin(cam.rotX)+cz*Math.cos(cam.rotX);
+    return[W/2+cx2*SC2*cam.zoom,H/2+(-cy2)*SC2*cam.zoom,cz2];
+  }
+  function hx(hex,f){const r2=parseInt(hex.slice(1,3),16),g2=parseInt(hex.slice(3,5),16),b2=parseInt(hex.slice(5,7),16);return`rgb(${Math.min(255,Math.round(r2*f))},${Math.min(255,Math.round(g2*f))},${Math.min(255,Math.round(b2*f))})`}
   function face(pts,col,a){ctx.globalAlpha=a||1;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=.5;ctx.stroke();ctx.globalAlpha=1}
-  // Background
-  const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a0f1a');bg.addColorStop(1,'#0f1a2a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  // Grid
-  ctx.strokeStyle='rgba(100,140,200,.08)';ctx.lineWidth=.5;
-  for(let gx=-18;gx<=24;gx+=2){const[x1,y1]=proj(gx,-.05,-14),[x2,y2]=proj(gx,-.05,16);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
-  for(let gz=-14;gz<=16;gz+=2){const[x1,y1]=proj(-18,-.05,gz),[x2,y2]=proj(24,-.05,gz);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
-  // Flows
-  flows.forEach(f=>{for(let i=0;i<f.p.length-1;i++){const a=eMap[f.p[i]],b=eMap[f.p[i+1]];if(!a||!b)continue;const pA=proj(a.x+a.w/2,a.h*.4,a.z+a.d/2),pB=proj(b.x+b.w/2,b.h*.4,b.z+b.d/2);ctx.strokeStyle=f.c;ctx.lineWidth=2;ctx.globalAlpha=.5;ctx.beginPath();ctx.moveTo(pA[0],pA[1]);ctx.lineTo(pB[0],pB[1]);ctx.stroke();ctx.globalAlpha=1}});
-  // Sort + draw equipment
-  const sorted=[...eq].sort((a,b)=>{const[,,za]=proj(a.x+a.w/2,0,a.z+a.d/2).concat(0),[,,zb]=proj(b.x+b.w/2,0,b.z+b.d/2).concat(0);return(zb||0)-(za||0)});
-  const clk=[];
-  sorted.forEach(e=>{
-    const{x,z,w,d,h,col,label,tank,id}=e;
-    const P=(px,py,pz)=>proj(px,py,pz);
-    const b00=P(x,0,z),b10=P(x+w,0,z),b11=P(x+w,0,z+d),b01=P(x,0,z+d);
-    const t00=P(x,h,z),t10=P(x+w,h,z),t11=P(x+w,h,z+d),t01=P(x,h,z+d);
-    face([b00,b10,t10,t00],hx(col,.55));face([b00,b01,t01,t00],hx(col,.75));face([b10,b11,t11,t10],hx(col,.75));face([b01,b11,t11,t01],col);face([t00,t10,t11,t01],hx(col,1.25),.92);
-    if(tank){const s=sMap[id],lv=s?Math.min(100,Math.max(0,s.value))/100:.5,wh=h*lv;
-      if(wh>.1){const wt=P(x+.1,wh,z+.1),wt2=P(x+w-.1,wh,z+.1),wt3=P(x+w-.1,wh,z+d-.1),wt4=P(x+.1,wh,z+d-.1);ctx.globalAlpha=.4;ctx.fillStyle='#007AFF';ctx.beginPath();ctx.moveTo(wt[0],wt[1]);ctx.lineTo(wt2[0],wt2[1]);ctx.lineTo(wt3[0],wt3[1]);ctx.lineTo(wt4[0],wt4[1]);ctx.closePath();ctx.fill();ctx.globalAlpha=1}
-      const cx2=(t00[0]+t10[0]+t11[0]+t01[0])/4,cy2=(t00[1]+t10[1]+t11[1]+t01[1])/4;
-      if(s){ctx.font='bold 9px JetBrains Mono,monospace';ctx.fillStyle='#FFF';ctx.textAlign='center';ctx.fillText(s.value,cx2,cy2+3);ctx.font='6px JetBrains Mono';ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(s.unit||'%',cx2,cy2+12)}
-    }
-    const lx=(t00[0]+t10[0]+t11[0]+t01[0])/4,ly=Math.min(t00[1],t10[1],t01[1],t11[1])-5;
-    ctx.font='8px sans-serif';ctx.fillStyle='rgba(220,235,255,.85)';ctx.textAlign='center';ctx.fillText(label.length>18?label.slice(0,16)+'…':label,lx,ly);
-    const ax=[b00,b10,b11,b01,t00,t10,t11,t01].map(p=>p[0]),ay=[b00,b10,b11,b01,t00,t10,t11,t01].map(p=>p[1]);
-    clk.push({id,x:Math.min(...ax)-4,y:Math.min(...ay)-4,w:Math.max(...ax)-Math.min(...ax)+8,h:Math.max(...ay)-Math.min(...ay)+8});
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a0f1a');bg.addColorStop(1,'#0f1a2a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    // Grid
+    ctx.strokeStyle='rgba(100,140,200,.08)';ctx.lineWidth=.5;
+    for(let gx=-18;gx<=24;gx+=2){const[x1,y1]=proj(gx,-.05,-14),[x2,y2]=proj(gx,-.05,16);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+    for(let gz=-14;gz<=16;gz+=2){const[x1,y1]=proj(-18,-.05,gz),[x2,y2]=proj(24,-.05,gz);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+    clk=[];
+    // Flows
+    flows.forEach(f=>{for(let i=0;i<f.p.length-1;i++){const a=eMap[f.p[i]],b=eMap[f.p[i+1]];if(!a||!b)continue;
+      const pA=proj(a.x+a.w/2,a.h*.4,a.z+a.d/2),pB=proj(b.x+b.w/2,b.h*.4,b.z+b.d/2);
+      ctx.strokeStyle=f.c;ctx.lineWidth=2;ctx.globalAlpha=flowOn?.8:.5;
+      if(flowOn){ctx.setLineDash([6,6]);ctx.lineDashOffset=-flowT*20}else{ctx.setLineDash([])}
+      ctx.beginPath();ctx.moveTo(pA[0],pA[1]);ctx.lineTo(pB[0],pB[1]);ctx.stroke();
+      if(!flowOn){const mx=(pA[0]+pB[0])/2,my=(pA[1]+pB[1])/2,ang=Math.atan2(pB[1]-pA[1],pB[0]-pA[0]);ctx.globalAlpha=.6;ctx.save();ctx.translate(mx,my);ctx.rotate(ang);ctx.beginPath();ctx.moveTo(-4,-3);ctx.lineTo(4,0);ctx.lineTo(-4,3);ctx.fillStyle=f.c;ctx.fill();ctx.restore()}
+      ctx.setLineDash([]);ctx.globalAlpha=1}});
+    // Sort + draw
+    const sorted=[...eq].sort((a,b)=>{const[,,za]=proj(a.x+a.w/2,0,a.z+a.d/2),[,,zb]=proj(b.x+b.w/2,0,b.z+b.d/2);return zb-za});
+    sorted.forEach(e=>{
+      const{x,z,w,d,h,col,label,tank,id}=e;
+      const b00=proj(x,0,z),b10=proj(x+w,0,z),b11=proj(x+w,0,z+d),b01=proj(x,0,z+d);
+      const t00=proj(x,h,z),t10=proj(x+w,h,z),t11=proj(x+w,h,z+d),t01=proj(x,h,z+d);
+      face([b00,b10,t10,t00],hx(col,.55));face([b00,b01,t01,t00],hx(col,.75));face([b10,b11,t11,t10],hx(col,.75));face([b01,b11,t11,t01],col);face([t00,t10,t11,t01],hx(col,1.25),.92);
+      if(tank){const s=sMap[id],lv=s?Math.min(100,Math.max(0,s.value))/100:.5,wh=h*lv;
+        if(wh>.1){const wt=proj(x+.1,wh,z+.1),wt2=proj(x+w-.1,wh,z+.1),wt3=proj(x+w-.1,wh,z+d-.1),wt4=proj(x+.1,wh,z+d-.1);ctx.globalAlpha=.4;ctx.fillStyle='#007AFF';ctx.beginPath();ctx.moveTo(wt[0],wt[1]);ctx.lineTo(wt2[0],wt2[1]);ctx.lineTo(wt3[0],wt3[1]);ctx.lineTo(wt4[0],wt4[1]);ctx.closePath();ctx.fill();ctx.globalAlpha=1}
+        const ecx=(t00[0]+t10[0]+t11[0]+t01[0])/4,ecy=(t00[1]+t10[1]+t11[1]+t01[1])/4;
+        const rx=Math.abs(t10[0]-t00[0])/2*.7,ry=Math.abs(t10[0]-t11[0])/3*.7+3;
+        ctx.fillStyle=hx(col,1.1);ctx.globalAlpha=.5;ctx.beginPath();ctx.ellipse(ecx,ecy,Math.max(1,rx),Math.max(1,ry),0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        if(s){ctx.font=`bold ${Math.max(8,cam.zoom*9)}px JetBrains Mono,monospace`;ctx.fillStyle='#FFF';ctx.textAlign='center';ctx.fillText(s.value,ecx,ecy+3);ctx.font=`${Math.max(6,cam.zoom*6)}px JetBrains Mono`;ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(s.unit||'%',ecx,ecy+12)}
+      }
+      const lx=(t00[0]+t10[0]+t11[0]+t01[0])/4,ly=Math.min(t00[1],t10[1],t01[1],t11[1])-5;
+      const fs=Math.max(7,Math.min(10,SC2*cam.zoom*.32));
+      ctx.font=fs+'px sans-serif';ctx.fillStyle='rgba(220,235,255,.85)';ctx.textAlign='center';
+      ctx.fillText(label.length>22?label.slice(0,20)+'…':label,lx,ly);
+      const ax=[b00,b10,b11,b01,t00,t10,t11,t01].map(p=>p[0]),ay=[b00,b10,b11,b01,t00,t10,t11,t01].map(p=>p[1]);
+      clk.push({id,x:Math.min(...ax)-4,y:Math.min(...ay)-4,w:Math.max(...ax)-Math.min(...ax)+8,h:Math.max(...ay)-Math.min(...ay)+8,label:e.label,desc:e.desc||''});
+    });
+    // Zone labels
+    [{t:'OUTSIDE HMI',x:-10,z:-12,c:'#4a9'},{t:'SIEMENS / RO',x:8,z:-1,c:'#ca4'},{t:'NANO FILTRATION',x:-3,z:5,c:'#8a5fc0'},{t:'DISTRIBUTION',x:16,z:0,c:'#4af'},{t:'WWTP / RECOVERY',x:15,z:11,c:'#2aaa8a'}].forEach(l=>{const[sx,sy]=proj(l.x,6,l.z);ctx.font='11px sans-serif';ctx.fillStyle=l.c;ctx.globalAlpha=.45;ctx.textAlign='center';ctx.fillText(l.t,sx,sy);ctx.globalAlpha=1});
+  }
+
+  // View mode buttons
+  window.plantSetView=function(v){
+    document.querySelectorAll('#plantUI button').forEach(b=>{b.style.background='rgba(255,255,255,.08)';b.style.borderColor='rgba(255,255,255,.2)'});
+    const btn=document.getElementById('pv-'+v);if(btn){btn.style.background='rgba(100,180,255,.25)';btn.style.borderColor='rgba(100,180,255,.6)'}
+    if(v==='iso'){cam.rotX=.52;cam.rotY=.6;cam.zoom=1}
+    else if(v==='top'){cam.rotX=Math.PI/2;cam.rotY=0;cam.zoom=.9}
+    else if(v==='front'){cam.rotX=.1;cam.rotY=0;cam.zoom=.9}
+    draw();
+  };
+  window.plantResetCam=function(){cam={rotX:.52,rotY:.6,zoom:1};draw()};
+  window.plantToggleFlow=function(){
+    flowOn=!flowOn;document.getElementById('plantFlowBtn').textContent=flowOn?'Stop ■':'Animate ▶';
+    if(flowOn){(function anim(){flowT+=.018;draw();animId=requestAnimationFrame(anim)})()}
+    else{cancelAnimationFrame(animId);draw()}
+  };
+  window.plantDrillDown=function(){if(selectedId&&knownSensors.includes(selectedId))openAnalytics(selectedId)};
+
+  // Mouse interaction: drag to orbit
+  let drag=false,lastX,lastY;
+  cv.addEventListener('mousedown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;cv.style.cursor='grabbing'});
+  cv.addEventListener('mousemove',e=>{if(!drag)return;cam.rotY+=(e.clientX-lastX)*.008;cam.rotX=Math.max(-.1,Math.min(Math.PI/2,cam.rotX+(e.clientY-lastY)*.006));lastX=e.clientX;lastY=e.clientY;if(!flowOn)draw()});
+  cv.addEventListener('mouseup',()=>{drag=false;cv.style.cursor='grab'});
+  cv.addEventListener('mouseleave',()=>{drag=false;cv.style.cursor='grab'});
+  cv.addEventListener('wheel',e=>{e.preventDefault();cam.zoom*=e.deltaY>0?.93:1.07;cam.zoom=Math.max(.25,Math.min(3.5,cam.zoom));if(!flowOn)draw()},{passive:false});
+  // Touch support
+  let lastTD=0;
+  cv.addEventListener('touchstart',e=>{if(e.touches.length===1){drag=true;lastX=e.touches[0].clientX;lastY=e.touches[0].clientY}if(e.touches.length===2){drag=false;lastTD=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)}});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();if(e.touches.length===1&&drag){cam.rotY+=(e.touches[0].clientX-lastX)*.01;cam.rotX=Math.max(-.1,Math.min(Math.PI/2,cam.rotX+(e.touches[0].clientY-lastY)*.008));lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;if(!flowOn)draw()}if(e.touches.length===2){const d2=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);cam.zoom*=d2/lastTD;lastTD=d2;cam.zoom=Math.max(.25,Math.min(3.5,cam.zoom));if(!flowOn)draw()}},{passive:false});
+  cv.addEventListener('touchend',()=>{drag=false});
+  // Click: show info + analytics link
+  cv.addEventListener('click',e=>{
+    const rect=cv.getBoundingClientRect(),mx=(e.clientX-rect.left)*dpr,my=(e.clientY-rect.top)*dpr;
+    let hit=null;for(const c of clk){if(mx>=c.x&&mx<=c.x+c.w&&my>=c.y&&my<=c.y+c.h){hit=c;break}}
+    const info=document.getElementById('plantInfo'),title=document.getElementById('plantInfoTitle'),desc=document.getElementById('plantInfoDesc'),sLink=document.getElementById('plantInfoSensor');
+    if(hit){
+      selectedId=hit.id;title.textContent=hit.label;desc.textContent=hit.desc;
+      if(knownSensors.includes(hit.id)){sLink.style.display='block';sLink.textContent='→ View Analytics ('+hit.id+')'}else{sLink.style.display='none'}
+      info.style.display='block';
+    }else{info.style.display='none';selectedId=null}
   });
-  // Zone labels
-  [{t:'OUTSIDE HMI',x:-10,z:-12,c:'#4a9'},{t:'SIEMENS / RO',x:8,z:-1,c:'#ca4'},{t:'NANO FILTRATION',x:-3,z:5,c:'#8a5fc0'},{t:'DISTRIBUTION',x:16,z:0,c:'#4af'},{t:'WWTP / RECOVERY',x:15,z:11,c:'#2aaa8a'}].forEach(l=>{const[sx,sy]=proj(l.x,6,l.z);ctx.font='11px sans-serif';ctx.fillStyle=l.c;ctx.globalAlpha=.45;ctx.textAlign='center';ctx.fillText(l.t,sx,sy);ctx.globalAlpha=1});
-  // Click handler
-  cv.onclick=function(ev){const rect=cv.getBoundingClientRect(),mx=(ev.clientX-rect.left)*dpr,my=(ev.clientY-rect.top)*dpr;
-    const known=['LIT_MR','LIT_RT4','LIT_RR2','LIT_STW','LIT_TWT','LIT_BRT','LIT_HT','LIT_ST','LIT_NR1','LIT_NR2','FIT_10','FIT_FL','FIT_CIP','FIT_6','FIT_8','PIT_RACF1','PIT_RACF2','PIT_RACF3','PIT_NACF1','PIT_NACF2','pH_RO','pH_NACF','CL_001','EC_RO','DPT_BF','DPT_PF'];
-    for(const c of clk){if(mx>=c.x&&mx<=c.x+c.w&&my>=c.y&&my<=c.y+c.h){if(known.includes(c.id))openAnalytics(c.id);return}}};
+
+  window.addEventListener('resize',()=>{resize();draw()});
+  draw();
 }
 
 // ── Tab System ──
