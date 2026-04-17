@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Crosshair, Drop, Scales, ChartLine, Heartbeat, Flask } from "@phosphor-icons/react";
+import { Crosshair, Drop, Scales, ChartLine, Heartbeat, Flask, Buildings } from "@phosphor-icons/react";
 import axios from "axios";
 import WaterBalance from "./WaterBalance";
 import NRWAnalytics from "./analytics/NRWAnalytics";
@@ -7,12 +7,35 @@ import DemandIntelligence from "./analytics/DemandIntelligence";
 import AssetHealth from "./analytics/AssetHealth";
 import WaterQualityIntelligence from "./analytics/WaterQualityIntelligence";
 import PFDIsometric from "./PFDIsometric";
+import PlantOverview from "./PlantOverview";
+import DateRangeFilter from "./DateRangeFilter";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const TABS = [
+  { id: "pfd", label: "Process Flow", icon: <Crosshair size={12} weight="bold" /> },
+  { id: "plant", label: "Plant Overview", icon: <Buildings size={12} weight="bold" /> },
+  { id: "balance", label: "Water Balance", icon: <Scales size={12} weight="bold" /> },
+  { id: "nrw", label: "NRW Analytics", icon: <Drop size={12} weight="bold" /> },
+  { id: "demand", label: "Demand", icon: <ChartLine size={12} weight="bold" /> },
+  { id: "assets", label: "Asset Health", icon: <Heartbeat size={12} weight="bold" /> },
+  { id: "quality", label: "Water Quality", icon: <Flask size={12} weight="bold" /> },
+];
+
+const getDefaultDateRange = () => {
+  const end = new Date();
+  const start = new Date(end.getTime() - 24 * 3600000);
+  return {
+    preset: "24H",
+    startDate: start.toISOString().slice(0, 16),
+    endDate: end.toISOString().slice(0, 16),
+  };
+};
 
 const PFDVisualization = ({ sensors, onSensorClick }) => {
   const [leakZones, setLeakZones] = useState([]);
   const [activeView, setActiveView] = useState("pfd");
+  const [dateRange, setDateRange] = useState(getDefaultDateRange);
 
   const fetchLeaks = useCallback(async () => {
     try {
@@ -34,28 +57,23 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
     [onSensorClick],
   );
 
+  const showDateFilter = activeView !== "pfd" && activeView !== "plant";
+
   return (
     <div
       className="grid-border p-4 md:p-6 relative"
       style={{ backgroundColor: "#121212", minHeight: "500px" }}
       data-testid="pfd-visualization"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Header Row 1: Tabs + Leaks */}
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-4">
           <div
             className="flex items-center rounded-sm border overflow-hidden flex-wrap"
             style={{ borderColor: "rgba(255, 255, 255, 0.1)", backgroundColor: "#1A1A1A" }}
             data-testid="pfd-view-toggle"
           >
-            {[
-              { id: "pfd", label: "Process Flow", icon: <Crosshair size={12} weight="bold" /> },
-              { id: "balance", label: "Water Balance", icon: <Scales size={12} weight="bold" /> },
-              { id: "nrw", label: "NRW Analytics", icon: <Drop size={12} weight="bold" /> },
-              { id: "demand", label: "Demand", icon: <ChartLine size={12} weight="bold" /> },
-              { id: "assets", label: "Asset Health", icon: <Heartbeat size={12} weight="bold" /> },
-              { id: "quality", label: "Water Quality", icon: <Flask size={12} weight="bold" /> },
-            ].map((tab) => (
+            {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveView(tab.id)}
@@ -85,7 +103,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
               </span>
             </div>
           )}
-          {activeView === "pfd" && (
+          {(activeView === "pfd" || activeView === "plant") && (
             <div className="flex items-center gap-2">
               <Crosshair size={16} color="#A3A3A3" />
               <span className="text-xs" style={{ color: "#A3A3A3" }}>
@@ -96,17 +114,26 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
         </div>
       </div>
 
-      {/* Conditional View: PFD or Analytics Tabs */}
-      {activeView === "balance" ? (
-        <WaterBalance />
+      {/* Header Row 2: Date Filter (shown for analytics tabs) */}
+      {showDateFilter && (
+        <div className="mb-4">
+          <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+        </div>
+      )}
+
+      {/* Conditional View */}
+      {activeView === "plant" ? (
+        <PlantOverview sensors={sensors} onSensorClick={handleClick} />
+      ) : activeView === "balance" ? (
+        <WaterBalance dateRange={dateRange} />
       ) : activeView === "nrw" ? (
-        <NRWAnalytics />
+        <NRWAnalytics dateRange={dateRange} />
       ) : activeView === "demand" ? (
-        <DemandIntelligence />
+        <DemandIntelligence dateRange={dateRange} />
       ) : activeView === "assets" ? (
-        <AssetHealth />
+        <AssetHealth dateRange={dateRange} />
       ) : activeView === "quality" ? (
-        <WaterQualityIntelligence />
+        <WaterQualityIntelligence dateRange={dateRange} />
       ) : (
         <PFDIsometric sensors={sensors} onSensorClick={handleClick} />
       )}
