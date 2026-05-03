@@ -6,7 +6,7 @@ const AnomalyPanel = ({ anomalies }) => {
   return (
     <div
       className="grid-border p-4 md:p-6"
-      style={{ backgroundColor: "#121212" }}
+      style={{ backgroundColor: "#0B1D3A" }}
       data-testid="anomaly-panel"
     >
       <div className="flex items-center gap-2 mb-4">
@@ -21,7 +21,7 @@ const AnomalyPanel = ({ anomalies }) => {
 
       {anomalies.length === 0 ? (
         <div className="text-center py-6">
-          <p className="text-sm" style={{ color: "#A3A3A3" }}>
+          <p className="text-sm" style={{ color: "#C9E0EF" }}>
             No anomalies detected
           </p>
         </div>
@@ -44,16 +44,16 @@ const AnomalyPanel = ({ anomalies }) => {
                 >
                   {anomaly.anomaly_type}
                 </span>
-                <span className="text-xs" style={{ color: "#A3A3A3" }}>
+                <span className="text-xs" style={{ color: "#C9E0EF" }}>
                   {format(new Date(anomaly.timestamp), "HH:mm")}
                 </span>
               </div>
               <p className="text-sm text-white mb-1">{anomaly.instrument_name}</p>
-              <p className="text-xs" style={{ color: "#A3A3A3" }}>
+              <p className="text-xs" style={{ color: "#C9E0EF" }}>
                 {anomaly.description}
               </p>
               <div className="mt-2">
-                <span className="text-xs" style={{ color: "#A3A3A3" }}>
+                <span className="text-xs" style={{ color: "#C9E0EF" }}>
                   Confidence:
                 </span>
                 <span className="text-xs ml-1 font-bold" style={{ color: "#FF9500" }}>

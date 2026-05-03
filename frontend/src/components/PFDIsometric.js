@@ -52,15 +52,15 @@ const INSTRUMENT_LAYOUT = [
 /* Pipe connections — follow the actual water reticulation process flow */
 const PIPES = [
   /* ── Main intake line ───────────────────────────── */
-  { from: [-0.5, 0.85],  to: [0.5, 0.85],   label: "Municipal In", flow: true, color: "#007AFF" },
+  { from: [-0.5, 0.85],  to: [0.5, 0.85],   label: "Municipal In", flow: true, color: "#1171b8" },
   /* MR → through filters toward treatment */
-  { from: [1.8, 0.85],   to: [3.8, 1.05],   label: "",  flow: true, color: "#007AFF" },
+  { from: [1.8, 0.85],   to: [3.8, 1.05],   label: "",  flow: true, color: "#1171b8" },
   /* Fork down to RO Recovery */
-  { from: [2.5, 0.95],   to: [2.5, 1.25],   label: "",  flow: true, color: "#32ADE6" },
+  { from: [2.5, 0.95],   to: [2.5, 1.25],   label: "",  flow: true, color: "#1A8AD4" },
   /* RR2 → STW */
-  { from: [3.2, 1.55],   to: [3.8, 1.35],   label: "",  flow: true, color: "#32ADE6" },
+  { from: [3.2, 1.55],   to: [3.8, 1.35],   label: "",  flow: true, color: "#1A8AD4" },
   /* STW → through RACF filters → TWT */
-  { from: [5.0, 1.3],    to: [7.0, 1.45],   label: "",  flow: true, color: "#32ADE6" },
+  { from: [5.0, 1.3],    to: [7.0, 1.45],   label: "",  flow: true, color: "#1A8AD4" },
   /* ── Distribution ───────────────────────────────── */
   /* TWT → up to RT4 */
   { from: [7.5, 1.05],   to: [6.7, 0.65],   label: "",  flow: true, color: "#34C759" },
@@ -74,7 +74,7 @@ const PIPES = [
   /* BRT → recycle back up to treatment */
   { from: [1.4, 2.35],   to: [2.2, 1.75],   label: "",  flow: true, color: "#AF52DE" },
   /* HT → down to Storage */
-  { from: [3.2, 2.85],   to: [4.3, 3.2],    label: "",  flow: true, color: "#32ADE6" },
+  { from: [3.2, 2.85],   to: [4.3, 3.2],    label: "",  flow: true, color: "#1A8AD4" },
   /* NR1 → recovery back up */
   { from: [3.5, 3.75],   to: [2.7, 2.85],   label: "",  flow: true, color: "#AF52DE" },
   /* NR2 → recovery back up */
@@ -84,8 +84,8 @@ const PIPES = [
 ];
 
 const GROUP_COLORS = {
-  intake: "#007AFF",
-  treatment: "#32ADE6",
+  intake: "#1171b8",
+  treatment: "#1A8AD4",
   distribution: "#34C759",
   production: "#34C759",
   recovery: "#AF52DE",
@@ -106,8 +106,8 @@ const STATUS_COLORS = {
 
 /* ── Zone labels (subtle background text) ─────────── */
 const ZONE_LABELS = [
-  { label: "INTAKE",       x: 0.3,  y: 0.15,  color: "#007AFF" },
-  { label: "TREATMENT",    x: 3.0,  y: 0.15,  color: "#32ADE6" },
+  { label: "INTAKE",       x: 0.3,  y: 0.15,  color: "#1171b8" },
+  { label: "TREATMENT",    x: 3.0,  y: 0.15,  color: "#1A8AD4" },
   { label: "DISTRIBUTION", x: 6.5,  y: 0.15,  color: "#34C759" },
   { label: "RECOVERY",     x: 1.5,  y: 4.1,   color: "#AF52DE" },
 ];
@@ -117,7 +117,7 @@ const ZONE_LABELS = [
 const IsometricTank = ({ tank, sensor, onClick }) => {
   const level = sensor ? Math.min(100, Math.max(0, sensor.value)) : 50;
   const status = sensor?.status || "offline";
-  const groupColor = GROUP_COLORS[tank.group] || "#007AFF";
+  const groupColor = GROUP_COLORS[tank.group] || "#1171b8";
   const waterHeight = (level / 100) * tank.h * 0.75;
 
   return (
@@ -172,10 +172,10 @@ const IsometricTank = ({ tank, sensor, onClick }) => {
 
 const InstrumentMarker = ({ inst, sensor, onClick }) => {
   const status = sensor?.status || "offline";
-  const groupColor = GROUP_COLORS[inst.group] || "#007AFF";
+  const groupColor = GROUP_COLORS[inst.group] || "#1171b8";
   const typeColor = {
-    flow: "#007AFF",
-    level: "#32ADE6",
+    flow: "#1171b8",
+    level: "#1A8AD4",
     pressure: "#FF9500",
     ph: "#34C759",
     chlorine: "#34C759",

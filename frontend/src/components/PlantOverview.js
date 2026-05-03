@@ -150,11 +150,11 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
 
     // Background
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, "#0a0f1a"); bg.addColorStop(1, "#0f1a2a");
+    bg.addColorStop(0, "#062C60"); bg.addColorStop(1, "#0B1D3A");
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
     // Grid
-    ctx.strokeStyle = "rgba(100,140,200,0.08)"; ctx.lineWidth = 0.5;
+    ctx.strokeStyle = "rgba(201,224,239,0.06)"; ctx.lineWidth = 0.5;
     for (let gx = -18; gx <= 24; gx += 2) {
       const [x1,y1] = project(gx, -0.05, -14);
       const [x2,y2] = project(gx, -0.05, 16);
@@ -230,7 +230,7 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
         const wh = h * level;
         if (wh > 0.1) {
           const wt00=P(x+0.1,wh,z+0.1), wt10=P(x+w-0.1,wh,z+0.1), wt11=P(x+w-0.1,wh,z+d-0.1), wt01=P(x+0.1,wh,z+d-0.1);
-          ctx.globalAlpha = 0.4; ctx.fillStyle = "#007AFF";
+          ctx.globalAlpha = 0.4; ctx.fillStyle = "#1171b8";
           ctx.beginPath(); ctx.moveTo(wt00[0],wt00[1]);
           ctx.lineTo(wt10[0],wt10[1]); ctx.lineTo(wt11[0],wt11[1]); ctx.lineTo(wt01[0],wt01[1]);
           ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
@@ -383,7 +383,7 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
   }, [viewMode, draw]);
 
   return (
-    <div className="relative" style={{ minHeight: "600px", background: "#0a0f1a", borderRadius: "2px" }} data-testid="plant-overview">
+    <div className="relative" style={{ minHeight: "600px", background: "#062C60", borderRadius: "2px" }} data-testid="plant-overview">
       <div style={{ width: "100%", height: "600px" }}>
         <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", cursor: "grab" }} />
       </div>

@@ -17,7 +17,7 @@ const AIAgentPanel = () => {
     <div
       className="border p-4 md:p-6 flex flex-col"
       style={{
-        backgroundColor: "#0A0A0A",
+        backgroundColor: "#062C60",
         borderColor: "rgba(0, 122, 255, 0.5)",
         minHeight: "500px",
         maxHeight: "500px",
@@ -31,7 +31,7 @@ const AIAgentPanel = () => {
         >
           AI Agent
         </h3>
-        <p className="text-xs" style={{ color: "#A3A3A3" }}>
+        <p className="text-xs" style={{ color: "#C9E0EF" }}>
           Ask questions about the system
         </p>
       </div>
@@ -40,18 +40,18 @@ const AIAgentPanel = () => {
       <div className="flex-1 overflow-y-auto mb-4 space-y-3" style={{ minHeight: 0 }}>
         {messages.length === 0 && (
           <div className="space-y-2">
-            <p className="text-xs" style={{ color: "#A3A3A3" }}>
+            <p className="text-xs" style={{ color: "#C9E0EF" }}>
               Try asking:
             </p>
             {SUGGESTED_QUERIES.map((q) => (
               <button
                 key={q}
                 onClick={() => setQuery(q)}
-                className="w-full text-left text-xs p-2 border rounded-sm hover:border-[#007AFF] transition-colors"
+                className="w-full text-left text-xs p-2 border rounded-sm hover:border-[#1171b8] transition-colors"
                 style={{
-                  backgroundColor: "#121212",
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                  color: "#A3A3A3",
+                  backgroundColor: "#0B1D3A",
+                  borderColor: "rgba(201, 224, 239, 0.15)",
+                  color: "#C9E0EF",
                 }}
                 data-testid={`suggested-query-${q.slice(0, 20).replace(/\s/g, "-")}`}
               >
@@ -67,8 +67,8 @@ const AIAgentPanel = () => {
 
         {loading && (
           <div className="flex items-center gap-2 p-2">
-            <CircleNotch size={16} color="#007AFF" className="animate-spin" />
-            <span className="text-xs" style={{ color: "#A3A3A3" }}>
+            <CircleNotch size={16} color="#1171b8" className="animate-spin" />
+            <span className="text-xs" style={{ color: "#C9E0EF" }}>
               Thinking...
             </span>
           </div>
@@ -86,8 +86,8 @@ const AIAgentPanel = () => {
           placeholder="Ask me anything..."
           className="flex-1 px-3 py-2 text-sm border rounded-sm focus:outline-none focus:ring-2"
           style={{
-            backgroundColor: "#121212",
-            borderColor: "rgba(255, 255, 255, 0.1)",
+            backgroundColor: "#0B1D3A",
+            borderColor: "rgba(201, 224, 239, 0.15)",
             color: "#FFFFFF",
             fontFamily: "JetBrains Mono, monospace",
           }}
@@ -98,7 +98,7 @@ const AIAgentPanel = () => {
           type="submit"
           disabled={!query.trim() || loading}
           className="px-4 py-2 rounded-sm transition-opacity disabled:opacity-50"
-          style={{ backgroundColor: "#007AFF", color: "#FFFFFF" }}
+          style={{ backgroundColor: "#1171b8", color: "#FFFFFF" }}
           data-testid="submit-query-button"
         >
           <PaperPlaneRight size={20} weight="fill" />

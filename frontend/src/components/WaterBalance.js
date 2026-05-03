@@ -8,17 +8,17 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 /* ── Shared Sub-components ─────────────────────────────── */
 
 const SummaryCard = ({ label, value, unit, subValue, subUnit, color, icon }) => (
-  <div className="p-3 rounded-sm border" style={{ backgroundColor: "#1A1A1A", borderColor: `${color}33` }}>
+  <div className="p-3 rounded-sm border" style={{ backgroundColor: "#163F56", borderColor: `${color}33` }}>
     <div className="flex items-center gap-2 mb-2">
       <div className="p-1.5 rounded-sm" style={{ backgroundColor: `${color}15` }}>{icon}</div>
-      <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "#A3A3A3" }}>{label}</span>
+      <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: "#C9E0EF" }}>{label}</span>
     </div>
     <div className="flex items-baseline gap-1">
       <span className="text-xl font-black tracking-tighter" style={{ fontFamily: "Chivo, sans-serif", color }}>{value}</span>
-      <span className="text-[10px]" style={{ color: "#525252" }}>{unit}</span>
+      <span className="text-[10px]" style={{ color: "#5A8BA8" }}>{unit}</span>
     </div>
     {subValue !== undefined && (
-      <p className="text-[10px] mt-0.5" style={{ color: "#525252" }}>{subValue} {subUnit}</p>
+      <p className="text-[10px] mt-0.5" style={{ color: "#5A8BA8" }}>{subValue} {subUnit}</p>
     )}
   </div>
 );
@@ -26,7 +26,7 @@ const SummaryCard = ({ label, value, unit, subValue, subUnit, color, icon }) => 
 const EfficiencyBar = ({ label, value, color }) => (
   <div className="flex flex-col gap-1">
     <div className="flex items-center justify-between">
-      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#A3A3A3" }}>{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#C9E0EF" }}>{label}</span>
       <span className="text-xs font-bold" style={{ color, fontFamily: "JetBrains Mono, monospace" }}>{value}%</span>
     </div>
     <div className="h-1.5 rounded-full w-full" style={{ backgroundColor: "#252525" }}>
@@ -39,12 +39,12 @@ const EfficiencyBar = ({ label, value, color }) => (
 
 const FLOW_NODES = [
   // Left: Inflows
-  { id: "municipal", label: "Municipal\nSupply", x: 30, y: 50, w: 90, h: 44, color: "#007AFF", side: "left" },
-  { id: "rainfall", label: "Rainfall\n/Runoff", x: 30, y: 110, w: 90, h: 44, color: "#32ADE6", side: "left" },
-  { id: "borehole", label: "Borehole\nSupply", x: 30, y: 170, w: 90, h: 44, color: "#007AFF", side: "left" },
+  { id: "municipal", label: "Municipal\nSupply", x: 30, y: 50, w: 90, h: 44, color: "#1171b8", side: "left" },
+  { id: "rainfall", label: "Rainfall\n/Runoff", x: 30, y: 110, w: 90, h: 44, color: "#1A8AD4", side: "left" },
+  { id: "borehole", label: "Borehole\nSupply", x: 30, y: 170, w: 90, h: 44, color: "#1171b8", side: "left" },
   // Center: Process
-  { id: "reservoir", label: "Main\nReservoir", x: 210, y: 80, w: 100, h: 52, color: "#007AFF", side: "center" },
-  { id: "treatment", label: "Treatment\nPlant", x: 390, y: 80, w: 100, h: 52, color: "#32ADE6", side: "center" },
+  { id: "reservoir", label: "Main\nReservoir", x: 210, y: 80, w: 100, h: 52, color: "#1171b8", side: "center" },
+  { id: "treatment", label: "Treatment\nPlant", x: 390, y: 80, w: 100, h: 52, color: "#1A8AD4", side: "center" },
   { id: "distribution", label: "Distribution\nSystem", x: 570, y: 80, w: 100, h: 52, color: "#34C759", side: "center" },
   // Right: Outflows
   { id: "cip", label: "CIP Lines", x: 740, y: 20, w: 80, h: 36, color: "#34C759", side: "right" },
@@ -63,11 +63,11 @@ const FlowDiagram = ({ data }) => {
   const { intake, treatment, distribution, recovery, wastewater, losses } = data;
 
   const connections = [
-    { from: "municipal", to: "reservoir", value: intake.municipal.flow_rate, color: "#007AFF" },
-    { from: "rainfall", to: "reservoir", value: intake.rainfall_runoff?.flow_rate || 0, color: "#32ADE6" },
-    { from: "borehole", to: "reservoir", value: intake.borehole?.flow_rate || 0, color: "#007AFF" },
-    { from: "reservoir", to: "treatment", value: intake.total, color: "#007AFF" },
-    { from: "treatment", to: "distribution", value: treatment.treated_output, color: "#32ADE6" },
+    { from: "municipal", to: "reservoir", value: intake.municipal.flow_rate, color: "#1171b8" },
+    { from: "rainfall", to: "reservoir", value: intake.rainfall_runoff?.flow_rate || 0, color: "#1A8AD4" },
+    { from: "borehole", to: "reservoir", value: intake.borehole?.flow_rate || 0, color: "#1171b8" },
+    { from: "reservoir", to: "treatment", value: intake.total, color: "#1171b8" },
+    { from: "treatment", to: "distribution", value: treatment.treated_output, color: "#1A8AD4" },
     { from: "distribution", to: "cip", value: distribution.cip_lines.flow_rate, color: "#34C759" },
     { from: "distribution", to: "pet", value: distribution.pet_lines.flow_rate, color: "#34C759" },
     { from: "distribution", to: "canline", value: distribution.canline.flow_rate, color: "#34C759" },
@@ -119,7 +119,7 @@ const FlowDiagram = ({ data }) => {
     <svg viewBox="0 0 860 310" className="w-full" style={{ minHeight: "260px" }}>
       <defs>
         <marker id="arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-          <path d="M0,0 L6,3 L0,6 Z" fill="#A3A3A3" />
+          <path d="M0,0 L6,3 L0,6 Z" fill="#C9E0EF" />
         </marker>
       </defs>
       {/* Connections */}
@@ -170,10 +170,10 @@ const FacilityTable = ({ facilities }) => {
       <table className="w-full text-[10px] border-collapse" data-testid="facility-balance-table">
         <thead>
           <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Facility</th>
-            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Inflows (L/min)</th>
-            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Outflows (L/min)</th>
-            <th className="text-right py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Storage (L/min)</th>
+            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>Facility</th>
+            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>Inflows (L/min)</th>
+            <th className="text-left py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>Outflows (L/min)</th>
+            <th className="text-right py-2 px-3 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>Storage (L/min)</th>
           </tr>
         </thead>
         <tbody>
@@ -183,19 +183,19 @@ const FacilityTable = ({ facilities }) => {
             return (
               <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                 <td className="py-2.5 px-3 font-bold" style={{ color: "#FFF" }}>{f.name}</td>
-                <td className="py-2.5 px-3" style={{ color: "#A3A3A3" }}>
+                <td className="py-2.5 px-3" style={{ color: "#C9E0EF" }}>
                   {f.inflows.map((fl, j) => (
                     <div key={j} className="flex justify-between mb-0.5">
                       <span>{fl.label}</span>
-                      <span className="font-bold" style={{ color: "#007AFF", fontFamily: "JetBrains Mono" }}>{fl.value}</span>
+                      <span className="font-bold" style={{ color: "#1171b8", fontFamily: "JetBrains Mono" }}>{fl.value}</span>
                     </div>
                   ))}
                   <div className="flex justify-between mt-1 pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                     <span className="font-bold" style={{ color: "#FFF" }}>Total</span>
-                    <span className="font-bold" style={{ color: "#007AFF", fontFamily: "JetBrains Mono" }}>{totalIn.toFixed(1)}</span>
+                    <span className="font-bold" style={{ color: "#1171b8", fontFamily: "JetBrains Mono" }}>{totalIn.toFixed(1)}</span>
                   </div>
                 </td>
-                <td className="py-2.5 px-3" style={{ color: "#A3A3A3" }}>
+                <td className="py-2.5 px-3" style={{ color: "#C9E0EF" }}>
                   {f.outflows.map((fl, j) => (
                     <div key={j} className="flex justify-between mb-0.5">
                       <span>{fl.label}</span>
@@ -228,12 +228,12 @@ const FacilityTable = ({ facilities }) => {
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-sm border p-2" style={{ backgroundColor: "#1A1A1AEE", borderColor: "rgba(255,255,255,0.1)" }}>
-      <p className="text-[10px] font-bold mb-1" style={{ color: "#A3A3A3" }}>{label}</p>
+    <div className="rounded-sm border p-2" style={{ backgroundColor: "#163F56EE", borderColor: "rgba(255,255,255,0.1)" }}>
+      <p className="text-[10px] font-bold mb-1" style={{ color: "#C9E0EF" }}>{label}</p>
       {payload.map((p, i) => (
         <div key={i} className="flex items-center gap-2 text-[10px]">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span style={{ color: "#A3A3A3" }}>{p.name}:</span>
+          <span style={{ color: "#C9E0EF" }}>{p.name}:</span>
           <span className="font-bold" style={{ color: p.color, fontFamily: "JetBrains Mono" }}>{p.value} L/min</span>
         </div>
       ))}
@@ -270,7 +270,7 @@ const WaterBalance = () => {
   if (loading || !data) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: "400px" }}>
-        <p className="text-sm" style={{ color: "#A3A3A3" }}>Loading water balance...</p>
+        <p className="text-sm" style={{ color: "#C9E0EF" }}>Loading water balance...</p>
       </div>
     );
   }
@@ -293,8 +293,8 @@ const WaterBalance = () => {
       {/* ── SECTION 1: Balance Overview ────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
         <SummaryCard label="Total Inflows" value={bs.total_inflows || intake.total} unit="L/min"
-          subValue={bs.total_inflows_m3d} subUnit="m³/d" color="#007AFF"
-          icon={<Drop size={14} color="#007AFF" weight="duotone" />} />
+          subValue={bs.total_inflows_m3d} subUnit="m³/d" color="#1171b8"
+          icon={<Drop size={14} color="#1171b8" weight="duotone" />} />
         <SummaryCard label="Total Outflows" value={bs.total_outflows} unit="L/min"
           subValue={bs.total_outflows_m3d} subUnit="m³/d" color="#FF9500"
           icon={<ArrowRight size={14} color="#FF9500" weight="bold" />} />
@@ -309,16 +309,16 @@ const WaterBalance = () => {
         <SummaryCard label="Storage" value={bs.change_in_storage || 0} unit="L/min"
           subValue={bs.change_in_storage_m3d} subUnit="m³/d"
           color={bs.change_in_storage >= 0 ? "#34C759" : "#FF3B30"}
-          icon={<ArrowsClockwise size={14} color="#32ADE6" weight="duotone" />} />
+          icon={<ArrowsClockwise size={14} color="#1A8AD4" weight="duotone" />} />
         <SummaryCard label="Balance Check" value={bs.balance_check_pct || 0} unit="%"
           color={bs.balance_check_pct < 5 ? "#34C759" : "#FF9500"}
           icon={<Gauge size={14} color="#34C759" weight="duotone" />} />
       </div>
 
       {/* ── SECTION 2: Water Balance Flow Diagram (SVG) ── */}
-      <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-        <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
-          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#007AFF" }} />
+      <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+        <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#C9E0EF" }}>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#1171b8" }} />
           Average Daily Water Balance (Sankey)
         </h4>
         <FlowDiagram data={data} />
@@ -327,17 +327,17 @@ const WaterBalance = () => {
       {/* ── SECTION 3: Facility Balance + Loss Analysis ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Facility Table (2 cols wide) */}
-        <div className="lg:col-span-2 rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#32ADE6" }} />
+        <div className="lg:col-span-2 rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#C9E0EF" }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#1A8AD4" }} />
             Facility-Level Water Balance
           </h4>
           <FacilityTable facilities={facilities} />
         </div>
 
         {/* Loss Analysis Pie */}
-        <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#C9E0EF" }}>
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF3B30" }} />
             Loss Analysis
           </h4>
@@ -356,7 +356,7 @@ const WaterBalance = () => {
               <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: LOSS_COLORS[i % LOSS_COLORS.length] }} />
-                  <span className="text-[10px]" style={{ color: "#A3A3A3" }}>{d.name}</span>
+                  <span className="text-[10px]" style={{ color: "#C9E0EF" }}>{d.name}</span>
                 </div>
                 <span className="text-[10px] font-bold" style={{ color: LOSS_COLORS[i % LOSS_COLORS.length], fontFamily: "JetBrains Mono" }}>
                   {d.value} L/min
@@ -368,20 +368,20 @@ const WaterBalance = () => {
       </div>
 
       {/* ── SECTION 4: 24H Time Series ───────────────────── */}
-      <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-        <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
-          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#007AFF" }} />
+      <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+        <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#C9E0EF" }}>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#1171b8" }} />
           24H Water Balance Trend
         </h4>
         <div style={{ height: "220px" }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={hourly_balance || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#25252555" />
-              <XAxis dataKey="hour" tick={{ fill: "#525252", fontSize: 9 }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fill: "#525252", fontSize: 9 }} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(22,63,86,0.33)" />
+              <XAxis dataKey="hour" tick={{ fill: "#5A8BA8", fontSize: 9 }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fill: "#5A8BA8", fontSize: 9 }} tickLine={false} axisLine={false} />
               <Tooltip content={<ChartTooltip />} />
-              <Legend wrapperStyle={{ fontSize: "10px", color: "#A3A3A3" }} />
-              <Area type="monotone" dataKey="inflows" name="Inflows" stroke="#007AFF" fill="#007AFF22" strokeWidth={2} dot={false} />
+              <Legend wrapperStyle={{ fontSize: "10px", color: "#C9E0EF" }} />
+              <Area type="monotone" dataKey="inflows" name="Inflows" stroke="#1171b8" fill="#1171b822" strokeWidth={2} dot={false} />
               <Area type="monotone" dataKey="outflows" name="Outflows" stroke="#FF9500" fill="#FF950022" strokeWidth={2} dot={false} />
               <Area type="monotone" dataKey="losses" name="Losses" stroke="#FF3B30" fill="#FF3B3022" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="recovery" name="Recovery" stroke="#AF52DE" strokeWidth={2} strokeDasharray="4 2" dot={false} />
@@ -393,8 +393,8 @@ const WaterBalance = () => {
       {/* ── SECTION 5: Efficiency + Quality Balance ──────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Efficiency Gauges */}
-        <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-          <h4 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: "#C9E0EF" }}>
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#34C759" }} />
             System Efficiency
           </h4>
@@ -410,8 +410,8 @@ const WaterBalance = () => {
         </div>
 
         {/* TDS/Salt Balance (like Barberton Section 5) */}
-        <div className="rounded-sm border p-4" style={{ backgroundColor: "#0D0D0D", borderColor: "rgba(255,255,255,0.08)" }}>
-          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#A3A3A3" }}>
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+          <h4 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: "#C9E0EF" }}>
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF9500" }} />
             Quality / Salt Balance (TDS)
           </h4>
@@ -419,18 +419,18 @@ const WaterBalance = () => {
             <table className="w-full text-[10px] border-collapse" data-testid="quality-balance-table">
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                  <th className="text-left py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Point</th>
-                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>TDS (mg/L)</th>
-                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Flow (L/min)</th>
-                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#525252" }}>Salt (kg/d)</th>
+                  <th className="text-left py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>Point</th>
+                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>TDS (mg/L)</th>
+                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>Flow (L/min)</th>
+                  <th className="text-right py-2 px-2 font-bold uppercase tracking-wider" style={{ color: "#5A8BA8" }}>Salt (kg/d)</th>
                 </tr>
               </thead>
               <tbody>
                 {(quality_balance || []).map((q, i) => (
                   <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                     <td className="py-2 px-2 font-semibold" style={{ color: "#FFF" }}>{q.point}</td>
-                    <td className="py-2 px-2 text-right font-bold" style={{ color: "#32ADE6", fontFamily: "JetBrains Mono" }}>{q.tds_mg_l}</td>
-                    <td className="py-2 px-2 text-right" style={{ color: "#A3A3A3", fontFamily: "JetBrains Mono" }}>{q.flow_l_min}</td>
+                    <td className="py-2 px-2 text-right font-bold" style={{ color: "#1A8AD4", fontFamily: "JetBrains Mono" }}>{q.tds_mg_l}</td>
+                    <td className="py-2 px-2 text-right" style={{ color: "#C9E0EF", fontFamily: "JetBrains Mono" }}>{q.flow_l_min}</td>
                     <td className="py-2 px-2 text-right font-bold" style={{ color: "#FF9500", fontFamily: "JetBrains Mono" }}>{q.salt_load_kg_d}</td>
                   </tr>
                 ))}

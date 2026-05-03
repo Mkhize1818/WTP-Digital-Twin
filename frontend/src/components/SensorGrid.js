@@ -5,7 +5,7 @@ const SensorGrid = ({ sensors, onSensorClick }) => {
   return (
     <div
       className="grid-border p-4 md:p-6"
-      style={{ backgroundColor: "#121212" }}
+      style={{ backgroundColor: "#0B1D3A" }}
       data-testid="sensor-grid"
     >
       <h3

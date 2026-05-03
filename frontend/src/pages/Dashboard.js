@@ -26,13 +26,13 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-[#A3A3A3]">Loading Digital Twin...</div>
+        <div className="text-xl text-[#C9E0EF]">Loading Digital Twin...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0A0A0A" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#062C60" }}>
       <Header />
 
       <main className="p-6 md:p-8">

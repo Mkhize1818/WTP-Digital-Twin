@@ -9,8 +9,8 @@ import { WarningCircle, Lightning } from "@phosphor-icons/react";
 
 /* ── Shared chart axis/grid styles ──────────────────────── */
 
-const AXIS_TICK = { fill: "#A3A3A3", fontSize: 11, fontFamily: "JetBrains Mono" };
-const AXIS_TICK_SM = { fill: "#A3A3A3", fontSize: 10, fontFamily: "JetBrains Mono" };
+const AXIS_TICK = { fill: "#C9E0EF", fontSize: 11, fontFamily: "JetBrains Mono" };
+const AXIS_TICK_SM = { fill: "#C9E0EF", fontSize: 10, fontFamily: "JetBrains Mono" };
 const AXIS_LINE = { stroke: "rgba(255,255,255,0.1)" };
 const GRID_STROKE = "rgba(255,255,255,0.06)";
 
@@ -19,8 +19,8 @@ const GRID_STROKE = "rgba(255,255,255,0.06)";
 export const ChartTooltip = ({ active, payload, unit }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="p-3 border rounded-sm" style={{ backgroundColor: "#1A1A1A", borderColor: "rgba(255, 255, 255, 0.2)" }}>
-      <p className="text-xs mb-2" style={{ color: "#A3A3A3", fontFamily: "JetBrains Mono, monospace" }}>
+    <div className="p-3 border rounded-sm" style={{ backgroundColor: "#163F56", borderColor: "rgba(255, 255, 255, 0.2)" }}>
+      <p className="text-xs mb-2" style={{ color: "#C9E0EF", fontFamily: "JetBrains Mono, monospace" }}>
         {payload[0]?.payload?.fullTime}
       </p>
       {payload.map((entry) => (
@@ -37,15 +37,15 @@ export const ChartTooltip = ({ active, payload, unit }) => {
 
 export const TimeSeriesChart = ({ chartData, instrument, thresholds, typeLabel, stats, range }) => {
   const tooltipContent = <ChartTooltip unit={instrument.unit} />;
-  const legendStyle = { fontSize: 12, color: "#A3A3A3", fontFamily: "IBM Plex Sans" };
+  const legendStyle = { fontSize: 12, color: "#C9E0EF", fontFamily: "IBM Plex Sans" };
 
   return (
-    <div className="grid-border p-4 mb-6" style={{ backgroundColor: "#0A0A0A" }}>
+    <div className="grid-border p-4 mb-6" style={{ backgroundColor: "#062C60" }}>
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-lg font-semibold tracking-tight" style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}>
           Time Series &mdash; {typeLabel}
         </h4>
-        <span className="text-xs" style={{ color: "#A3A3A3" }}>
+        <span className="text-xs" style={{ color: "#C9E0EF" }}>
           {stats.data_points} data points &middot; Range: {range.toUpperCase()}
         </span>
       </div>
@@ -65,8 +65,8 @@ export const TimeSeriesChart = ({ chartData, instrument, thresholds, typeLabel, 
               label={{ value: `Low: ${thresholds.low}`, fill: "#FF9500", fontSize: 10, position: "right" }} />
           )}
           <ReferenceLine y={instrument.baseline} stroke="rgba(255,255,255,0.2)" strokeDasharray="4 4"
-            label={{ value: `Baseline: ${instrument.baseline}`, fill: "#525252", fontSize: 10, position: "left" }} />
-          <Line type="monotone" dataKey="value" stroke="#007AFF" strokeWidth={2} dot={false} name="Actual" animationDuration={500} />
+            label={{ value: `Baseline: ${instrument.baseline}`, fill: "#5A8BA8", fontSize: 10, position: "left" }} />
+          <Line type="monotone" dataKey="value" stroke="#1171b8" strokeWidth={2} dot={false} name="Actual" animationDuration={500} />
           <Line type="monotone" dataKey="ra5" stroke="#34C759" strokeWidth={1.5} dot={false} strokeDasharray="4 2" name="Rolling Avg (5)" animationDuration={500} />
           <Line type="monotone" dataKey="ra10" stroke="#FF9500" strokeWidth={1.5} dot={false} strokeDasharray="8 3" name="Rolling Avg (10)" animationDuration={500} />
         </ComposedChart>
@@ -81,7 +81,7 @@ export const TrendEnvelope = ({ chartData, unit }) => {
   const tooltipContent = <ChartTooltip unit={unit} />;
 
   return (
-    <div className="grid-border p-4" style={{ backgroundColor: "#0A0A0A" }}>
+    <div className="grid-border p-4" style={{ backgroundColor: "#062C60" }}>
       <h4 className="text-lg font-semibold tracking-tight mb-4" style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}>
         Trend Envelope
       </h4>
@@ -93,11 +93,11 @@ export const TrendEnvelope = ({ chartData, unit }) => {
           <Tooltip content={tooltipContent} />
           <defs>
             <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#007AFF" stopOpacity={0} />
+              <stop offset="5%" stopColor="#1171b8" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#1171b8" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="value" stroke="#007AFF" fill="url(#areaGrad)" strokeWidth={1.5} name="Value" />
+          <Area type="monotone" dataKey="value" stroke="#1171b8" fill="url(#areaGrad)" strokeWidth={1.5} name="Value" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -107,13 +107,13 @@ export const TrendEnvelope = ({ chartData, unit }) => {
 /* ── Recent Events Panel ─────────────────────────────────── */
 
 export const RecentEvents = ({ alerts, anomalies }) => (
-  <div className="grid-border p-4" style={{ backgroundColor: "#0A0A0A" }}>
+  <div className="grid-border p-4" style={{ backgroundColor: "#062C60" }}>
     <h4 className="text-lg font-semibold tracking-tight mb-4" style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}>
       Recent Events
     </h4>
     <div className="space-y-2 max-h-[200px] overflow-y-auto">
       {alerts.length === 0 && anomalies.length === 0 ? (
-        <p className="text-sm text-center py-4" style={{ color: "#A3A3A3" }}>No recent events for this instrument.</p>
+        <p className="text-sm text-center py-4" style={{ color: "#C9E0EF" }}>No recent events for this instrument.</p>
       ) : (
         <>
           {alerts.map((alert) => (
@@ -121,7 +121,7 @@ export const RecentEvents = ({ alerts, anomalies }) => (
               <WarningCircle size={16} color={alert.severity === "critical" ? "#FF3B30" : "#FF9500"} weight="duotone" className="mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-white truncate">{alert.message}</p>
-                <p className="text-xs" style={{ color: "#525252" }}>{format(new Date(alert.timestamp), "HH:mm:ss dd/MM")}</p>
+                <p className="text-xs" style={{ color: "#5A8BA8" }}>{format(new Date(alert.timestamp), "HH:mm:ss dd/MM")}</p>
               </div>
             </div>
           ))}
@@ -130,7 +130,7 @@ export const RecentEvents = ({ alerts, anomalies }) => (
               <Lightning size={16} color="#FF9500" weight="duotone" className="mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-white truncate">{anomaly.anomaly_type}: {anomaly.description}</p>
-                <p className="text-xs" style={{ color: "#525252" }}>
+                <p className="text-xs" style={{ color: "#5A8BA8" }}>
                   Confidence: {(anomaly.confidence * 100).toFixed(0)}% &middot; {format(new Date(anomaly.timestamp), "HH:mm:ss dd/MM")}
                 </p>
               </div>

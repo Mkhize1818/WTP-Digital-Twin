@@ -8,8 +8,8 @@ const Header = () => {
     <header
       className="border-b px-6 md:px-8 py-3"
       style={{
-        backgroundColor: "#0A0A0A",
-        borderColor: "rgba(255, 255, 255, 0.1)",
+        backgroundColor: "#062C60",
+        borderColor: "rgba(201, 224, 239, 0.15)",
       }}
       data-testid="dashboard-header"
     >
@@ -27,7 +27,7 @@ const Header = () => {
               className="w-2 h-2 rounded-full animate-pulse"
               style={{ backgroundColor: "#34C759" }}
             />
-            <span className="text-xs text-[#A3A3A3] hidden md:inline">Live</span>
+            <span className="text-xs text-[#C9E0EF] hidden md:inline">Live</span>
           </div>
         </div>
 
@@ -39,7 +39,7 @@ const Header = () => {
           >
             Digital Twin
           </h1>
-          <p className="text-xs text-[#A3A3A3]">Water Reticulation System</p>
+          <p className="text-xs text-[#C9E0EF]">Water Reticulation System</p>
         </div>
 
         {/* Right — CCBA Logo */}

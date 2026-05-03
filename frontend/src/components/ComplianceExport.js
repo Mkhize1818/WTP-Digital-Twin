@@ -53,11 +53,11 @@ const ComplianceExport = () => {
   return (
     <div
       className="grid-border p-4 md:p-6"
-      style={{ backgroundColor: "#121212" }}
+      style={{ backgroundColor: "#0B1D3A" }}
       data-testid="compliance-export"
     >
       <div className="flex items-center gap-2 mb-4">
-        <FileText size={24} color="#007AFF" weight="duotone" />
+        <FileText size={24} color="#1171b8" weight="duotone" />
         <h3
           className="text-xl md:text-2xl font-semibold tracking-tight"
           style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}
@@ -71,8 +71,8 @@ const ComplianceExport = () => {
         <div
           className="flex items-center rounded-sm border overflow-hidden"
           style={{
-            borderColor: "rgba(255, 255, 255, 0.1)",
-            backgroundColor: "#1A1A1A",
+            borderColor: "rgba(201, 224, 239, 0.15)",
+            backgroundColor: "#163F56",
           }}
           data-testid="report-range-selector"
         >
@@ -83,8 +83,8 @@ const ComplianceExport = () => {
               className="px-3 py-1.5 text-xs font-bold transition-colors"
               style={{
                 backgroundColor:
-                  range === r.value ? "#007AFF" : "transparent",
-                color: range === r.value ? "#FFFFFF" : "#A3A3A3",
+                  range === r.value ? "#1171b8" : "transparent",
+                color: range === r.value ? "#FFFFFF" : "#C9E0EF",
               }}
               data-testid={`report-range-${r.value}`}
             >
@@ -99,9 +99,9 @@ const ComplianceExport = () => {
           disabled={loading}
           className="flex items-center gap-1.5 px-4 py-2 rounded-sm border text-sm font-medium hover:border-[#34C759] transition-colors disabled:opacity-50"
           style={{
-            borderColor: "rgba(255, 255, 255, 0.1)",
+            borderColor: "rgba(201, 224, 239, 0.15)",
             color: "#34C759",
-            backgroundColor: "#1A1A1A",
+            backgroundColor: "#163F56",
           }}
           data-testid="compliance-csv-button"
         >
@@ -117,9 +117,9 @@ const ComplianceExport = () => {
           disabled={loading}
           className="flex items-center gap-1.5 px-4 py-2 rounded-sm border text-sm font-medium hover:border-[#FF3B30] transition-colors disabled:opacity-50"
           style={{
-            borderColor: "rgba(255, 255, 255, 0.1)",
+            borderColor: "rgba(201, 224, 239, 0.15)",
             color: "#FF3B30",
-            backgroundColor: "#1A1A1A",
+            backgroundColor: "#163F56",
           }}
           data-testid="compliance-pdf-button"
         >

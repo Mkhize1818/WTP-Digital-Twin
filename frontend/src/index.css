@@ -1,8 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@300;400;700;900&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@300;400;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Aktiv Grotesk';
+  font-weight: 300;
+  font-style: normal;
+  src: local('Aktiv Grotesk Light'), local('AktivGrotesk-Light');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aktiv Grotesk';
+  font-weight: 400;
+  font-style: normal;
+  src: local('Aktiv Grotesk Regular'), local('AktivGrotesk-Regular');
+  font-display: swap;
+}
 
 * {
   margin: 0;
@@ -11,28 +27,34 @@
 }
 
 :root {
-  --background: #0A0A0A;
-  --surface: #121212;
-  --surface-elevated: #1A1A1A;
+  /* Talbot Brand Palette */
+  --background: #062C60;
+  --surface: #0B1D3A;
+  --surface-elevated: #163F56;
   --text-primary: #FFFFFF;
-  --text-secondary: #A3A3A3;
-  --text-disabled: #525252;
-  --brand-primary: #007AFF;
-  --brand-hover: #3395FF;
-  --brand-secondary: #005BB5;
+  --text-secondary: #C9E0EF;
+  --text-disabled: #5A8BA8;
+  --brand-primary: #1171b8;
+  --brand-hover: #1A8AD4;
+  --brand-secondary: #0E5A94;
   --status-success: #34C759;
   --status-warning: #FF9500;
   --status-error: #FF3B30;
-  --status-info: #32ADE6;
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-focus: #007AFF;
+  --status-info: #C9E0EF;
+  --border-default: rgba(201, 224, 239, 0.12);
+  --border-focus: #1171b8;
+
+  /* Extended palette tokens */
+  --talbot-primary: #1171b8;
+  --talbot-teal: #163F56;
+  --talbot-navy: #062C60;
+  --talbot-sky: #C9E0EF;
 }
 
 body {
   margin: 0;
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Aktiv Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
@@ -40,7 +62,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Chivo', sans-serif;
+  font-family: 'Chivo', 'Aktiv Grotesk', sans-serif;
 }
 
 code, pre {
@@ -58,7 +80,7 @@ code, pre {
   }
 
   .grid-border:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(201, 224, 239, 0.25);
   }
 
   .status-online {
@@ -79,7 +101,7 @@ code, pre {
 
   @keyframes flash {
     0%, 100% { background-color: transparent; }
-    50% { background-color: rgba(0, 122, 255, 0.2); }
+    50% { background-color: rgba(17, 113, 184, 0.2); }
   }
 
   .animate-pulse-border {
