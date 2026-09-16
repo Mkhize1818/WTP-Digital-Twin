@@ -119,7 +119,7 @@ const WaterQualityIntelligence = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Chlorine Decay Model */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<TrendDown size={16} color="#34C759" weight="duotone" />} title="Chlorine Decay Model" color="#C9E0EF" />
+          <SectionHeader icon={<TrendDown size={16} color="#34C759" weight="duotone" />} title="Chlorine Decay Model" color="#163F56" />
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={decay_curve}>
               <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
@@ -134,7 +134,7 @@ const WaterQualityIntelligence = () => {
 
         {/* Spatial Quality Map */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Broadcast size={16} color="#1A8AD4" weight="duotone" />} title="Spatial Quality Grid" color="#C9E0EF" />
+          <SectionHeader icon={<Broadcast size={16} color="#1A8AD4" weight="duotone" />} title="Spatial Quality Grid" color="#163F56" />
           <div className="space-y-2">
             {spatial_quality.map((zone) => (
               <div key={zone.id} className="p-2.5 rounded-sm border" style={{ backgroundColor: "rgba(255,255,255,0.88)", borderColor: zone.status === "compliant" ? "rgba(52,199,89,0.15)" : "rgba(255,59,48,0.25)" }}>
@@ -170,7 +170,7 @@ const WaterQualityIntelligence = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Contamination Events */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Warning size={16} color="#FF9500" weight="duotone" />} title="Contamination Event Log" color="#C9E0EF" />
+          <SectionHeader icon={<Warning size={16} color="#FF9500" weight="duotone" />} title="Contamination Event Log" color="#163F56" />
           <div className="space-y-1.5 max-h-64 overflow-y-auto">
             {contamination_events.map((event) => (
               <div key={event.id} className="p-2 rounded-sm flex items-start gap-2" style={{ backgroundColor: "rgba(255,255,255,0.88)" }}>
@@ -194,7 +194,7 @@ const WaterQualityIntelligence = () => {
 
         {/* Quality Predictions */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Flask size={16} color="#AF52DE" weight="duotone" />} title="Predictive Quality Degradation" color="#C9E0EF" />
+          <SectionHeader icon={<Flask size={16} color="#AF52DE" weight="duotone" />} title="Predictive Quality Degradation" color="#163F56" />
           <div className="space-y-3">
             {predictions.map((pred) => (
               <div key={pred.parameter} className="p-2.5 rounded-sm" style={{ backgroundColor: "rgba(255,255,255,0.88)" }}>

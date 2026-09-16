@@ -67,7 +67,7 @@ const AssetHealth = () => {
 
       {/* Asset Condition Table */}
       <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-        <SectionHeader icon={<Heartbeat size={16} color="#34C759" weight="duotone" />} title="Asset Condition & Failure Probability" color="#C9E0EF" />
+        <SectionHeader icon={<Heartbeat size={16} color="#34C759" weight="duotone" />} title="Asset Condition & Failure Probability" color="#163F56" />
         <div className="overflow-x-auto">
           <table className="w-full text-[10px]">
             <thead>
@@ -123,7 +123,7 @@ const AssetHealth = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Break History */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<HardDrives size={16} color="#AF52DE" weight="duotone" />} title="Break History (12 Months)" color="#C9E0EF" />
+          <SectionHeader icon={<HardDrives size={16} color="#AF52DE" weight="duotone" />} title="Break History (12 Months)" color="#163F56" />
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={break_history}>
               <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
@@ -141,7 +141,7 @@ const AssetHealth = () => {
 
         {/* Maintenance Schedule */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Wrench size={16} color="#1171b8" weight="duotone" />} title="Predictive Maintenance Schedule" color="#C9E0EF" />
+          <SectionHeader icon={<Wrench size={16} color="#1171b8" weight="duotone" />} title="Predictive Maintenance Schedule" color="#163F56" />
           <div className="space-y-2">
             {maintenance_schedule.map((item) => (
               <div key={item.asset_id} className="p-2.5 rounded-sm border" style={{ backgroundColor: "rgba(255,255,255,0.88)", borderColor: item.type === "urgent" ? "#FF3B3033" : "rgba(255,255,255,0.05)" }}>

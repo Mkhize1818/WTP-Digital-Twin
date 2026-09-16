@@ -1,0 +1,53 @@
+{
+  "summary": "Verified LIGHT theme conversion + Coca-Cola logo removal. Header shows only Talbot logo. Body uses light bg (#E8F0F8) with water backdrop image. Header white/glass rgba(255,255,255,0.92) with dark navy 'Digital Twin' text. All CSS variables correct (--background=#E8F0F8, --surface=#FFFFFF, --text-primary=#062C60, --brand-primary=#1171b8). Metric cards white with dark navy values. Tabs: active=#1171b8 with white text, inactive=#163F56 on transparent light bg. All 5 analytics tabs (Water Balance, NRW, Demand, Asset Health, Water Quality) render with light backgrounds. Chart axis labels use dark #163F56 - readable. AI Agent panel light with dark text. Backend APIs return 200 after fixing a critical missing MongoDB index (sensor_readings had 400k+ docs with no index -> /api/sensors/latest was timing out).",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "/api/sensors/latest, /api/anomalies, /api/alerts", "issue": "MongoDB sensor_readings collection had no index on (instrument_id,timestamp) with 400k+ records causing 15-30s query times and gateway 502s. TESTING AGENT added indexes: {instrument_id:1, timestamp:-1} and {timestamp:-1}. Main agent should add index creation to startup_event so it persists across DB rebuilds.", "priority": "HIGH"}
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Active Alerts card", "issues": ["Alert description text (e.g. 'Sensor RO Break Tank pH is offline.') appears very faint / low contrast on the light red alert background - hard to read"]},
+      {"screen": "Water Quality tab section headers", "issues": ["'CHLORINE DECAY MODEL' and 'SPATIAL QUALITY GRID' uppercase headers render in a very pale color on white - marginal contrast"]},
+      {"screen": "standalone_demo.html", "issues": [".tb.ac active tab uses color:#062C60 (dark navy) on brand blue background — spec says white text on active tab; also .air send button uses color:#062C60 on brand blue = low contrast", ".gb progress-bar track still uses dark background:#252525 — leftover from dark theme, looks out of place on light theme"]}
+    ]
+  },
+  "passed_tests": [
+    "Coca-Cola/CCBA logo REMOVED from header - only Talbot logo present (verified via DOM query)",
+    "Body background: rgb(232,240,248) light blue with water backdrop image url",
+    "Header background: rgba(255,255,255,0.92) white/glass, border rgba(17,113,184,0.12)",
+    "'Digital Twin' h1 color: rgb(6,44,96) dark navy - readable",
+    "CSS vars: --background=#E8F0F8, --surface=#FFFFFF, --text-primary=#062C60, --brand-primary=#1171b8",
+    "Active tab (Process Flow / Water Quality): bg=rgb(17,113,184), color=rgb(255,255,255)",
+    "Inactive tabs: transparent bg, color=rgb(22,63,86) dark teal",
+    "All 5 analytics tabs render (Water Balance, NRW, Demand, Asset Health, Water Quality) without dark panels",
+    "Chart SVG axis text fill=rgb(22,63,86) — dark on light chart bg",
+    "Metric cards (Total Flow, Avg Pressure, Active Alerts, Sensors Online) show white cards with dark navy values",
+    "AI Agent panel renders with light bg + dark text",
+    "Backend /api/stats returns 200 with valid data after index fix",
+    "Backend /api/sensors/latest returns 27 sensors after index fix",
+    "standalone_demo.html uses --bg:#E8F0F8 and water backdrop image on body"
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "Add MongoDB index creation in backend startup_event: db.sensor_readings.create_index([('instrument_id',1),('timestamp',-1)]) and ('timestamp',-1). Testing agent applied index manually but it will be lost on DB rebuild.",
+    "Improve contrast for Active Alert description text on light-red alert cards (currently too faint)",
+    "Increase contrast/weight of section subheaders 'CHLORINE DECAY MODEL' & 'SPATIAL QUALITY GRID' on Water Quality tab",
+    "standalone_demo.html: change .tb.ac color to #FFFFFF (white) on brand blue active tab; same for .air send button; replace .gb background:#252525 with a light track color"
+  ],
+  "critical_code_review_comments": [
+    "server.py sensor_simulation_loop keeps writing to Mongo without any index — will slow down all sort queries as data grows. Add indexes at startup and consider TTL/cap on sensor_readings.",
+    "Header.js correctly removed CCBA logo and uses inline light theme styles.",
+    "index.css correctly sets light --background with water backdrop image."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% after index fix (was 0% - all endpoints timing out)", "frontend": "100% of theme checks passed; 3 minor contrast issues"},
+  "seed_data_creation": "None - added mongo indexes on existing sensor_readings collection",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Theme switch to light is complete and correct. Header has only Talbot logo (CCBA removed). CSS variables --background=#E8F0F8, --text-primary=#062C60, --brand-primary=#1171b8. Body has water backdrop image. If /api/sensors/latest starts timing out again, recreate mongo indexes: db.sensor_readings.createIndex({instrument_id:1,timestamp:-1}). Main agent should bake index creation into server.py startup_event.",
+  "rca of the issue": "Backend 502s from external URL were caused by MongoDB sensor_readings collection having 403,373 records with only default _id index. Every /api/sensors/latest call performs 27 sort-by-timestamp queries filtered on instrument_id — without indexes these did full collection scans and exceeded ingress timeout (>30s). Fixed by creating compound index (instrument_id ASC, timestamp DESC). Endpoints now respond in <1s."
+}

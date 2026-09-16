@@ -66,7 +66,7 @@ const DemandIntelligence = () => {
 
       {/* Demand Forecast */}
       <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-        <SectionHeader icon={<TrendUp size={16} color="#1171b8" weight="duotone" />} title="24H Demand Forecast (Actual vs Predicted)" color="#C9E0EF" />
+        <SectionHeader icon={<TrendUp size={16} color="#1171b8" weight="duotone" />} title="24H Demand Forecast (Actual vs Predicted)" color="#163F56" />
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={forecast}>
             <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
@@ -85,7 +85,7 @@ const DemandIntelligence = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Peak Demand Heatmap */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<ChartBar size={16} color="#FF9500" weight="duotone" />} title="Peak Demand Heatmap" color="#C9E0EF" />
+          <SectionHeader icon={<ChartBar size={16} color="#FF9500" weight="duotone" />} title="Peak Demand Heatmap" color="#163F56" />
           <div className="overflow-x-auto">
             <div className="flex items-center gap-0.5 mb-1">
               <div style={{ width: 28 }} />
@@ -128,7 +128,7 @@ const DemandIntelligence = () => {
 
         {/* Consumer Segmentation */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Users size={16} color="#AF52DE" weight="duotone" />} title="Consumer Segmentation" color="#C9E0EF" />
+          <SectionHeader icon={<Users size={16} color="#AF52DE" weight="duotone" />} title="Consumer Segmentation" color="#163F56" />
           <div className="flex items-center gap-4">
             <ResponsiveContainer width={140} height={140}>
               <PieChart>
@@ -155,7 +155,7 @@ const DemandIntelligence = () => {
 
       {/* Seasonal Trend */}
       <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-        <SectionHeader icon={<Thermometer size={16} color="#FF9500" weight="duotone" />} title="Seasonal Usage & Temperature Trend" color="#C9E0EF" />
+        <SectionHeader icon={<Thermometer size={16} color="#FF9500" weight="duotone" />} title="Seasonal Usage & Temperature Trend" color="#163F56" />
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={seasonal_trend}>
             <CartesianGrid strokeDasharray="3 3" stroke="#252525" />

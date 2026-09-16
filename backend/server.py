@@ -243,6 +243,11 @@ async def sensor_simulation_loop():
 
 @app.on_event("startup")
 async def startup_event():
+    # Create indexes for fast queries on large collections
+    await db.sensor_readings.create_index([("instrument_id", 1), ("timestamp", -1)])
+    await db.sensor_readings.create_index([("timestamp", -1)])
+    await db.alerts.create_index([("timestamp", -1)])
+    await db.anomalies.create_index([("timestamp", -1)])
     asyncio.create_task(sensor_simulation_loop())
 
 @api_router.get("/")

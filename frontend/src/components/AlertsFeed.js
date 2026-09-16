@@ -91,7 +91,7 @@ const AlertsFeed = ({ alerts, onRefresh }) => {
                       {format(new Date(alert.timestamp), "HH:mm:ss")}
                     </span>
                   </div>
-                  <p className="text-sm text-white mb-2">{alert.message}</p>
+                  <p className="text-sm mb-2" style={{ color: "#062C60" }}>{alert.message}</p>
                   <button
                     onClick={() => handleAcknowledge(alert.id)}
                     className="text-xs px-3 py-1 rounded-sm font-medium hover:opacity-80 transition-opacity"

@@ -61,7 +61,7 @@ const NRWAnalytics = () => {
 
       {/* Input vs Consumption vs Losses */}
       <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-        <SectionHeader icon={<ChartLine size={16} color="#1171b8" weight="duotone" />} title="24H Water Balance: Input vs Consumption vs Losses" color="#C9E0EF" />
+        <SectionHeader icon={<ChartLine size={16} color="#1171b8" weight="duotone" />} title="24H Water Balance: Input vs Consumption vs Losses" color="#163F56" />
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={hourly_balance}>
             <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
@@ -79,7 +79,7 @@ const NRWAnalytics = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* DMA Analysis */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Drop size={16} color="#1A8AD4" weight="duotone" />} title="District Metered Area (DMA) Analysis" color="#C9E0EF" />
+          <SectionHeader icon={<Drop size={16} color="#1A8AD4" weight="duotone" />} title="District Metered Area (DMA) Analysis" color="#163F56" />
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {dma_analysis.map((dma) => (
               <div key={dma.id} className="flex items-center justify-between p-2 rounded-sm" style={{ backgroundColor: "rgba(255,255,255,0.88)" }}>
@@ -103,7 +103,7 @@ const NRWAnalytics = () => {
 
         {/* MNF Profile */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Gauge size={16} color="#AF52DE" weight="duotone" />} title={`Minimum Night Flow (Baseline: ${mnf_baseline} L/min)`} color="#C9E0EF" />
+          <SectionHeader icon={<Gauge size={16} color="#AF52DE" weight="duotone" />} title={`Minimum Night Flow (Baseline: ${mnf_baseline} L/min)`} color="#163F56" />
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={mnf_profile}>
               <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
@@ -120,7 +120,7 @@ const NRWAnalytics = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Loss Separation */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Warning size={16} color="#FF9500" weight="duotone" />} title="Apparent vs Real Loss Separation" color="#C9E0EF" />
+          <SectionHeader icon={<Warning size={16} color="#FF9500" weight="duotone" />} title="Apparent vs Real Loss Separation" color="#163F56" />
           <div className="flex items-center gap-6">
             <ResponsiveContainer width={160} height={160}>
               <PieChart>
@@ -161,7 +161,7 @@ const NRWAnalytics = () => {
 
         {/* Pipe Leak Probability */}
         <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
-          <SectionHeader icon={<Drop size={16} color="#FF3B30" weight="duotone" />} title="Leak Probability per Pipe Segment" color="#C9E0EF" />
+          <SectionHeader icon={<Drop size={16} color="#FF3B30" weight="duotone" />} title="Leak Probability per Pipe Segment" color="#163F56" />
           <div className="space-y-1.5 max-h-64 overflow-y-auto">
             {pipe_risk.sort((a, b) => b.leak_probability - a.leak_probability).map((pipe) => (
               <div key={pipe.id} className="flex items-center gap-3 p-2 rounded-sm" style={{ backgroundColor: "rgba(255,255,255,0.88)" }}>
