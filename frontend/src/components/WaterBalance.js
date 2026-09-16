@@ -119,7 +119,7 @@ const FlowDiagram = ({ data }) => {
     <svg viewBox="0 0 860 310" className="w-full" style={{ minHeight: "260px" }}>
       <defs>
         <marker id="arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-          <path d="M0,0 L6,3 L0,6 Z" fill="#C9E0EF" />
+          <path d="M0,0 L6,3 L0,6 Z" fill="#163F56" />
         </marker>
       </defs>
       {/* Connections */}
@@ -133,7 +133,7 @@ const FlowDiagram = ({ data }) => {
               <animate attributeName="stroke-dashoffset" from="20" to="0" dur="2s" repeatCount="indefinite" />
             </path>
             {/* Flow value label at midpoint */}
-            <text x="0" y="0" fill={c.color} fontSize="8" fontWeight="700" fontFamily="JetBrains Mono, monospace" textAnchor="middle" opacity="0.9">
+            <text x="0" y="0" fill={c.color} fontSize="9" fontWeight="800" fontFamily="JetBrains Mono, monospace" textAnchor="middle" opacity="1">
               <textPath href={`#fpath-${i}`} startOffset="50%">{c.value} L/min</textPath>
             </text>
             <path id={`fpath-${i}`} d={d} fill="none" stroke="none" />
@@ -144,17 +144,17 @@ const FlowDiagram = ({ data }) => {
       {FLOW_NODES.map((n) => (
         <g key={n.id}>
           <rect x={n.x} y={n.y} width={n.w} height={n.h} rx="3" ry="3"
-            fill={`${n.color}12`} stroke={`${n.color}55`} strokeWidth="1" />
+            fill={`${n.color}18`} stroke={`${n.color}88`} strokeWidth="1.5" />
           {n.label.split("\n").map((line, li) => (
             <text key={li} x={n.x + n.w / 2} y={n.y + n.h / 2 + (li - (n.label.split("\n").length - 1) / 2) * 11}
-              fill="#E0E0E0" fontSize="9" fontWeight="600" textAnchor="middle" dominantBaseline="central">
+              fill="#062C60" fontSize="9" fontWeight="700" textAnchor="middle" dominantBaseline="central">
               {line}
             </text>
           ))}
         </g>
       ))}
       {/* Recovery arrow label */}
-      <text x="345" y="175" fill="#AF52DE" fontSize="8" fontWeight="600" fontFamily="JetBrains Mono" textAnchor="middle" opacity="0.6">
+      <text x="345" y="175" fill="#AF52DE" fontSize="9" fontWeight="700" fontFamily="JetBrains Mono" textAnchor="middle" opacity="0.8">
         RECOVERY LOOP
       </text>
     </svg>

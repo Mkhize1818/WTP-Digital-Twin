@@ -62,7 +62,7 @@
 .air{display:flex;gap:8px;margin-top:auto}.air input{flex:1;padding:8px 12px;font-size:12px;border:1px solid var(--bd2);background:var(--bg2);color:#062C60;font-family:'JetBrains Mono',monospace;border-radius:2px;outline:none}
 .air input:focus{border-color:var(--bl)}.air button{padding:8px 16px;background:var(--bl);color:#062C60;border:none;cursor:pointer;border-radius:2px;font-weight:700}
 /* PFD - Isometric 3D */
-.iso-scene{position:relative;width:100%;min-height:640px;background:#060810;border:1px solid rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.iso-scene{position:relative;width:100%;min-height:640px;background:linear-gradient(160deg,#E8F0F8 0%,#D4E6F5 40%,#C0D8EC 100%);border:1px solid rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
 .iso-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,122,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,122,255,0.03) 1px,transparent 1px);background-size:50px 50px;mask-image:radial-gradient(ellipse at center,black 40%,transparent 80%)}
 .iso-zones{position:absolute;inset:0;z-index:0;pointer-events:none}
 .iso-zlbl{position:absolute;font-size:11px;font-weight:900;font-family:'JetBrains Mono',monospace;letter-spacing:3px;white-space:nowrap;user-select:none}
@@ -73,8 +73,8 @@
 .iso-inst{pointer-events:auto}
 .iso-tank{position:absolute;cursor:pointer;transition:transform .2s ease,filter .2s ease;transform-origin:center bottom}
 .iso-tank:hover{transform:scale(1.06) translateY(-4px);filter:brightness(1.25);z-index:50 !important}
-.iso-tank-cap{width:100%;height:18px;border:1px solid;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));position:relative;z-index:3;backdrop-filter:blur(2px)}
-.iso-tank-body{position:relative;width:100%;border:1px solid;border-top:none;background:linear-gradient(180deg,rgba(10,15,30,0.95),rgba(5,8,20,0.98));overflow:hidden;z-index:2;border-radius:0 0 4px 4px}
+.iso-tank-cap{width:100%;height:18px;border:1px solid;border-radius:50%;background:linear-gradient(135deg,rgba(17,113,184,0.15),rgba(17,113,184,0.05));position:relative;z-index:3;backdrop-filter:blur(2px)}
+.iso-tank-body{position:relative;width:100%;border:1px solid;border-top:none;background:linear-gradient(180deg,rgba(6,44,96,0.88),rgba(6,44,96,0.95));box-shadow:0 4px 16px rgba(6,44,96,0.2);overflow:hidden;z-index:2;border-radius:0 0 4px 4px}
 .iso-tank-water{position:absolute;bottom:0;left:0;right:0;transition:height 1.5s cubic-bezier(0.4,0,0.2,1);border-radius:0 0 3px 3px}
 .iso-water-shimmer{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.08) 30%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.08) 70%,transparent 100%);animation:shimmer 3s ease-in-out infinite}
 @keyframes shimmer{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
@@ -86,11 +86,11 @@
 .iso-sdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .iso-tank-id{text-align:center;font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;margin-top:2px}
 .iso-inst{position:absolute;cursor:pointer;transition:transform .15s ease}.iso-inst:hover{transform:scale(1.18);z-index:50 !important}
-.iso-inst-in{display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:2px;border:1px solid;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);white-space:nowrap}
+.iso-inst-in{display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:2px;border:1px solid;background:rgba(255,255,255,0.88);box-shadow:0 1px 4px rgba(6,44,96,0.1);backdrop-filter:blur(6px);white-space:nowrap}
 .iso-inst-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .iso-inst-lbl{font-size:8px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px}
-.iso-inst-val{font-size:8px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace}
-.iso-legend{position:absolute;top:12px;right:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;z-index:10;padding:6px 10px;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);border-radius:2px;border:1px solid rgba(255,255,255,0.06)}
+.iso-inst-val{font-size:8px;color:#163F56;font-family:'JetBrains Mono',monospace}
+.iso-legend{position:absolute;top:12px;right:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;z-index:10;padding:6px 10px;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(6,44,96,0.08);backdrop-filter:blur(8px);border-radius:2px;border:1px solid rgba(255,255,255,0.06)}
 .iso-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:#163F56;font-family:'JetBrains Mono',monospace}
 .iso-legend-dot{width:6px;height:6px;border-radius:50%}
 .iso-legend-sep{width:1px;height:14px;background:rgba(255,255,255,0.1)}
@@ -310,7 +310,7 @@ function renderPFD(){
   // Build SVG pipes
   let pipeSvg='';ISO_PIPES.forEach((p,i)=>{
     const x1=p.from[0]*100+40,y1=p.from[1]*110+40,x2=p.to[0]*100+40,y2=p.to[1]*110+40;
-    pipeSvg+=`<line x1="${x1}" y1="${y1+2}" x2="${x2}" y2="${y2+2}" stroke="rgba(0,0,0,0.3)" stroke-width="6" stroke-linecap="round"/>`;
+    pipeSvg+=`<line x1="${x1}" y1="${y1+2}" x2="${x2}" y2="${y2+2}" stroke="rgba(6,44,96,0.12)" stroke-width="6" stroke-linecap="round"/>`;
     pipeSvg+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${p.color}44" stroke-width="4" stroke-linecap="round"/>`;
     pipeSvg+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${p.color}" stroke-width="2" stroke-linecap="round" stroke-dasharray="8 16" class="iso-pipe-flow" style="animation-delay:${i*0.3}s"/>`;
     if(p.label)pipeSvg+=`<text x="${(x1+x2)/2}" y="${(y1+y2)/2-8}" fill="${p.color}" font-size="9" font-weight="700" font-family="JetBrains Mono,monospace" text-anchor="middle">${p.label}</text>`;
@@ -445,7 +445,7 @@ function renderWB(){const m=R(140,170),rain=R(2.5,8),bore=R(5,15),ti=Math.round(
     {l:'Total Losses',v:tloss,u:'L/min',c:'#FF3B30'},
     {l:'Storage Chg',v:cis,u:'L/min',sv:Math.round(cis*conv*10)/10,su:'m³/d',c:cis>=0?'#34C759':'#FF3B30'},
     {l:'Balance Check',v:bc,u:'%',c:bc<5?'#34C759':'#FF9500'}
-  ].map(c=>`<div style="padding:10px;border-radius:2px;border:1px solid ${c.c}33;background:#FFFFFF"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#163F56;margin-bottom:6px">${c.l}</div><div style="font-family:Chivo,sans-serif;font-size:18px;font-weight:900;letter-spacing:-1px;color:${c.c}">${c.v} <span style="font-size:10px;color:#7A9AB5">${c.u}</span></div>${c.sv!==undefined?`<div style="font-size:9px;color:#7A9AB5;margin-top:2px">${c.sv} ${c.su}</div>`:''}</div>`).join('')}</div>
+  ].map(c=>`<div style="padding:10px;border-radius:2px;border:1px solid ${c.c}33;background:#F4F8FC;border:1px solid rgba(17,113,184,0.1)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#062C60;margin-bottom:6px">${c.l}</div><div style="font-family:Chivo,sans-serif;font-size:18px;font-weight:900;letter-spacing:-1px;color:${c.c}">${c.v} <span style="font-size:10px;color:#7A9AB5">${c.u}</span></div>${c.sv!==undefined?`<div style="font-size:9px;color:#7A9AB5;margin-top:2px">${c.sv} ${c.su}</div>`:''}</div>`).join('')}</div>
   <!-- Sankey-style SVG Flow Diagram -->
   <div class="pd" style="margin-bottom:16px"><div class="st"><div class="dot" style="background:#1171b8"></div>Average Daily Water Balance (Sankey)</div>
   <svg viewBox="0 0 860 310" style="width:100%;min-height:240px">
@@ -460,7 +460,7 @@ function renderWB(){const m=R(140,170),rain=R(2.5,8),bore=R(5,15),ti=Math.round(
       {l:'Main\\nReservoir',x:210,y:80,w:100,h:52,c:'#1171b8'},{l:'Treatment\\nPlant',x:390,y:80,w:100,h:52,c:'#1A8AD4'},{l:'Distribution\\nSystem',x:570,y:80,w:100,h:52,c:'#34C759'},
       {l:'CIP Lines',x:740,y:20,w:80,h:36,c:'#34C759'},{l:'PET Lines',x:740,y:64,w:80,h:36,c:'#34C759'},{l:'Canline',x:740,y:108,w:80,h:36,c:'#34C759'},{l:'Syrup Room',x:740,y:152,w:80,h:36,c:'#34C759'},{l:'WWTP',x:740,y:200,w:80,h:36,c:'#FF9500'},
       {l:'Recovery\\nSystem',x:390,y:210,w:100,h:44,c:'#AF52DE'},{l:'Evaporation',x:570,y:210,w:80,h:36,c:'#FF9500'},{l:'Seepage',x:570,y:260,w:80,h:36,c:'#FF3B30'}
-    ].map(n=>`<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="3" fill="${n.c}12" stroke="${n.c}55" stroke-width="1"/>${n.l.split('\\n').map((ln,li,arr)=>`<text x="${n.x+n.w/2}" y="${n.y+n.h/2+(li-(arr.length-1)/2)*11}" fill="#E0E0E0" font-size="9" font-weight="600" text-anchor="middle" dominant-baseline="central">${ln}</text>`).join('')}`).join('')}
+    ].map(n=>`<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="3" fill="${n.c}12" stroke="${n.c}55" stroke-width="1"/>${n.l.split('\\n').map((ln,li,arr)=>`<text x="${n.x+n.w/2}" y="${n.y+n.h/2+(li-(arr.length-1)/2)*11}" fill="#062C60" font-size="9" font-weight="600" text-anchor="middle" dominant-baseline="central">${ln}</text>`).join('')}`).join('')}
     <text x="345" y="175" fill="#AF52DE" font-size="8" font-weight="600" font-family="JetBrains Mono" text-anchor="middle" opacity=".6">RECOVERY LOOP</text>
   </svg></div>
   <!-- Facility Balance Table + Loss Analysis -->
@@ -682,9 +682,9 @@ function renderPlant(){
 
   function draw(){
     ctx.clearRect(0,0,W,H);
-    const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#062C60');bg.addColorStop(1,'#0B1D3A');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#E8F0F8');bg.addColorStop(1,'#D4E6F5');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
     // Grid
-    ctx.strokeStyle='rgba(100,140,200,.08)';ctx.lineWidth=.5;
+    ctx.strokeStyle='rgba(17,113,184,0.08)';ctx.lineWidth=.5;
     for(let gx=-18;gx<=24;gx+=2){const[x1,y1]=proj(gx,-.05,-14),[x2,y2]=proj(gx,-.05,16);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
     for(let gz=-14;gz<=16;gz+=2){const[x1,y1]=proj(-18,-.05,gz),[x2,y2]=proj(24,-.05,gz);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
     clk=[];
@@ -712,7 +712,7 @@ function renderPlant(){
       }
       const lx=(t00[0]+t10[0]+t11[0]+t01[0])/4,ly=Math.min(t00[1],t10[1],t01[1],t11[1])-5;
       const fs=Math.max(7,Math.min(10,SC2*cam.zoom*.32));
-      ctx.font=fs+'px sans-serif';ctx.fillStyle='rgba(220,235,255,.85)';ctx.textAlign='center';
+      ctx.font=fs+'px sans-serif';ctx.fillStyle='rgba(6,44,96,0.85)';ctx.textAlign='center';
       ctx.fillText(label.length>22?label.slice(0,20)+'…':label,lx,ly);
       const ax=[b00,b10,b11,b01,t00,t10,t11,t01].map(p=>p[0]),ay=[b00,b10,b11,b01,t00,t10,t11,t01].map(p=>p[1]);
       clk.push({id,x:Math.min(...ax)-4,y:Math.min(...ay)-4,w:Math.max(...ax)-Math.min(...ax)+8,h:Math.max(...ay)-Math.min(...ay)+8,label:e.label,desc:e.desc||''});

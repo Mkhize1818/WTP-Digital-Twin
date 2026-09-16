@@ -216,7 +216,7 @@ const PipeConnection = ({ pipe, index }) => {
     <g key={index}>
       <line
         x1={x1} y1={y1 + 2} x2={x2} y2={y2 + 2}
-        stroke="rgba(0,0,0,0.3)" strokeWidth="6" strokeLinecap="round"
+        stroke="rgba(6,44,96,0.12)" strokeWidth="6" strokeLinecap="round"
       />
       <line
         x1={x1} y1={y1} x2={x2} y2={y2}
@@ -274,7 +274,7 @@ const PFDIsometric = ({ sensors, onSensorClick }) => {
             style={{
               left: `${z.x * 100}px`,
               top: `${z.y * 110 + 12}px`,
-              color: `${z.color}30`,
+              color: `${z.color}55`,
             }}
           >
             {z.label}
