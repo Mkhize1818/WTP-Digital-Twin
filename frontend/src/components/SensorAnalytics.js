@@ -33,14 +33,14 @@ const TYPE_LABELS = {
 /* ── Stat Card ──────────────────────────────────────────── */
 
 const StatCard = ({ label, value, unit, icon, testId }) => (
-  <div className="grid-border p-3" style={{ backgroundColor: "#163F56" }} data-testid={testId}>
+  <div className="grid-border p-3" style={{ backgroundColor: "#FFFFFF" }} data-testid={testId}>
     <div className="flex items-center gap-2 mb-1">
       {icon}
-      <span className="text-xs font-bold uppercase tracking-[0.15em]" style={{ color: "#C9E0EF" }}>{label}</span>
+      <span className="text-xs font-bold uppercase tracking-[0.15em]" style={{ color: "#163F56" }}>{label}</span>
     </div>
     <div className="flex items-baseline gap-1">
-      <span className="text-xl font-black tracking-tighter" style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}>{value}</span>
-      <span className="text-xs" style={{ color: "#5A8BA8" }}>{unit}</span>
+      <span className="text-xl font-black tracking-tighter" style={{ fontFamily: "Chivo, sans-serif", color: "#062C60" }}>{value}</span>
+      <span className="text-xs" style={{ color: "#7A9AB5" }}>{unit}</span>
     </div>
   </div>
 );
@@ -114,7 +114,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
 
   if (loading) {
     return (
-      <div className="grid-border p-6 flex items-center justify-center" style={{ backgroundColor: "#0B1D3A", minHeight: "600px" }}>
+      <div className="grid-border p-6 flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.88)", minHeight: "600px" }}>
         <p className="text-[#C9E0EF]">Loading analytics...</p>
       </div>
     );
@@ -122,8 +122,8 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
 
   if (!data) {
     return (
-      <div className="grid-border p-6" style={{ backgroundColor: "#0B1D3A" }}>
-        <button onClick={onBack} className="flex items-center gap-2 text-sm mb-4 hover:text-white transition-colors" style={{ color: "#C9E0EF" }} data-testid="analytics-back-button">
+      <div className="grid-border p-6" style={{ backgroundColor: "rgba(255,255,255,0.88)" }}>
+        <button onClick={onBack} className="flex items-center gap-2 text-sm mb-4 hover:text-white transition-colors" style={{ color: "#163F56" }} data-testid="analytics-back-button">
           <ArrowLeft size={18} /> Back to PFD
         </button>
         <p className="text-[#C9E0EF]">No data available.</p>
@@ -135,7 +135,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
   const typeLabel = TYPE_LABELS[instrument.type] || instrument.type;
 
   return (
-    <div className="grid-border p-4 md:p-6" style={{ backgroundColor: "#0B1D3A" }} data-testid="sensor-analytics-panel">
+    <div className="grid-border p-4 md:p-6" style={{ backgroundColor: "rgba(255,255,255,0.88)" }} data-testid="sensor-analytics-panel">
 
       {/* Header Row */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -143,17 +143,17 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
           <button
             onClick={onBack}
             className="flex items-center gap-2 px-3 py-2 rounded-sm border hover:border-[#1171b8] transition-colors"
-            style={{ backgroundColor: "#163F56", borderColor: "rgba(201, 224, 239, 0.15)", color: "#C9E0EF" }}
+            style={{ backgroundColor: "#FFFFFF", borderColor: "rgba(17, 113, 184, 0.15)", color: "#163F56" }}
             data-testid="analytics-back-button"
           >
             <ArrowLeft size={18} />
             <span className="text-sm">Back to PFD</span>
           </button>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: "Chivo, sans-serif", color: "#062C60" }}>
               {instrument.name}
             </h2>
-            <p className="text-sm" style={{ color: "#C9E0EF" }}>
+            <p className="text-sm" style={{ color: "#163F56" }}>
               {instrument.id} &middot; {typeLabel}
             </p>
           </div>
@@ -162,8 +162,8 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
         {/* Controls Row */}
         <div className="flex items-center gap-3 flex-wrap">
           {/* Preset Range Buttons */}
-          <div className="flex items-center rounded-sm border overflow-hidden" style={{ borderColor: "rgba(201, 224, 239, 0.15)", backgroundColor: "#163F56" }} data-testid="range-selector">
-            <div className="flex items-center gap-1 px-2" style={{ color: "#5A8BA8" }}>
+          <div className="flex items-center rounded-sm border overflow-hidden" style={{ borderColor: "rgba(17, 113, 184, 0.15)", backgroundColor: "#FFFFFF" }} data-testid="range-selector">
+            <div className="flex items-center gap-1 px-2" style={{ color: "#7A9AB5" }}>
               <Clock size={14} />
             </div>
             {RANGES.map((r) => (
@@ -173,7 +173,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
                 className="px-3 py-1.5 text-xs font-bold transition-colors"
                 style={{
                   backgroundColor: range === r.value && !customDateRange ? "#1171b8" : "transparent",
-                  color: range === r.value && !customDateRange ? "#FFFFFF" : "#C9E0EF",
+                  color: range === r.value && !customDateRange ? "#FFFFFF" : "#163F56",
                 }}
                 data-testid={`range-${r.value}`}
               >
@@ -188,9 +188,9 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
               <button
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm border text-xs font-medium transition-colors"
                 style={{
-                  borderColor: customDateRange ? "#1171b8" : "rgba(201, 224, 239, 0.15)",
-                  color: customDateRange ? "#FFFFFF" : "#C9E0EF",
-                  backgroundColor: customDateRange ? "#1171b8" : "#163F56",
+                  borderColor: customDateRange ? "#1171b8" : "rgba(17, 113, 184, 0.15)",
+                  color: customDateRange ? "#FFFFFF" : "#163F56",
+                  backgroundColor: customDateRange ? "#1171b8" : "#F4F8FC",
                 }}
                 data-testid="calendar-picker-button"
               >
@@ -204,11 +204,11 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
             <PopoverContent
               className="w-auto p-0"
               align="end"
-              style={{ backgroundColor: "#163F56", borderColor: "rgba(255,255,255,0.15)" }}
+              style={{ backgroundColor: "#FFFFFF", borderColor: "rgba(17,113,184,0.15)" }}
             >
               <div className="p-3">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#C9E0EF" }}>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#163F56" }}>
                     Select Date Range
                   </span>
                   {customDateRange && (
@@ -234,7 +234,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
                     month: "space-y-4",
                     caption: "flex justify-center pt-1 relative items-center",
                     caption_label: "text-sm font-medium text-white",
-                    nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-white border border-[rgba(255,255,255,0.1)] rounded-sm",
+                    nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-white border border-[rgba(17,113,184,0.12)] rounded-sm",
                     head_cell: "text-[#C9E0EF] rounded-md w-8 font-normal text-[0.8rem]",
                     cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-[#1171b833] [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md [&:has(>.day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
                     day: "h-8 w-8 p-0 font-normal text-white hover:bg-[#1171b833] rounded-sm transition-colors",
@@ -249,7 +249,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
                   }}
                 />
                 {customDateRange?.from && !customDateRange?.to && (
-                  <p className="text-xs mt-2 text-center" style={{ color: "#C9E0EF" }}>
+                  <p className="text-xs mt-2 text-center" style={{ color: "#163F56" }}>
                     Select end date
                   </p>
                 )}
@@ -261,7 +261,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
           <button
             onClick={() => exportCSV(data, rangeLabel)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm border text-xs font-medium hover:border-[#34C759] transition-colors"
-            style={{ borderColor: "rgba(201, 224, 239, 0.15)", color: "#34C759", backgroundColor: "#163F56" }}
+            style={{ borderColor: "rgba(17, 113, 184, 0.15)", color: "#34C759", backgroundColor: "#FFFFFF" }}
             data-testid="export-csv-button"
           >
             <FileCsv size={16} weight="duotone" /> CSV
@@ -269,7 +269,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
           <button
             onClick={() => exportPDF(data, rangeLabel)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm border text-xs font-medium hover:border-[#FF3B30] transition-colors"
-            style={{ borderColor: "rgba(201, 224, 239, 0.15)", color: "#FF3B30", backgroundColor: "#163F56" }}
+            style={{ borderColor: "rgba(17, 113, 184, 0.15)", color: "#FF3B30", backgroundColor: "#FFFFFF" }}
             data-testid="export-pdf-button"
           >
             <FilePdf size={16} weight="duotone" /> PDF
@@ -277,7 +277,7 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
 
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "#34C759" }} />
-            <span className="text-xs" style={{ color: "#C9E0EF" }}>Live</span>
+            <span className="text-xs" style={{ color: "#163F56" }}>Live</span>
           </div>
         </div>
       </div>
@@ -302,12 +302,12 @@ const SensorAnalytics = ({ instrumentId, onBack }) => {
 
       {/* Compliance Band */}
       {thresholds.label && (
-        <div className="grid-border p-4 mt-4" style={{ backgroundColor: "#062C60" }}>
+        <div className="grid-border p-4 mt-4" style={{ backgroundColor: "transparent" }}>
           <div className="flex items-center gap-3">
             <ClockCountdown size={20} color="#1A8AD4" weight="duotone" />
             <div>
-              <p className="text-sm font-semibold" style={{ color: "#FFFFFF" }}>{thresholds.label}</p>
-              <p className="text-xs" style={{ color: "#C9E0EF" }}>
+              <p className="text-sm font-semibold" style={{ color: "#062C60" }}>{thresholds.label}</p>
+              <p className="text-xs" style={{ color: "#163F56" }}>
                 Low: {thresholds.low} {instrument.unit} &middot; High: {thresholds.high} {instrument.unit} &middot; Baseline: {instrument.baseline} {instrument.unit}
               </p>
             </div>

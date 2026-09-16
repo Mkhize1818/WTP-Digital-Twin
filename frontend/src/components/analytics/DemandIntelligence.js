@@ -39,7 +39,7 @@ const DemandIntelligence = () => {
   }, [fetchData]);
 
   if (loading || !data) {
-    return <div className="flex items-center justify-center" style={{ minHeight: 400 }}><p className="text-sm" style={{ color: "#C9E0EF" }}>Loading demand analytics...</p></div>;
+    return <div className="flex items-center justify-center" style={{ minHeight: 400 }}><p className="text-sm" style={{ color: "#163F56" }}>Loading demand analytics...</p></div>;
   }
 
   const { forecast, heatmap, segments, seasonal_trend, summary } = data;
@@ -57,22 +57,22 @@ const DemandIntelligence = () => {
           { label: "Predicted Peak", value: `${summary.predicted_peak} L/min`, color: "#FF9500" },
           { label: "24h Average", value: `${summary.avg_daily} L/min`, color: "#34C759" },
         ].map((card) => (
-          <div key={card.label} className="p-3 rounded-sm border" style={{ backgroundColor: "#163F56", borderColor: `${card.color}33` }}>
-            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#C9E0EF" }}>{card.label}</p>
+          <div key={card.label} className="p-3 rounded-sm border" style={{ backgroundColor: "#FFFFFF", borderColor: `${card.color}33` }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#163F56" }}>{card.label}</p>
             <p className="text-lg font-black tracking-tighter" style={{ fontFamily: "Chivo, sans-serif", color: card.color }}>{card.value}</p>
           </div>
         ))}
       </div>
 
       {/* Demand Forecast */}
-      <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+      <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
         <SectionHeader icon={<TrendUp size={16} color="#1171b8" weight="duotone" />} title="24H Demand Forecast (Actual vs Predicted)" color="#C9E0EF" />
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={forecast}>
             <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
-            <XAxis dataKey="hour" tick={{ fontSize: 10, fill: "#5A8BA8" }} interval={3} />
-            <YAxis tick={{ fontSize: 10, fill: "#5A8BA8" }} />
-            <Tooltip contentStyle={{ backgroundColor: "#163F56", border: "1px solid #333", fontSize: 11, color: "#FFF" }} />
+            <XAxis dataKey="hour" tick={{ fontSize: 10, fill: "#163F56" }} interval={3} />
+            <YAxis tick={{ fontSize: 10, fill: "#163F56" }} />
+            <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(17,113,184,0.2)", fontSize: 11, color: "#062C60" }} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
             <Area type="monotone" dataKey="upper_bound" stroke="none" fill="#1171b811" />
             <Area type="monotone" dataKey="lower_bound" stroke="none" fill="#1171b811" />
@@ -84,20 +84,20 @@ const DemandIntelligence = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Peak Demand Heatmap */}
-        <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
           <SectionHeader icon={<ChartBar size={16} color="#FF9500" weight="duotone" />} title="Peak Demand Heatmap" color="#C9E0EF" />
           <div className="overflow-x-auto">
             <div className="flex items-center gap-0.5 mb-1">
               <div style={{ width: 28 }} />
               {Array.from({ length: 24 }, (_, h) => (
-                <div key={h} className="text-center" style={{ width: 16, fontSize: 7, color: "#5A8BA8" }}>
+                <div key={h} className="text-center" style={{ width: 16, fontSize: 7, color: "#7A9AB5" }}>
                   {h % 4 === 0 ? `${h}` : ""}
                 </div>
               ))}
             </div>
             {days.map((day) => (
               <div key={day} className="flex items-center gap-0.5 mb-0.5">
-                <span style={{ width: 28, fontSize: 8, color: "#C9E0EF" }}>{day}</span>
+                <span style={{ width: 28, fontSize: 8, color: "#163F56" }}>{day}</span>
                 {Array.from({ length: 24 }, (_, h) => {
                   const cell = heatmap.find(c => c.day === day && c.hour === h);
                   const intensity = cell ? cell.value / maxHeatVal : 0;
@@ -115,19 +115,19 @@ const DemandIntelligence = () => {
               </div>
             ))}
             <div className="flex items-center justify-end gap-2 mt-2">
-              <span style={{ fontSize: 8, color: "#5A8BA8" }}>Low</span>
+              <span style={{ fontSize: 8, color: "#7A9AB5" }}>Low</span>
               <div className="flex gap-0.5">
                 {[0.1, 0.3, 0.5, 0.7, 0.9].map(v => (
                   <div key={v} style={{ width: 12, height: 8, borderRadius: 1, backgroundColor: `rgba(0,122,255,${v})` }} />
                 ))}
               </div>
-              <span style={{ fontSize: 8, color: "#5A8BA8" }}>High</span>
+              <span style={{ fontSize: 8, color: "#7A9AB5" }}>High</span>
             </div>
           </div>
         </div>
 
         {/* Consumer Segmentation */}
-        <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
           <SectionHeader icon={<Users size={16} color="#AF52DE" weight="duotone" />} title="Consumer Segmentation" color="#C9E0EF" />
           <div className="flex items-center gap-4">
             <ResponsiveContainer width={140} height={140}>
@@ -135,7 +135,7 @@ const DemandIntelligence = () => {
                 <Pie data={segments} cx="50%" cy="50%" innerRadius={35} outerRadius={60} dataKey="share_pct">
                   {segments.map((_, i) => <Cell key={i} fill={SEGMENT_COLORS[i]} />)}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#163F56", border: "1px solid #333", fontSize: 11, color: "#FFF" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(17,113,184,0.2)", fontSize: 11, color: "#062C60" }} />
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-1.5 flex-1">
@@ -143,7 +143,7 @@ const DemandIntelligence = () => {
                 <div key={seg.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: SEGMENT_COLORS[i] }} />
-                    <span className="text-[10px]" style={{ color: "#C9E0EF" }}>{seg.name}</span>
+                    <span className="text-[10px]" style={{ color: "#163F56" }}>{seg.name}</span>
                   </div>
                   <span className="text-[10px] font-bold" style={{ color: SEGMENT_COLORS[i] }}>{seg.share_pct}%</span>
                 </div>
@@ -154,15 +154,15 @@ const DemandIntelligence = () => {
       </div>
 
       {/* Seasonal Trend */}
-      <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+      <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
         <SectionHeader icon={<Thermometer size={16} color="#FF9500" weight="duotone" />} title="Seasonal Usage & Temperature Trend" color="#C9E0EF" />
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={seasonal_trend}>
             <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
-            <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#5A8BA8" }} />
-            <YAxis yAxisId="left" tick={{ fontSize: 10, fill: "#5A8BA8" }} />
+            <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#163F56" }} />
+            <YAxis yAxisId="left" tick={{ fontSize: 10, fill: "#163F56" }} />
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: "#FF9500" }} />
-            <Tooltip contentStyle={{ backgroundColor: "#163F56", border: "1px solid #333", fontSize: 11, color: "#FFF" }} />
+            <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(17,113,184,0.2)", fontSize: 11, color: "#062C60" }} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
             <Bar yAxisId="left" dataKey="avg_demand" name="Avg Demand (L/min)" fill="#1171b8" radius={[2, 2, 0, 0]} />
             <Bar yAxisId="left" dataKey="peak_demand" name="Peak Demand" fill="#1171b844" radius={[2, 2, 0, 0]} />

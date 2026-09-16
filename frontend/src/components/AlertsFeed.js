@@ -27,19 +27,19 @@ const AlertsFeed = ({ alerts, onRefresh }) => {
   return (
     <div
       className="grid-border p-4 md:p-6"
-      style={{ backgroundColor: "#0B1D3A" }}
+      style={{ backgroundColor: "rgba(255,255,255,0.88)" }}
       data-testid="alerts-feed"
     >
       <div className="flex items-center justify-between mb-4">
         <h3
           className="text-xl md:text-2xl font-semibold tracking-tight"
-          style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}
+          style={{ fontFamily: "Chivo, sans-serif", color: "#062C60" }}
         >
           Active Alerts
         </h3>
         <span
           className="text-xs font-bold uppercase tracking-[0.2em]"
-          style={{ color: "#C9E0EF" }}
+          style={{ color: "#163F56" }}
         >
           {alerts.length} Active
         </span>
@@ -49,7 +49,7 @@ const AlertsFeed = ({ alerts, onRefresh }) => {
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <CheckCircle size={48} color="#34C759" weight="duotone" />
-            <p className="text-sm mt-2" style={{ color: "#C9E0EF" }}>
+            <p className="text-sm mt-2" style={{ color: "#163F56" }}>
               No active alerts
             </p>
           </div>
@@ -82,12 +82,12 @@ const AlertsFeed = ({ alerts, onRefresh }) => {
                         {alert.type}
                       </span>
                       {alert.instrument_name && (
-                        <span className="text-xs ml-2" style={{ color: "#C9E0EF" }}>
+                        <span className="text-xs ml-2" style={{ color: "#163F56" }}>
                           {alert.instrument_name}
                         </span>
                       )}
                     </div>
-                    <span className="text-xs" style={{ color: "#C9E0EF" }}>
+                    <span className="text-xs" style={{ color: "#163F56" }}>
                       {format(new Date(alert.timestamp), "HH:mm:ss")}
                     </span>
                   </div>
@@ -97,7 +97,7 @@ const AlertsFeed = ({ alerts, onRefresh }) => {
                     className="text-xs px-3 py-1 rounded-sm font-medium hover:opacity-80 transition-opacity"
                     style={{
                       backgroundColor: "#1171b8",
-                      color: "#FFFFFF",
+                      color: "#062C60",
                     }}
                     data-testid={`acknowledge-alert-${alert.id}`}
                   >

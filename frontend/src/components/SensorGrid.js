@@ -5,12 +5,12 @@ const SensorGrid = ({ sensors, onSensorClick }) => {
   return (
     <div
       className="grid-border p-4 md:p-6"
-      style={{ backgroundColor: "#0B1D3A" }}
+      style={{ backgroundColor: "rgba(255,255,255,0.88)" }}
       data-testid="sensor-grid"
     >
       <h3
         className="text-xl md:text-2xl font-semibold tracking-tight mb-4"
-        style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}
+        style={{ fontFamily: "Chivo, sans-serif", color: "#062C60" }}
       >
         Instrumentation
       </h3>

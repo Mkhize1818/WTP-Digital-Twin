@@ -32,10 +32,10 @@ const DateRangeFilter = ({ dateRange, onDateRangeChange }) => {
 
   return (
     <div className="flex items-center gap-2 flex-wrap" data-testid="date-range-filter">
-      <CalendarBlank size={14} color="#C9E0EF" weight="bold" />
+      <CalendarBlank size={14} color="#1171b8" weight="bold" />
       <div
         className="flex items-center rounded-sm border overflow-hidden"
-        style={{ borderColor: "rgba(255,255,255,0.1)", backgroundColor: "#163F56" }}
+        style={{ borderColor: "rgba(17,113,184,0.15)", backgroundColor: "#FFFFFF" }}
       >
         {PRESETS.map((p) => (
           <button
@@ -44,7 +44,7 @@ const DateRangeFilter = ({ dateRange, onDateRangeChange }) => {
             className="px-2 py-1 text-[10px] font-bold transition-colors"
             style={{
               backgroundColor: preset === p.label ? "#1171b8" : "transparent",
-              color: preset === p.label ? "#FFF" : "#C9E0EF",
+              color: preset === p.label ? "#FFF" : "#163F56",
             }}
             data-testid={`date-preset-${p.label}`}
           >
@@ -58,23 +58,23 @@ const DateRangeFilter = ({ dateRange, onDateRangeChange }) => {
         onChange={(e) => handleCustomDate("start", e.target.value)}
         className="text-[10px] px-2 py-1 rounded-sm border outline-none"
         style={{
-          backgroundColor: "#163F56",
-          borderColor: preset === "custom" ? "#1171b8" : "rgba(255,255,255,0.1)",
-          color: "#C9E0EF",
+          backgroundColor: "#FFFFFF",
+          borderColor: preset === "custom" ? "#1171b8" : "rgba(17,113,184,0.15)",
+          color: "#163F56",
           maxWidth: "145px",
         }}
         data-testid="date-start-input"
       />
-      <span className="text-[10px]" style={{ color: "#5A8BA8" }}>to</span>
+      <span className="text-[10px]" style={{ color: "#7A9AB5" }}>to</span>
       <input
         type="datetime-local"
         value={endDate || ""}
         onChange={(e) => handleCustomDate("end", e.target.value)}
         className="text-[10px] px-2 py-1 rounded-sm border outline-none"
         style={{
-          backgroundColor: "#163F56",
-          borderColor: preset === "custom" ? "#1171b8" : "rgba(255,255,255,0.1)",
-          color: "#C9E0EF",
+          backgroundColor: "#FFFFFF",
+          borderColor: preset === "custom" ? "#1171b8" : "rgba(17,113,184,0.15)",
+          color: "#163F56",
           maxWidth: "145px",
         }}
         data-testid="date-end-input"

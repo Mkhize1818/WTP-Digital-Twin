@@ -213,7 +213,7 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
         ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
         for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
         ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 0.5; ctx.stroke();
+        ctx.strokeStyle = "rgba(17,113,184,0.12)"; ctx.lineWidth = 0.5; ctx.stroke();
         ctx.globalAlpha = 1;
       };
 
@@ -394,8 +394,8 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
           <button key={v} onClick={() => setViewMode(v)}
             className="text-[10px] font-bold px-2.5 py-1 rounded-md border transition-colors"
             style={{
-              background: viewMode === v ? "rgba(100,180,255,0.25)" : "rgba(255,255,255,0.08)",
-              borderColor: viewMode === v ? "rgba(100,180,255,0.6)" : "rgba(255,255,255,0.15)",
+              background: viewMode === v ? "rgba(100,180,255,0.25)" : "rgba(17,113,184,0.1)",
+              borderColor: viewMode === v ? "rgba(100,180,255,0.6)" : "rgba(17,113,184,0.15)",
               color: "#e0e8ff",
             }}
             data-testid={`plant-view-${v}`}
@@ -405,15 +405,15 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
         ))}
         <button onClick={() => { stateRef.current.cam = { rotX: 0.52, rotY: 0.6, zoom: 1.0 }; setViewMode("iso"); draw(); }}
           className="text-[10px] font-bold px-2.5 py-1 rounded-md border transition-colors"
-          style={{ background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)", color: "#e0e8ff" }}>
+          style={{ background: "rgba(17,113,184,0.1)", borderColor: "rgba(17,113,184,0.15)", color: "#e0e8ff" }}>
           Reset
         </button>
-        <div className="border-t my-0.5" style={{ borderColor: "rgba(255,255,255,0.1)" }} />
+        <div className="border-t my-0.5" style={{ borderColor: "rgba(17,113,184,0.12)" }} />
         <button onClick={() => setFlowOn(p => !p)}
           className="text-[10px] font-bold px-2.5 py-1 rounded-md border transition-colors"
           style={{
-            background: flowOn ? "rgba(100,180,255,0.25)" : "rgba(255,255,255,0.08)",
-            borderColor: flowOn ? "rgba(100,180,255,0.6)" : "rgba(255,255,255,0.15)",
+            background: flowOn ? "rgba(100,180,255,0.25)" : "rgba(17,113,184,0.1)",
+            borderColor: flowOn ? "rgba(100,180,255,0.6)" : "rgba(17,113,184,0.15)",
             color: "#e0e8ff",
           }}
           data-testid="plant-flow-toggle"
@@ -423,7 +423,7 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
       </div>
 
       {/* Legend */}
-      <div className="absolute bottom-3 left-3 rounded-lg p-2" style={{ background: "rgba(10,15,26,0.85)", border: "0.5px solid rgba(255,255,255,0.15)", zIndex: 10 }}>
+      <div className="absolute bottom-3 left-3 rounded-lg p-2" style={{ background: "rgba(10,15,26,0.85)", border: "0.5px solid rgba(17,113,184,0.15)", zIndex: 10 }}>
         {LEGEND.map(l => (
           <div key={l.label} className="flex items-center gap-1.5 my-0.5">
             <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: l.color }} />
@@ -441,7 +441,7 @@ const PlantOverview = ({ sensors, onSensorClick }) => {
       )}
 
       {/* Hint */}
-      <div className="absolute bottom-3 right-3 text-[10px]" style={{ color: "rgba(255,255,255,0.3)", zIndex: 10 }}>
+      <div className="absolute bottom-3 right-3 text-[10px]" style={{ color: "rgba(17,113,184,0.2)", zIndex: 10 }}>
         Drag to orbit · Scroll to zoom · Click equipment for analytics
       </div>
     </div>

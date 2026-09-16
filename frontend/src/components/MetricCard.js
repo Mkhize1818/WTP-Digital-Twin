@@ -23,26 +23,26 @@ const MetricCard = ({ title, value, unit, icon, severity, testId }) => {
   return (
     <div
       className="grid-border p-4 md:p-6 transition-colors duration-200"
-      style={{ backgroundColor: "#0B1D3A" }}
+      style={{ backgroundColor: "rgba(255,255,255,0.88)" }}
       data-testid={testId}
     >
       <div className="flex items-start justify-between mb-3">
         <div>
           <p
             className="text-xs font-bold uppercase tracking-[0.2em] mb-2"
-            style={{ color: "#C9E0EF" }}
+            style={{ color: "#163F56" }}
           >
             {title}
           </p>
           <div className="flex items-baseline gap-1">
             <span
               className="text-3xl md:text-4xl font-black tracking-tighter"
-              style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}
+              style={{ fontFamily: "Chivo, sans-serif", color: "#062C60" }}
             >
               {value}
             </span>
             {unit && (
-              <span className="text-sm" style={{ color: "#C9E0EF" }}>
+              <span className="text-sm" style={{ color: "#163F56" }}>
                 {unit}
               </span>
             )}

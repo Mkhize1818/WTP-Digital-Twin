@@ -40,7 +40,7 @@ const AssetHealth = () => {
   }, [fetchData]);
 
   if (loading || !data) {
-    return <div className="flex items-center justify-center" style={{ minHeight: 400 }}><p className="text-sm" style={{ color: "#C9E0EF" }}>Loading asset health...</p></div>;
+    return <div className="flex items-center justify-center" style={{ minHeight: 400 }}><p className="text-sm" style={{ color: "#163F56" }}>Loading asset health...</p></div>;
   }
 
   const { assets, break_history, maintenance_schedule, summary } = data;
@@ -55,23 +55,23 @@ const AssetHealth = () => {
           { label: "Avg RUL", value: `${summary.avg_rul_years}`, unit: "years", color: "#1A8AD4" },
           { label: "Breaks (12mo)", value: summary.total_breaks_12m, unit: "events", color: "#AF52DE" },
         ].map((card) => (
-          <div key={card.label} className="p-3 rounded-sm border" style={{ backgroundColor: "#163F56", borderColor: `${card.color}33` }}>
-            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#C9E0EF" }}>{card.label}</p>
+          <div key={card.label} className="p-3 rounded-sm border" style={{ backgroundColor: "#FFFFFF", borderColor: `${card.color}33` }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#163F56" }}>{card.label}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-black tracking-tighter" style={{ fontFamily: "Chivo, sans-serif", color: card.color }}>{card.value}</span>
-              <span className="text-[10px]" style={{ color: "#5A8BA8" }}>{card.unit}</span>
+              <span className="text-[10px]" style={{ color: "#7A9AB5" }}>{card.unit}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Asset Condition Table */}
-      <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+      <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
         <SectionHeader icon={<Heartbeat size={16} color="#34C759" weight="duotone" />} title="Asset Condition & Failure Probability" color="#C9E0EF" />
         <div className="overflow-x-auto">
           <table className="w-full text-[10px]">
             <thead>
-              <tr style={{ color: "#5A8BA8" }}>
+              <tr style={{ color: "#7A9AB5" }}>
                 <th className="text-left py-2 px-2">Asset</th>
                 <th className="text-left py-2 px-2">Material</th>
                 <th className="text-center py-2 px-2">Age</th>
@@ -87,10 +87,10 @@ const AssetHealth = () => {
                 <tr key={asset.id} className="border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                   <td className="py-2 px-2">
                     <p className="font-bold text-white">{asset.name}</p>
-                    <p style={{ color: "#5A8BA8" }}>{asset.length_m}m | {asset.diameter_mm}mm</p>
+                    <p style={{ color: "#7A9AB5" }}>{asset.length_m}m | {asset.diameter_mm}mm</p>
                   </td>
-                  <td className="py-2 px-2" style={{ color: "#C9E0EF" }}>{asset.material}</td>
-                  <td className="text-center py-2 px-2" style={{ color: "#C9E0EF" }}>{asset.age_years}yr</td>
+                  <td className="py-2 px-2" style={{ color: "#163F56" }}>{asset.material}</td>
+                  <td className="text-center py-2 px-2" style={{ color: "#163F56" }}>{asset.age_years}yr</td>
                   <td className="text-center py-2 px-2">
                     <div className="flex items-center justify-center gap-1">
                       <div className="w-10 h-1.5 rounded-full" style={{ backgroundColor: "#252525" }}>
@@ -122,14 +122,14 @@ const AssetHealth = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Break History */}
-        <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
           <SectionHeader icon={<HardDrives size={16} color="#AF52DE" weight="duotone" />} title="Break History (12 Months)" color="#C9E0EF" />
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={break_history}>
               <CartesianGrid strokeDasharray="3 3" stroke="#252525" />
-              <XAxis dataKey="month" tick={{ fontSize: 9, fill: "#5A8BA8" }} angle={-45} textAnchor="end" height={50} />
-              <YAxis tick={{ fontSize: 9, fill: "#5A8BA8" }} allowDecimals={false} />
-              <Tooltip contentStyle={{ backgroundColor: "#163F56", border: "1px solid #333", fontSize: 11, color: "#FFF" }} />
+              <XAxis dataKey="month" tick={{ fontSize: 9, fill: "#163F56" }} angle={-45} textAnchor="end" height={50} />
+              <YAxis tick={{ fontSize: 9, fill: "#163F56" }} allowDecimals={false} />
+              <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(17,113,184,0.2)", fontSize: 11, color: "#062C60" }} />
               <Bar dataKey="breaks" name="Breaks" radius={[3, 3, 0, 0]}>
                 {break_history.map((entry, i) => (
                   <Cell key={i} fill={entry.breaks >= 3 ? "#FF3B30" : (entry.breaks >= 2 ? "#FF9500" : "#AF52DE")} />
@@ -140,11 +140,11 @@ const AssetHealth = () => {
         </div>
 
         {/* Maintenance Schedule */}
-        <div className="rounded-sm border p-4" style={{ backgroundColor: "#091A30", borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="rounded-sm border p-4" style={{ backgroundColor: "#F4F8FC", borderColor: "rgba(17,113,184,0.1)" }}>
           <SectionHeader icon={<Wrench size={16} color="#1171b8" weight="duotone" />} title="Predictive Maintenance Schedule" color="#C9E0EF" />
           <div className="space-y-2">
             {maintenance_schedule.map((item) => (
-              <div key={item.asset_id} className="p-2.5 rounded-sm border" style={{ backgroundColor: "#0B1D3A", borderColor: item.type === "urgent" ? "#FF3B3033" : "rgba(255,255,255,0.05)" }}>
+              <div key={item.asset_id} className="p-2.5 rounded-sm border" style={{ backgroundColor: "rgba(255,255,255,0.88)", borderColor: item.type === "urgent" ? "#FF3B3033" : "rgba(255,255,255,0.05)" }}>
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs font-bold text-white">{item.asset_name}</p>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase" style={{
@@ -155,11 +155,11 @@ const AssetHealth = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[10px]">
-                  <span style={{ color: "#C9E0EF" }}>
+                  <span style={{ color: "#163F56" }}>
                     <Timer size={10} weight="bold" className="inline mr-1" />
                     {item.scheduled_date}
                   </span>
-                  <span style={{ color: "#5A8BA8" }}>Est. R{item.estimated_cost.toLocaleString()}</span>
+                  <span style={{ color: "#7A9AB5" }}>Est. R{item.estimated_cost.toLocaleString()}</span>
                 </div>
               </div>
             ))}

@@ -62,7 +62,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
   return (
     <div
       className="grid-border p-4 md:p-6 relative"
-      style={{ backgroundColor: "#0B1D3A", minHeight: "500px" }}
+      style={{ backgroundColor: "rgba(255,255,255,0.88)", minHeight: "500px" }}
       data-testid="pfd-visualization"
     >
       {/* Header Row 1: Tabs + Leaks */}
@@ -70,7 +70,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
         <div className="flex items-center gap-4">
           <div
             className="flex items-center rounded-sm border overflow-hidden flex-wrap"
-            style={{ borderColor: "rgba(201, 224, 239, 0.15)", backgroundColor: "#163F56" }}
+            style={{ borderColor: "rgba(17, 113, 184, 0.15)", backgroundColor: "#FFFFFF" }}
             data-testid="pfd-view-toggle"
           >
             {TABS.map((tab) => (
@@ -80,7 +80,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
                 className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold transition-colors"
                 style={{
                   backgroundColor: activeView === tab.id ? "#1171b8" : "transparent",
-                  color: activeView === tab.id ? "#FFFFFF" : "#C9E0EF",
+                  color: activeView === tab.id ? "#FFFFFF" : "#163F56",
                 }}
                 data-testid={`${tab.id}-tab-button`}
               >
@@ -106,7 +106,7 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
           {(activeView === "pfd" || activeView === "plant") && (
             <div className="flex items-center gap-2">
               <Crosshair size={16} color="#C9E0EF" />
-              <span className="text-xs" style={{ color: "#C9E0EF" }}>
+              <span className="text-xs" style={{ color: "#163F56" }}>
                 Click any tag for analytics
               </span>
             </div>

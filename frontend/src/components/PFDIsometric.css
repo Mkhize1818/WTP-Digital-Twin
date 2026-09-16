@@ -5,7 +5,7 @@
   width: 100%;
   min-height: 640px;
   background: #062C60;
-  border: 1px solid rgba(201, 224, 239, 0.12);
+  border: 1px solid rgba(17, 113, 184, 0.12);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -267,7 +267,7 @@
   background: rgba(6, 44, 96, 0.8);
   backdrop-filter: blur(8px);
   border-radius: 2px;
-  border: 1px solid rgba(201, 224, 239, 0.12);
+  border: 1px solid rgba(17, 113, 184, 0.12);
 }
 
 .iso-legend-item {
@@ -288,7 +288,7 @@
 .iso-legend-sep {
   width: 1px;
   height: 14px;
-  background: rgba(201, 224, 239, 0.15);
+  background: rgba(17, 113, 184, 0.15);
 }
 
 /* ── Hint ───────────────────────────────────────────── */

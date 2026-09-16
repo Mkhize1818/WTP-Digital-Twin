@@ -53,14 +53,14 @@ const ComplianceExport = () => {
   return (
     <div
       className="grid-border p-4 md:p-6"
-      style={{ backgroundColor: "#0B1D3A" }}
+      style={{ backgroundColor: "rgba(255,255,255,0.88)" }}
       data-testid="compliance-export"
     >
       <div className="flex items-center gap-2 mb-4">
         <FileText size={24} color="#1171b8" weight="duotone" />
         <h3
           className="text-xl md:text-2xl font-semibold tracking-tight"
-          style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}
+          style={{ fontFamily: "Chivo, sans-serif", color: "#062C60" }}
         >
           Compliance Reports
         </h3>
@@ -71,8 +71,8 @@ const ComplianceExport = () => {
         <div
           className="flex items-center rounded-sm border overflow-hidden"
           style={{
-            borderColor: "rgba(201, 224, 239, 0.15)",
-            backgroundColor: "#163F56",
+            borderColor: "rgba(17, 113, 184, 0.15)",
+            backgroundColor: "#FFFFFF",
           }}
           data-testid="report-range-selector"
         >
@@ -99,9 +99,9 @@ const ComplianceExport = () => {
           disabled={loading}
           className="flex items-center gap-1.5 px-4 py-2 rounded-sm border text-sm font-medium hover:border-[#34C759] transition-colors disabled:opacity-50"
           style={{
-            borderColor: "rgba(201, 224, 239, 0.15)",
+            borderColor: "rgba(17, 113, 184, 0.15)",
             color: "#34C759",
-            backgroundColor: "#163F56",
+            backgroundColor: "#FFFFFF",
           }}
           data-testid="compliance-csv-button"
         >
@@ -117,9 +117,9 @@ const ComplianceExport = () => {
           disabled={loading}
           className="flex items-center gap-1.5 px-4 py-2 rounded-sm border text-sm font-medium hover:border-[#FF3B30] transition-colors disabled:opacity-50"
           style={{
-            borderColor: "rgba(201, 224, 239, 0.15)",
+            borderColor: "rgba(17, 113, 184, 0.15)",
             color: "#FF3B30",
-            backgroundColor: "#163F56",
+            backgroundColor: "#FFFFFF",
           }}
           data-testid="compliance-pdf-button"
         >

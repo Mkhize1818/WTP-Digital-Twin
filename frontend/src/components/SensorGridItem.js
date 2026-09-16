@@ -24,8 +24,8 @@ const SensorGridItem = ({ sensor, onSensorClick }) => {
     <div
       className="p-3 border rounded-sm cursor-pointer hover:border-[#1171b8] transition-colors"
       style={{
-        backgroundColor: "#163F56",
-        borderColor: "rgba(201, 224, 239, 0.15)",
+        backgroundColor: "#FFFFFF",
+        borderColor: "rgba(17, 113, 184, 0.15)",
       }}
       onClick={() => onSensorClick?.(sensor.instrument_id)}
       data-testid={`sensor-card-${sensor.instrument_id}`}
@@ -40,18 +40,18 @@ const SensorGridItem = ({ sensor, onSensorClick }) => {
           />
         </div>
       </div>
-      <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "#C9E0EF" }}>
+      <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "#163F56" }}>
         {sensor.instrument_id}
       </p>
       <p className="text-sm text-white mb-2">{sensor.instrument_name}</p>
       <div className="flex items-baseline gap-1">
         <span
           className="text-xl font-black tracking-tighter"
-          style={{ fontFamily: "Chivo, sans-serif", color: "#FFFFFF" }}
+          style={{ fontFamily: "Chivo, sans-serif", color: "#062C60" }}
         >
           {sensor.value}
         </span>
-        <span className="text-xs" style={{ color: "#C9E0EF" }}>
+        <span className="text-xs" style={{ color: "#163F56" }}>
           {sensor.unit}
         </span>
       </div>

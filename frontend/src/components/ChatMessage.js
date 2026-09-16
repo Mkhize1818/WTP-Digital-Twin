@@ -4,7 +4,7 @@ const ChatMessage = ({ msg }) => (
   <div
     className="p-2 rounded-sm"
     style={{
-      backgroundColor: msg.role === "user" ? "#163F56" : "#0B1D3A",
+      backgroundColor: msg.role === "user" ? "#E8F0F8" : "#F4F8FC",
       borderLeft:
         msg.role === "assistant"
           ? "2px solid #1171b8"
@@ -24,7 +24,7 @@ const ChatMessage = ({ msg }) => (
     <p
       className="text-sm leading-relaxed"
       style={{
-        color: "#FFFFFF",
+        color: "#062C60",
         fontFamily:
           msg.role === "assistant"
             ? "IBM Plex Sans, sans-serif"

@@ -27,21 +27,21 @@
 }
 
 :root {
-  /* Talbot Brand Palette */
-  --background: #062C60;
-  --surface: #0B1D3A;
-  --surface-elevated: #163F56;
-  --text-primary: #FFFFFF;
-  --text-secondary: #C9E0EF;
-  --text-disabled: #5A8BA8;
+  /* Talbot Light Theme */
+  --background: #E8F0F8;
+  --surface: #FFFFFF;
+  --surface-elevated: #F4F8FC;
+  --text-primary: #062C60;
+  --text-secondary: #163F56;
+  --text-disabled: #7A9AB5;
   --brand-primary: #1171b8;
-  --brand-hover: #1A8AD4;
-  --brand-secondary: #0E5A94;
-  --status-success: #34C759;
-  --status-warning: #FF9500;
-  --status-error: #FF3B30;
-  --status-info: #C9E0EF;
-  --border-default: rgba(201, 224, 239, 0.12);
+  --brand-hover: #0E5A94;
+  --brand-secondary: #163F56;
+  --status-success: #2DA44E;
+  --status-warning: #D4820A;
+  --status-error: #CF222E;
+  --status-info: #1171b8;
+  --border-default: rgba(17, 113, 184, 0.12);
   --border-focus: #1171b8;
 
   /* Extended palette tokens */
@@ -53,21 +53,31 @@
 
 body {
   margin: 0;
-  font-family: 'Aktiv Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif;
+  font-family: 'Aktiv Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
+  background-image: url('https://static.prod-images.emergentagent.com/jobs/08778319-680e-4dcc-9637-79a56dea1c9a/images/051e0fd6187a51fc4b81cd9d57090552be0cc3fe87c259ce9d1761adead4fc4f.jpeg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
   color: var(--text-primary);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Chivo', 'Aktiv Grotesk', sans-serif;
+  color: var(--talbot-navy);
 }
 
 code, pre {
   font-family: 'JetBrains Mono', monospace;
 }
+
+/* Scrollbar styling for light theme */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(201, 224, 239, 0.3); }
+::-webkit-scrollbar-thumb { background: rgba(17, 113, 184, 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(17, 113, 184, 0.5); }
 
 @layer utilities {
   .text-balance {
@@ -76,24 +86,20 @@ code, pre {
 
   .grid-border {
     border: 1px solid var(--border-default);
-    transition: border-color 0.2s ease-in-out;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 8px;
   }
 
   .grid-border:hover {
-    border-color: rgba(201, 224, 239, 0.25);
+    border-color: rgba(17, 113, 184, 0.25);
+    box-shadow: 0 2px 12px rgba(17, 113, 184, 0.06);
   }
 
-  .status-online {
-    color: var(--status-success);
-  }
-
-  .status-offline {
-    color: var(--status-error);
-  }
-
-  .status-warning {
-    color: var(--status-warning);
-  }
+  .status-online { color: var(--status-success); }
+  .status-offline { color: var(--status-error); }
+  .status-warning { color: var(--status-warning); }
 
   .animate-flash {
     animation: flash 0.5s ease-in-out;
@@ -101,7 +107,7 @@ code, pre {
 
   @keyframes flash {
     0%, 100% { background-color: transparent; }
-    50% { background-color: rgba(17, 113, 184, 0.2); }
+    50% { background-color: rgba(17, 113, 184, 0.1); }
   }
 
   .animate-pulse-border {
