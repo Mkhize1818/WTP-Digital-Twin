@@ -30,7 +30,7 @@
 .st .dot{width:6px;height:6px;border-radius:50%}
 .tabs{display:flex;align-items:center;border:1px solid var(--bd2);background:var(--bg3);border-radius:2px;overflow:hidden;flex-wrap:wrap}
 .tb{display:flex;align-items:center;gap:4px;padding:8px 12px;font-size:10px;font-weight:700;border:none;cursor:pointer;transition:all .2s;background:transparent;color:var(--t2)}
-.tb.ac{background:var(--bl);color:#062C60}.tb:hover:not(.ac){color:#062C60}
+.tb.ac{background:var(--bl);color:#FFFFFF}.tb:hover:not(.ac){color:#062C60}
 .th{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .tv{display:none}.tv.ac{display:block}
 .lb2{display:flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--rd);border-radius:2px;animation:pulseBorder 2s infinite}
@@ -60,7 +60,7 @@
 .sq{width:100%;text-align:left;font-size:11px;padding:8px;border:1px solid var(--bd2);background:var(--bg2);color:var(--t2);cursor:pointer;margin-bottom:6px;border-radius:2px}
 .sq:hover{border-color:var(--bl)}
 .air{display:flex;gap:8px;margin-top:auto}.air input{flex:1;padding:8px 12px;font-size:12px;border:1px solid var(--bd2);background:var(--bg2);color:#062C60;font-family:'JetBrains Mono',monospace;border-radius:2px;outline:none}
-.air input:focus{border-color:var(--bl)}.air button{padding:8px 16px;background:var(--bl);color:#062C60;border:none;cursor:pointer;border-radius:2px;font-weight:700}
+.air input:focus{border-color:var(--bl)}.air button{padding:8px 16px;background:var(--bl);color:#FFFFFF;border:none;cursor:pointer;border-radius:2px;font-weight:700}
 /* PFD - Isometric 3D */
 .iso-scene{position:relative;width:100%;min-height:640px;background:linear-gradient(160deg,#E8F0F8 0%,#D4E6F5 40%,#C0D8EC 100%);border:1px solid rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
 .iso-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,122,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,122,255,0.03) 1px,transparent 1px);background-size:50px 50px;mask-image:radial-gradient(ellipse at center,black 40%,transparent 80%)}
@@ -79,8 +79,8 @@
 .iso-water-shimmer{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.08) 30%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.08) 70%,transparent 100%);animation:shimmer 3s ease-in-out infinite}
 @keyframes shimmer{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
 .iso-tank-level{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:5;pointer-events:none}
-.iso-lv{display:block;font-family:'Chivo',sans-serif;font-size:18px;font-weight:900;letter-spacing:-1px;color:#062C60;text-shadow:0 1px 4px rgba(0,0,0,0.8)}
-.iso-lu{display:block;font-size:9px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace}
+.iso-lv{display:block;font-family:'Chivo',sans-serif;font-size:18px;font-weight:900;letter-spacing:-1px;color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.8)}
+.iso-lu{display:block;font-size:9px;color:rgba(255,255,255,0.7);font-family:'JetBrains Mono',monospace}
 .iso-tank-base{width:100%;height:10px;border:1px solid;border-top:none;border-radius:0 0 50% 50%;background:rgba(0,0,0,0.3);position:relative;z-index:1}
 .iso-tank-lbl{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;font-size:9px;font-weight:600;color:#163F56;text-align:center;white-space:nowrap}
 .iso-sdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
@@ -134,7 +134,7 @@
 /* Range buttons */
 .rng{display:flex;align-items:center;border:1px solid var(--bd2);background:var(--bg3);border-radius:2px;overflow:hidden}
 .rng button{padding:6px 12px;font-size:10px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--t2);transition:all .2s}
-.rng button.ac{background:var(--bl);color:#062C60}
+.rng button.ac{background:var(--bl);color:#FFFFFF}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg);background-image:url('https://static.prod-images.emergentagent.com/jobs/08778319-680e-4dcc-9637-79a56dea1c9a/images/051e0fd6187a51fc4b81cd9d57090552be0cc3fe87c259ce9d1761adead4fc4f.jpeg');background-size:cover;background-attachment:fixed;background-position:center}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
 @media(max-width:1024px){.g4,.g6,.gr{grid-template-columns:repeat(2,1fr)}.gm{grid-template-columns:1fr}.g3,.g2{grid-template-columns:1fr}.fr{flex-wrap:wrap;justify-content:center}}
 @media(max-width:640px){.main{padding:12px 16px}.header{padding:8px 16px}.g4,.g6,.gr{grid-template-columns:1fr}.mc .vl{font-size:28px}}
@@ -251,7 +251,7 @@ function renderMetrics(){
   document.getElementById('metricsRow').innerHTML=[
     {l:'Total Flow',v:tf.toFixed(2),u:'L/min'},{l:'Avg Pressure',v:ap.toFixed(2),u:'bar'},
     {l:'Active Alerts',v:alerts.length,u:'',sev:true},{l:'Sensors Online',v:`${on}/27`,u:''},
-  ].map(c=>`<div class="mc"><div class="lb">${c.l}</div><div class="vl" style="color:${c.sev?'var(--rd)':'#fff'}">${c.v}<span class="un">${c.u}</span></div></div>`).join('');
+  ].map(c=>`<div class="mc"><div class="lb">${c.l}</div><div class="vl" style="color:${c.sev?'var(--rd)':'#062C60'}">${c.v}<span class="un">${c.u}</span></div></div>`).join('');
 }
 
 // ── PFD (3D Isometric) ──

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Crosshair, Drop, Scales, ChartLine, Heartbeat, Flask, Buildings } from "@phosphor-icons/react";
+import { Crosshair, Drop, Scales, ChartLine, Heartbeat, Flask, Buildings, MapTrifold } from "@phosphor-icons/react";
 import axios from "axios";
 import WaterBalance from "./WaterBalance";
 import NRWAnalytics from "./analytics/NRWAnalytics";
 import DemandIntelligence from "./analytics/DemandIntelligence";
 import AssetHealth from "./analytics/AssetHealth";
 import WaterQualityIntelligence from "./analytics/WaterQualityIntelligence";
+import GeoQuality from "./analytics/GeoQuality";
 import PFDIsometric from "./PFDIsometric";
 import PlantOverview from "./PlantOverview";
 import DateRangeFilter from "./DateRangeFilter";
@@ -20,6 +21,7 @@ const TABS = [
   { id: "demand", label: "Demand", icon: <ChartLine size={12} weight="bold" /> },
   { id: "assets", label: "Asset Health", icon: <Heartbeat size={12} weight="bold" /> },
   { id: "quality", label: "Water Quality", icon: <Flask size={12} weight="bold" /> },
+  { id: "geo", label: "Geo Quality", icon: <MapTrifold size={12} weight="bold" /> },
 ];
 
 const getDefaultDateRange = () => {
@@ -134,6 +136,8 @@ const PFDVisualization = ({ sensors, onSensorClick }) => {
         <AssetHealth dateRange={dateRange} />
       ) : activeView === "quality" ? (
         <WaterQualityIntelligence dateRange={dateRange} />
+      ) : activeView === "geo" ? (
+        <GeoQuality dateRange={dateRange} />
       ) : (
         <PFDIsometric sensors={sensors} onSensorClick={handleClick} />
       )}

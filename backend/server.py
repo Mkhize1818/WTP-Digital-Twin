@@ -1254,6 +1254,126 @@ async def get_water_quality():
     }
 
 
+# ── Geo Quality (Environmental Impact by Zone) ──────────────────────
+
+GEO_ZONES = [
+    {"id": "GZ_INTAKE", "name": "Raw Water Intake", "zone_type": "intake", "x": 10, "y": 15, "radius": 65,
+     "description": "Municipal supply entry & borehole area"},
+    {"id": "GZ_TREATMENT", "name": "Treatment Plant", "zone_type": "treatment", "x": 28, "y": 40, "radius": 80,
+     "description": "RO, RACF, NACF and chemical treatment zone"},
+    {"id": "GZ_STORAGE", "name": "Storage & Distribution", "zone_type": "storage", "x": 60, "y": 30, "radius": 70,
+     "description": "Treated water storage and distribution hub"},
+    {"id": "GZ_PRODUCTION", "name": "Production Area", "zone_type": "production", "x": 80, "y": 25, "radius": 60,
+     "description": "CIP, PET, Canline, Syrup production lines"},
+    {"id": "GZ_RECOVERY", "name": "Recovery & Nano", "zone_type": "recovery", "x": 35, "y": 75, "radius": 65,
+     "description": "Nano recovery tanks and polishing filters"},
+    {"id": "GZ_WWTP", "name": "WWTP Discharge", "zone_type": "wwtp", "x": 80, "y": 80, "radius": 75,
+     "description": "Wastewater treatment and environmental discharge point"},
+    {"id": "GZ_RUNOFF", "name": "Storm Water Runoff", "zone_type": "runoff", "x": 15, "y": 85, "radius": 55,
+     "description": "Surface runoff collection and overflow area"},
+    {"id": "GZ_GROUNDWATER", "name": "Groundwater Zone", "zone_type": "groundwater", "x": 50, "y": 90, "radius": 60,
+     "description": "Monitoring boreholes and aquifer impact area"},
+]
+
+ENV_PARAMETERS = [
+    {"id": "tds", "name": "Total Dissolved Solids", "unit": "mg/L", "env_limit": 600, "target": 400},
+    {"id": "bod", "name": "BOD₅ (Biochemical Oxygen Demand)", "unit": "mg/L", "env_limit": 10, "target": 5},
+    {"id": "cod", "name": "COD (Chemical Oxygen Demand)", "unit": "mg/L", "env_limit": 75, "target": 40},
+    {"id": "tss", "name": "Total Suspended Solids", "unit": "mg/L", "env_limit": 25, "target": 10},
+    {"id": "ph", "name": "pH", "unit": "pH", "env_limit_low": 5.5, "env_limit_high": 9.5, "target": 7.0},
+    {"id": "phosphate", "name": "Phosphate", "unit": "mg/L", "env_limit": 1.0, "target": 0.3},
+    {"id": "nitrate", "name": "Nitrate", "unit": "mg/L", "env_limit": 15, "target": 6},
+    {"id": "chlorine_res", "name": "Residual Chlorine", "unit": "mg/L", "env_limit": 0.25, "target": 0.1},
+]
+
+
+@api_router.get("/analytics/geo-quality")
+async def get_geo_quality():
+    import math
+    now = datetime.now(timezone.utc)
+
+    # Generate quality data for each geo zone
+    zone_data = []
+    for gz in GEO_ZONES:
+        zone_params = []
+        for param in ENV_PARAMETERS:
+            # Different zones have different baseline contamination levels
+            base_mult = {
+                "intake": 0.5, "treatment": 0.8, "storage": 0.3,
+                "production": 0.6, "recovery": 0.9, "wwtp": 1.5,
+                "runoff": 1.2, "groundwater": 0.7,
+            }.get(gz["zone_type"], 1.0)
+
+            if param["id"] == "ph":
+                val = round(param["target"] + _rng.uniform(-1.0, 1.0) * base_mult, 2)
+                limit_low = param["env_limit_low"]
+                limit_high = param["env_limit_high"]
+                in_limit = limit_low <= val <= limit_high
+                pct_of_limit = round(abs(val - param["target"]) / ((limit_high - limit_low) / 2) * 100, 1)
+            else:
+                val = round(max(0, param["target"] * base_mult + _rng.uniform(-param["target"] * 0.3, param["target"] * 0.5) * base_mult), 2)
+                in_limit = val <= param["env_limit"]
+                pct_of_limit = round((val / param["env_limit"]) * 100, 1)
+
+            zone_params.append({
+                "param_id": param["id"],
+                "name": param["name"],
+                "unit": param["unit"],
+                "value": val,
+                "env_limit": param.get("env_limit", f'{param.get("env_limit_low")}-{param.get("env_limit_high")}'),
+                "in_limit": in_limit,
+                "pct_of_limit": pct_of_limit,
+                "severity": "critical" if pct_of_limit > 100 else ("warning" if pct_of_limit > 75 else "normal"),
+            })
+
+        violations = sum(1 for p in zone_params if not p["in_limit"])
+        env_score = round(100 - (violations / len(zone_params)) * 100 - _rng.uniform(0, 10), 1)
+        env_score = max(0, min(100, env_score))
+
+        zone_data.append({
+            **gz,
+            "parameters": zone_params,
+            "violations": violations,
+            "env_score": env_score,
+            "risk_level": "critical" if env_score < 50 else ("warning" if env_score < 75 else "normal"),
+        })
+
+    # Environmental impact trends (24h)
+    env_trends = []
+    for h in range(24):
+        ts = (now - timedelta(hours=23 - h)).isoformat()
+        hour = (now - timedelta(hours=23 - h)).hour
+        diurnal = 0.8 + 0.4 * math.sin(math.pi * hour / 12)
+        env_trends.append({
+            "timestamp": ts,
+            "hour": f"{hour:02d}:00",
+            "tds_wwtp": round(350 + 100 * diurnal + _rng.uniform(-30, 30), 1),
+            "bod_wwtp": round(4 + 3 * diurnal + _rng.uniform(-1, 1), 1),
+            "cod_wwtp": round(30 + 20 * diurnal + _rng.uniform(-5, 5), 1),
+            "tss_wwtp": round(8 + 5 * diurnal + _rng.uniform(-2, 2), 1),
+        })
+
+    # Compliance summary
+    total_params = sum(len(z["parameters"]) for z in zone_data)
+    total_violations = sum(z["violations"] for z in zone_data)
+    critical_zones = [z for z in zone_data if z["risk_level"] == "critical"]
+
+    return {
+        "timestamp": now.isoformat(),
+        "zones": zone_data,
+        "env_trends": env_trends,
+        "summary": {
+            "total_zones": len(zone_data),
+            "compliant_zones": sum(1 for z in zone_data if z["violations"] == 0),
+            "total_parameters_checked": total_params,
+            "total_violations": total_violations,
+            "compliance_rate": round((1 - total_violations / total_params) * 100, 1) if total_params else 100,
+            "critical_zones": [{"id": z["id"], "name": z["name"], "score": z["env_score"]} for z in critical_zones],
+            "avg_env_score": round(sum(z["env_score"] for z in zone_data) / len(zone_data), 1),
+        },
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
