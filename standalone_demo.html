@@ -164,6 +164,7 @@
           <div id="view-demand" class="tv"></div>
           <div id="view-assets" class="tv"></div>
           <div id="view-quality" class="tv"></div>
+          <div id="view-geo" class="tv"></div>
         </div>
         <div class="g2">
           <div id="sensorGrid"></div>
@@ -766,8 +767,96 @@ function renderPlant(){
   draw();
 }
 
+// ── Geo Quality (Environmental Impact by Zone) ──
+function renderGeo(){
+  const GZ=[
+    {id:'GZ_INTAKE',n:'Raw Water Intake',t:'intake',x:10,y:15,r:6.5,desc:'Municipal supply entry & borehole area'},
+    {id:'GZ_TREATMENT',n:'Treatment Plant',t:'treatment',x:28,y:40,r:8,desc:'RO, RACF, NACF and chemical treatment zone'},
+    {id:'GZ_STORAGE',n:'Storage & Distribution',t:'storage',x:60,y:30,r:7,desc:'Treated water storage and distribution hub'},
+    {id:'GZ_PRODUCTION',n:'Production Area',t:'production',x:80,y:25,r:6,desc:'CIP, PET, Canline, Syrup production lines'},
+    {id:'GZ_RECOVERY',n:'Recovery & Nano',t:'recovery',x:35,y:75,r:6.5,desc:'Nano recovery tanks and polishing filters'},
+    {id:'GZ_WWTP',n:'WWTP Discharge',t:'wwtp',x:80,y:80,r:7.5,desc:'Wastewater treatment and environmental discharge'},
+    {id:'GZ_RUNOFF',n:'Storm Water Runoff',t:'runoff',x:15,y:85,r:5.5,desc:'Surface runoff collection and overflow area'},
+    {id:'GZ_GROUNDWATER',n:'Groundwater Zone',t:'groundwater',x:50,y:90,r:6,desc:'Monitoring boreholes and aquifer impact area'},
+  ];
+  const EP=[
+    {id:'tds',n:'Total Dissolved Solids',u:'mg/L',lim:600,tgt:400},
+    {id:'bod',n:'BOD₅',u:'mg/L',lim:10,tgt:5},
+    {id:'cod',n:'COD',u:'mg/L',lim:75,tgt:40},
+    {id:'tss',n:'Total Suspended Solids',u:'mg/L',lim:25,tgt:10},
+    {id:'ph',n:'pH',u:'pH',limL:5.5,limH:9.5,tgt:7.0},
+    {id:'phosphate',n:'Phosphate',u:'mg/L',lim:1.0,tgt:0.3},
+    {id:'nitrate',n:'Nitrate',u:'mg/L',lim:15,tgt:6},
+    {id:'cl_res',n:'Residual Chlorine',u:'mg/L',lim:0.25,tgt:0.1},
+  ];
+  const ZC={intake:'#1171b8',treatment:'#0E5A94',storage:'#34C759',production:'#FF9500',recovery:'#AF52DE',wwtp:'#CF222E',runoff:'#D4820A',groundwater:'#163F56'};
+  const RC={normal:'#2DA44E',warning:'#D4820A',critical:'#CF222E'};
+  const zones=GZ.map(gz=>{
+    const bm={intake:.5,treatment:.8,storage:.3,production:.6,recovery:.9,wwtp:1.5,runoff:1.2,groundwater:.7}[gz.t]||1;
+    const params=EP.map(p=>{
+      let val,inLim,pct;
+      if(p.id==='ph'){val=Math.round((p.tgt+R(-1,1)*bm)*100)/100;inLim=p.limL<=val&&val<=p.limH;pct=Math.round(Math.abs(val-p.tgt)/((p.limH-p.limL)/2)*1000)/10}
+      else{val=Math.round(Math.max(0,p.tgt*bm+R(-p.tgt*.3,p.tgt*.5)*bm)*100)/100;inLim=val<=p.lim;pct=Math.round(val/p.lim*1000)/10}
+      return{id:p.id,n:p.n,u:p.u,v:val,lim:p.lim||`${p.limL}-${p.limH}`,ok:inLim,pct,sev:pct>100?'critical':pct>75?'warning':'normal'};
+    });
+    const viol=params.filter(p=>!p.ok).length;
+    const sc=Math.round(Math.max(0,Math.min(100,100-(viol/params.length)*100-R(0,10)))*10)/10;
+    return{...gz,params,viol,sc,risk:sc<50?'critical':sc<75?'warning':'normal'};
+  });
+  const totalP=zones.reduce((s,z)=>s+z.params.length,0);
+  const totalV=zones.reduce((s,z)=>s+z.viol,0);
+  const compRate=Math.round((1-totalV/totalP)*1000)/10;
+  const avgSc=Math.round(zones.reduce((s,z)=>s+z.sc,0)/zones.length*10)/10;
+  const scCol=avgSc>=75?'#2DA44E':avgSc>=50?'#D4820A':'#CF222E';
+  // 24H WWTP trends
+  const trends=Array.from({length:24},(_,i)=>{const hr=(new Date().getHours()-23+i+24)%24;const d=.8+.4*Math.sin(Math.PI*hr/12);
+    return{h:`${String(hr).padStart(2,'0')}:00`,tds:Math.round((350+100*d+R(-30,30))*10)/10,bod:Math.round((4+3*d+R(-1,1))*10)/10,cod:Math.round((30+20*d+R(-5,5))*10)/10,tss:Math.round((8+5*d+R(-2,2))*10)/10};
+  });
+  document.getElementById('view-geo').innerHTML=`
+  <!-- Summary -->
+  <div class="g6" style="grid-template-columns:repeat(5,1fr)">${[
+    {l:'Avg Env Score',v:avgSc,u:'/100',c:scCol},{l:'Compliance Rate',v:compRate+'%',u:'',c:compRate>=90?'#2DA44E':'#D4820A'},
+    {l:'Zones Checked',v:zones.filter(z=>z.viol===0).length+'/'+zones.length,u:'compliant',c:'#1171b8'},
+    {l:'Violations',v:totalV,u:'',c:totalV===0?'#2DA44E':'#CF222E'},{l:'Params Checked',v:totalP,u:'',c:'#163F56'}
+  ].map(c=>`<div class="bc" style="border-color:${c.c}22"><div class="bl" style="color:#7A9AB5">${c.l}</div><div class="bv" style="color:${c.c}">${c.v} <span class="bu" style="color:#7A9AB5">${c.u}</span></div></div>`).join('')}</div>
+  <!-- Spatial Map + Bar Chart -->
+  <div class="g2">
+    <div class="pd"><div class="st"><div class="dot" style="background:#1171b8"></div>Spatial Quality Map</div>
+      <svg viewBox="0 0 100 100" style="width:100%;min-height:260px;background:#F4F8FC;border-radius:4px">
+        ${[20,40,60,80].map(v=>`<line x1="${v}" y1="0" x2="${v}" y2="100" stroke="rgba(17,113,184,0.06)" stroke-width="0.3"/><line x1="0" y1="${v}" x2="100" y2="${v}" stroke="rgba(17,113,184,0.06)" stroke-width="0.3"/>`).join('')}
+        ${zones.map(z=>{const col=RC[z.risk];return`<circle cx="${z.x}" cy="${z.y}" r="${z.r}" fill="${col}15" stroke="${col}" stroke-width="0.4" stroke-dasharray="2 1"/><circle cx="${z.x}" cy="${z.y}" r="1.5" fill="${col}"/><text x="${z.x}" y="${z.y-z.r-1.5}" fill="#062C60" font-size="2.8" font-weight="700" text-anchor="middle">${z.n}</text><text x="${z.x}" y="${z.y+1}" fill="${col}" font-size="3.5" font-weight="900" text-anchor="middle" font-family="Chivo">${z.sc}</text>${z.viol>0?`<text x="${z.x}" y="${z.y+4}" fill="#CF222E" font-size="2" font-weight="700" text-anchor="middle">${z.viol} violation${z.viol>1?'s':''}</text>`:''}`}).join('')}
+      </svg>
+    </div>
+    <div class="pd"><div class="st"><div class="dot" style="background:#1171b8"></div>Environmental Scores by Zone</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">${zones.map(z=>{const col=RC[z.risk];const w=Math.max(2,z.sc);return`<div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#062C60">${z.n}</span><span style="font-size:10px;font-weight:900;color:${col};font-family:JetBrains Mono">${z.sc}</span></div><div style="height:10px;background:#E0E8F0;border-radius:3px;overflow:hidden"><div style="height:100%;width:${w}%;background:${col};border-radius:3px"></div></div></div>`}).join('')}</div>
+    </div>
+  </div>
+  <!-- 24H WWTP Discharge Trends -->
+  <div class="pd"><div class="st"><div class="dot" style="background:#CF222E"></div>24H WWTP Discharge Trends (Environmental Impact)</div><div style="height:220px"><canvas id="geoTrendC"></canvas></div></div>
+  <!-- Zone Detail Cards -->
+  <div class="pd"><div class="st"><div class="dot" style="background:#1171b8"></div>Zone-by-Zone Environmental Analysis</div>
+    <div class="g2">${zones.map(z=>{const col=RC[z.risk];const zc=ZC[z.t]||'#1171b8';
+      return`<div class="pd" style="border-color:${col}22;padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:${zc}"></div><div><div style="font-size:12px;font-weight:700;color:#062C60">${z.n}</div><div style="font-size:9px;color:#7A9AB5">${z.desc}</div></div></div>
+          <div style="text-align:right"><div style="font-size:16px;font-weight:900;color:${col};font-family:Chivo">${z.sc}</div><div style="font-size:8px;font-weight:700;color:#7A9AB5;text-transform:uppercase">Score</div></div>
+        </div>
+        <table class="dt"><thead><tr><th>Parameter</th><th style="text-align:right">Value</th><th style="text-align:right">Limit</th><th style="text-align:right">% of Limit</th></tr></thead><tbody>
+        ${z.params.map(p=>`<tr><td class="nm">${p.n}</td><td style="text-align:right;font-weight:700;color:${p.ok?'#062C60':'#CF222E'};font-family:JetBrains Mono">${p.v} <span style="color:#7A9AB5;font-weight:400">${p.u}</span></td><td style="text-align:right;color:#7A9AB5;font-family:JetBrains Mono">${typeof p.lim==='number'?'≤'+p.lim:p.lim}</td><td style="text-align:right"><span style="font-weight:700;color:${RC[p.sev]};font-family:JetBrains Mono">${p.pct}%</span></td></tr>`).join('')}
+        </tbody></table>
+      </div>`}).join('')}</div>
+  </div>`;
+  // Chart
+  setTimeout(()=>{cC('geoTrendC',{type:'line',data:{labels:trends.map(t=>t.h),datasets:[
+    {label:'TDS (mg/L)',data:trends.map(t=>t.tds),borderColor:'#1171b8',backgroundColor:'#1171b818',fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:'BOD₅ (mg/L)',data:trends.map(t=>t.bod),borderColor:'#CF222E',backgroundColor:'#CF222E18',fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:'COD (mg/L)',data:trends.map(t=>t.cod),borderColor:'#D4820A',backgroundColor:'#D4820A18',fill:true,tension:.3,pointRadius:0,borderWidth:2},
+    {label:'TSS (mg/L)',data:trends.map(t=>t.tss),borderColor:'#AF52DE',backgroundColor:'#AF52DE18',fill:true,tension:.3,pointRadius:0,borderWidth:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#062C60',font:{size:10}}}},scales:{x:{ticks:{color:'#163F56',font:{size:9},maxTicksLimit:8},grid:{color:'#E0E8F0'}},y:{ticks:{color:'#163F56',font:{size:9}},grid:{color:'#E0E8F0'}}}}})},50);
+}
+
 // ── Tab System ──
-const TABS=[{id:'pfd',l:'Process Flow',r:renderPFD},{id:'plant',l:'Plant Overview',r:renderPlant},{id:'balance',l:'Water Balance',r:renderWB},{id:'nrw',l:'NRW Analytics',r:renderNRW},{id:'demand',l:'Demand',r:renderDemand},{id:'assets',l:'Asset Health',r:renderAssets},{id:'quality',l:'Water Quality',r:renderQuality}];
+const TABS=[{id:'pfd',l:'Process Flow',r:renderPFD},{id:'plant',l:'Plant Overview',r:renderPlant},{id:'balance',l:'Water Balance',r:renderWB},{id:'nrw',l:'NRW Analytics',r:renderNRW},{id:'demand',l:'Demand',r:renderDemand},{id:'assets',l:'Asset Health',r:renderAssets},{id:'quality',l:'Water Quality',r:renderQuality},{id:'geo',l:'Geo Quality',r:renderGeo}];
 let activeTab='pfd';
 function switchTab(id){activeTab=id;document.querySelectorAll('.tv').forEach(v=>v.classList.remove('ac'));document.getElementById(`view-${id}`).classList.add('ac');document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('ac',b.dataset.tab===id));TABS.find(t=>t.id===id)?.r()}
 function buildTabs(){document.getElementById('mainTabs').innerHTML=TABS.map(t=>`<button class="tb${t.id===activeTab?' ac':''}" data-tab="${t.id}" onclick="switchTab('${t.id}')">${t.l}</button>`).join('')}
